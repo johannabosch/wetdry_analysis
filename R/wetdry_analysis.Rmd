@@ -1,0 +1,534 @@
+---
+title: "wetdry_analysis"
+author: "Johanna Bosch"
+date: "2024-12-02"
+output: html_document
+---
+
+
+## Getting started
+
+```{r include=FALSE}
+source(here::here("project_settings.R"), echo=TRUE)
+
+```
+
+## Metadata
+
+What we need from the metadata file:
+`track_dataStart:` first date in raw trackfile (as downloaded from the tag)
+`dep_date:` day the tag was deployed on the bird
+`dep_dateEst:` my estimate of deploy date if not reported in original datasheet
+`ret_date:` date the tag was removed from the bird
+`ret_dateEst:`  estimate of retrieval date if not reported in original datasheet OR estimate of the last day of reliable light data if the logger battery died while still at sea
+`track_dataEnd:` last date in raw trackfile (as downloaded from the tag)
+
+The date window identified by these variables will include uninformative data before deployment and after retrieval,
+`track_dataEnd can be useful in identifying if/when a logger battery died at sea (track_dataEnd < ret_date).` When building the logic for cleaning up the DEG files, we can't forget to include scenarios where the device stopped collecting data before the retrieval date, so `ret_date` will be greater than the maximum date found in the DEG file.
+
+### Review
+
+```{r}
+
+#load the metadata
+md <- read.csv(file.path(data.dir, "MasterMetadata_LHSP_Tracking_NL_NB_NS_13Aug2024.csv"))
+
+# let's double check - every time there is an NA in retDate_comb, there should be no wet-dry file
+print(md %>%
+  filter(!is.na(wetdry_filename) & is.na(ret_date) & is.na(ret_dateEst))) # checks out
+
+#double check that Migrate Tech are the only devices with wetdry data
+print(md %>%
+  group_by(tagMake) %>%
+  summarise(filename_count = sum(!is.na(wetdry_filename))))
+
+#how many Migrate Tech (MT) devices total?
+MT_devices <- md %>%  filter(tagMake %in% c("Migrate Technology: W30A9-SEA", "Migrate Technology: W30A9-SEA-COOL"))
+
+#how many MT devices with missing wetdry files?
+MT_devices_missing <- (MT_devices %>%
+  filter(tagMake %in% c("Migrate Technology: W30A9-SEA", "Migrate Technology: W30A9-SEA-COOL"), is.na(wetdry_filename)) %>%
+    select(wetdry_filename, tagID))
+
+#how many MT devices have wetdry-data?
+MT_devices_retrieved <- (MT_devices %>%
+  filter(tagMake %in% c("Migrate Technology: W30A9-SEA", "Migrate Technology: W30A9-SEA-COOL"), !is.na(wetdry_filename)) %>%
+    select(wetdry_filename, tagID))
+```
+
+
+SUMMARY:
+
+Migrate Tech devices total = 480 
+Devices with wet-dry data = 274
+Devices without wet-dry data = 206
+
+
+
+### Housekeeping
+
+To clean up the metadata, we need to:
+  * filter out the Migrate Technology devices (they are the only devices with wetdry data)
+  * remove any rows that have NA for `wetdry_filename`
+  * merge cols for estimates and non-est for deployment and return dates, 
+
+```{r}
+
+#clean up the metadata so that we only include the necessary columns for clipping
+clipping_md <- md %>%
+  
+  filter(
+    #filter for MT devices
+    tagMake %in% c("Migrate Technology: W30A9-SEA", "Migrate Technology: W30A9-SEA-COOL"),
+    #remove any NA rows in wetdry_filename 
+    !is.na(wetdry_filename)) %>% 
+  
+  # merge estimated and observed columns 
+  mutate(
+    depDate_comb = as.Date(ifelse(!is.na(dep_dateEst), dep_dateEst, dep_date), format = "%Y-%m-%d"),
+    retDate_comb = as.Date(
+      ifelse(!is.na(ret_dateEst), substr(ret_dateEst, nchar(ret_dateEst) - 9, nchar(ret_dateEst)), 
+             ret_date), format = "%Y-%m-%d")) %>%
+  
+  mutate(depDate_comb = format(depDate_comb, "%d/%m/%Y"),
+         retDate_comb = format(retDate_comb, "%d/%m/%Y")) %>%
+  
+  #only keep necessary columns 
+  select(wetdry_filename, depDate_comb, retDate_comb)
+
+# checked that number of observations in `MT_devices_retrieved` is equal to `clipping_md`
+
+
+#fix fomratted name for that one DEG file i manually changed
+clipping_md <- clipping_md %>%
+  mutate(
+    wetdry_filename = ifelse(
+      wetdry_filename == "BH594_04Jul18_135310driftadj.deg",
+      "BH594_formatted_04Jul18_135310driftadj.deg",
+      wetdry_filename
+    )
+  )
+
+```
+
+
+## DEG files
+
+The number of DEG files we have in that original folder should equal `MT_devices_retrieved`
+
+```{r}
+print(length(list.files(origin.dir, pattern = "\\.deg$", full.names = TRUE))) #checks out!
+```
+Check out a random DEG file for a single bird first(`BH594_04Jul18_135310driftadj.deg`)
+
+```{r}
+#info on that bird from our metadata
+clipping_md[which(clipping_md$wetdry_filename == "BH594_formatted_04Jul18_135310driftadj.deg"), ]
+```
+So we want to clip this for our known deployment times from the metadata
+For this bird we want to filter the DEG file to keep any dates from 2017-09-20 to 2018-06-29.
+```{r}
+#access the deg file
+deg_file <- file.path(origin.dir, "BH584_04Jul18_125355driftadj.deg")
+
+#here's what a raw deg looks like
+print(readLines(deg_file, n = 25)) #our data starts at line 20
+```
+
+Right now the DEG files contain a bunch of metadata (the first 20 lines), and data from the entire track time, from `track_dataStart` to `track_dataEnd` in the `migrate_md` dataframe. On line 20, you can see the two columns (`datetime` and `wets0-20`) that log data for the device. The rows after line 20 sometimes contain random errors that occur while the device is logging data, so we have clean those out too and also isolate the date from the `datetime` column.
+
+### Cleaning
+
+I made a `clean_deg function` to remove the noise from the DEG files. 
+
+```{r eval = FALSE}
+
+source(here::here("utils/clean_degs.R"), echo=F)
+
+if (FALSE) {
+clean_degs(origin.dir, deg.dir)
+}
+```
+
+
+```{r}
+source(here("utils/fix_ret_dates.R"), echo = F)
+
+#this just changes the structure of clipping_md, no files are changed
+fixed_md <- update_ret_date(clipping_md, deg.dir)
+
+#looks like retrieval dates for 5 files had to be fixed
+
+```
+
+### Batch clipping
+
+I'm using `Furrr` to speed up the clipping task. [Purrr](purrr.tidyverse.org/) basically replaces R's `apply` family, and [Furrr](furrr.futureverse.org/) extends Purrr to support parallel processing. Purrr's `pmap()` family  applies a function row-wise over multiple inputs and bins the results into a single data frame (`pmap_dfr` - data frame row-bind). 
+
+This works for our big clip job because we can use `Furrr` in combination with `dplyr` functions like `mutate()` `summarize()` or `filter()` to optimize clipping, we can still process a single file at a time to avoid overloading memory, but we can distribute the work across multiple cores for faster execution so that one core deals with 50 files 
+
+I clipped the data sequentially with Purrr for 10 files first to get the logic down, and then switched to Furrr to build a bigger function (`clip_degs.R`).
+
+### clip_deg
+```{r}
+source(here("utils/clip_deg.R"), echo = F)
+```
+
+```{r}
+#run on a subset of 10 files to start
+subset <- fixed_md[1:10, ]
+str(subset)
+```
+
+
+```{r eval=FALSE}
+# Loop through each row in the 'subset' data frame and call clip_deg
+if (FALSE) {
+profvis({
+for (i in 1:nrow(subset)) {
+  print(paste("Processing row:", i))
+  print(subset[i, , drop = FALSE])
+  
+  result <- clip_deg(subset[i, , drop = FALSE], deg.dir, output.dir, zip_file, log_file)
+}})
+
+# using write_csv() the Date column (now of type Date) is automatically 
+# converted to the standard YYYY-MM-DD format -  default behavior of the 
+# readr package so I'll just keep it that way
+}
+
+```
+
+Without using Furrr process took :
+* 85.6MB of memory on my machine 
+* 5.27 seconds for 10 files
+
+### Test batch clipping in parallel
+
+I have 8 cores on my machine
+
+```{r}
+
+#define the number of cores on your machine
+cores <- parallel::detectCores()
+
+```
+
+```{r}
+
+# define function for a single row with clip deg
+process_row <- function(row, deg.dir, output.dir, log_file) {
+  clip_deg(row, deg.dir, output.dir, log_file)
+  }
+```
+
+I'm testing Furrr with 7 and then 4 cores to process 10 files to start, then scale it up to 50 files
+
+```{r eval=FALSE}
+if (FALSE) {
+# first I'll try using half of my cores
+# and then try using one less than what I have available
+plan(multisession, workers = (cores/2))
+
+plan()
+
+
+profvis({
+results <- future_map_dfr(
+  .x = split(subset, seq_len(nrow(subset))),
+  .f = ~ process_row(.x, deg.dir, output.dir, log_file),
+  .progress = TRUE)
+})
+
+print(results)
+}
+
+```
+
+Only took up 10.9MB of memory and around 4.64 seconds to run 10 files on 7 cores
+On 4 cores it took 5.1MB and 3.74 seconds to run (using 4 cores)
+
+Try scaling up to 50 files with 4 cores to see how it performs 
+
+```{r eval=FALSE}
+if (FALSE) {
+  
+subset <- fixed_md[1:50, ]
+str(subset)
+
+plan()
+
+profvis({
+results <- future_map_dfr(
+  .x = split(subset, seq_len(nrow(subset))),
+  .f = ~ process_row(.x, deg.dir, output.dir, zip_file, log_file),
+  .progress = TRUE)
+})
+}
+```
+
+With 4 cores for 50 files, Furrr::future_map_dfr used 6.4MB of memory and took 7.62 seconds.
+
+
+
+### Final clip
+
+Let's run it on all files in deg.dir
+created a sink in clip_degs to log output to a file instead of console
+
+```{r eval = FALSE}
+if (FALSE) {
+subset <- fixed_md[1:10, ]
+str(subset)
+
+aggregate_logs <- function(output.dir, log_file) {
+  worker_logs <- list.files(output.dir, pattern = "clip_summary_worker_.*\\.txt", full.names = TRUE)
+  file.append(log_file, worker_logs)
+  file.remove(worker_logs)
+}
+
+log_file <- file.path(output.dir, "clip_summary.txt")
+if (file.exists(log_file)) file.remove(log_file)
+
+#restart R and clear env, then try with all files on 4 cores
+plan(sequential)  
+# use sequential for testing
+#switch to `multisession` for parallel
+
+results <- future_map_dfr(
+  .x = split(subset, seq_len(nrow(subset))),
+  .f = ~ clip_deg(.x, deg.dir, output.dir),
+  .progress = TRUE
+)
+
+print(results)
+
+}
+```
+
+```{r eval = FALSE}
+if (FALSE) {
+# Switch to parallel processing for the full dataset
+plan(multisession, workers = cores/2)
+
+if (file.exists(log_file)) file.remove(log_file)
+worker_logs <- list.files(output.dir, pattern = "^clip_summary_worker_.*\\.txt$", full.names = TRUE)
+if (length(worker_logs) > 0) file.remove(worker_logs)
+
+# Process the full dataset
+results_full <- future_map_dfr(
+  .x = split(fixed_md, seq_len(nrow(fixed_md))),
+  .f = ~ clip_deg(.x, deg.dir, output.dir),
+  .progress = TRUE
+)
+
+# Consolidate logs
+aggregate_logs(output.dir, log_file)
+
+print(results_full)
+}
+```
+274 files on 4 cores required 9.2MB of memory allocation and around 58 seconds.
+
+
+
+### Fixing DEG file issues
+
+Make a new metadata file that reviews the days deployed 
+```{r}
+
+deployment_md <- clipping_md %>%
+  mutate(
+    depDate_comb = as.Date(depDate_comb, format = "%d/%m/%Y"),
+    retDate_comb = as.Date(retDate_comb, format = "%d/%m/%Y"),
+    days_deployed = as.numeric(retDate_comb - depDate_comb) +1
+  ) %>%
+  rowwise() %>%
+  mutate(
+    last_active_day = {
+      deg_file <- file.path(deg.dir, wetdry_filename)
+      if (file.exists(deg_file)) {
+        deg_data <- tryCatch(
+          read_csv(deg_file, col_types = cols(
+            date = col_date(format = "%d/%m/%Y"),
+            time = col_character(),
+            `wets0-20` = col_double()
+          )),
+          error = function(e) NULL
+        )
+        if (!is.null(deg_data)) {
+          max(deg_data$date, na.rm = TRUE)
+        } else {
+          NA
+        }
+      } else {
+        NA
+      }
+    },
+    days_inactive_before_ret = if (retDate_comb > last_active_day) {
+      as.numeric(retDate_comb - last_active_day)+1
+    } else {
+      NA
+    },
+    days_active_before_ret = as.numeric(last_active_day-depDate_comb)+1,
+    
+    days_active_after_ret = if (last_active_day > retDate_comb) {
+      as.numeric(last_active_day - retDate_comb)+1
+    } else {
+      NA
+    },
+    ) %>%
+  ungroup() %>%
+  
+  select(wetdry_filename, 
+         depDate_comb, retDate_comb, 
+         last_active_day, 
+         days_deployed, 
+         days_active_before_ret, days_inactive_before_ret, 
+         days_active_after_ret)
+
+
+```
+
+#### File: CD480_06Aug22_140316driftadj.deg
+
+Noticed file `CD480_06Aug22_140316driftadj.deg` has DEG some dates listed as `2201-10-06`
+```{r}
+file <- deployment_md[deployment_md$wetdry_filename == "CD480_06Aug22_140316driftadj.deg", ]
+print(file)
+```
+
+The DEG file has a weird invalid byte error message and then date formatting messed up.
+
+On May 2022, `01/05/2022`, the device starts logging invalid bytes
+then says it starts logging again in January of the next year? listed as `18/01/2201`, 
+It can't be logging for 2022 anymore because the day `18/01` already passed in 2022
+and metadata says retrieval day was in August 2022,  `2022-07-31`
+
+So it says it started logging in January again but lists the date as `2201`
+
+    ```
+    01/05/2022 07:09:47	20
+    01/05/2022 07:19:47	20
+    01/05/2022 07:29:47	20
+    01/05/2022 07:39:47	20
+    01/05/2022 07:49:47	20
+    Invalid byte: FF
+    Invalid byte: FF
+    Invalid byte: FF
+    Invalid byte: FF
+    Invalid byte: FF
+    01/05/2022 07:59:47	20
+    01/05/2022 08:09:47	20
+    01/05/2022 08:19:47	20
+    01/05/2022 08:29:47	20
+    01/05/2022 08:39:47	20
+    ...
+    01/05/2022 21:49:47	20
+    01/05/2022 21:59:47	20
+    01/05/2022 22:09:47	20
+    01/05/2022 22:19:47	20
+    Missing data until 18/01/2201 08:39:17
+    Invalid byte: FF
+    Invalid byte: FF
+    Invalid byte: FF
+    Invalid byte: FF
+    Invalid byte: FF
+    ...
+    Invalid byte: FF
+    Invalid byte: FF
+    18/01/2201 08:40:40	20
+    18/01/2201 08:50:40	20
+    18/01/2201 09:00:40	20
+    ...
+    ```
+
+When we applied clip_deg it filtered out all those messy dates leaving any dates before `01/05/2022`, so we're good to just keep using this file but it is bad quality.
+
+The wets values from April 30 at 8AM to May 1 at 7AM were consistently equal to 20, so maybe something went wrong with the device there (`30/04/2022 08:19:47` to `01/05/2022 07:49:47`).
+
+So really the last active day for this device was 01/05/2022 
+
+
+
+#### File: BU784_14Aug20_141554driftadj.deg
+
+Also the file `BU784_14Aug20_141554driftadj.deg` only has 937 lines after filtering
+
+```{r}
+file <- deployment_md[deployment_md$wetdry_filename == "BU784_14Aug20_141554driftadj.deg", ]
+print(file)
+```
+Looks like it was deployed for 135 days and died 7 days after it was deployed 
+
+
+Do we want to add a filtering step here for devices that didn't last over X number of days?
+Like a quality filtering step?
+
+
+
+
+## Down-sampling 
+
+We need to think about resolution carefully. Right now the files are logging every 10 minutes, which is too high of a resolution. Need to down-sample the dataset from 10min to some other interval that is meaningful to define states to.
+
+12hrs seems too long given how far birds can move in this time, but 10min is far too short.
+
+Tempted to use 2hr resolution to match GPS. 
+For example, within each 2hr period we need to assess:
+•	Proportion wet or time wet ((Count wets in 2hr period * 30sec) / 72000sec)
+•	Number of switches between 0 and non-zero value
+•	Total time when entire 10min sampling interval was dry (count 0s * 10min)
+•	Total time when entire 10min sampling interval was wet (count >=1 * 10min)
+•	Longest continuous time dry (longest number of consecutive rows with wets==0  * 10min)
+•	Longest continuous time wet (longest number of consecutive rows with wets>=1 * 10min)
+
+### 2hr Periods
+
+```{r}
+#made a new dir called downsampled in /data
+
+#define deg files to use
+deg_files <- list.files(output.dir, pattern = "*.deg", full.names = TRUE)#[1:5] #add if you want to subset
+
+#set up a furrr plan for using 4 cores
+plan(multisession, workers = 4)
+
+#function to downsample by 2hrs - move to utils once ready
+downsample_deg <- function(file_path) {
+  deg_data <- read_csv(file_path, show_col_types = FALSE)
+  
+  #bring back a datetime column so R can read dates in POSIXct format
+  deg_data <- deg_data %>%
+    mutate(datetime = as.POSIXct(paste(date, time), format = "%Y-%m-%d %H:%M:%S", tz = "UTC")) %>%
+    filter(!is.na(datetime) & !is.na(`wets0-20`))
+
+  #downsample by grouping date and 2 hr bins
+  downsampled_data <- deg_data %>%
+    mutate(bin = floor_date(datetime, "2 hours")) %>% #bin by 2hrs
+    group_by(bin) %>%
+    
+    summarize(
+      wets = round(mean(`wets0-20`, na.rm=TRUE), 3),
+      .groups = "drop") %>%
+    mutate(
+      date = as.Date(bin),
+      start_time = format(bin, "%H:%M:%S"),
+      end_time = format(bin + hours(2) - seconds(1), "%H:%M:%S")) %>%
+    
+    select(date, start_time, end_time, wets)
+  
+  file_name <- basename(file_path)
+  output_path <- file.path(downsampled.dir, file_name)
+  
+  write_csv(downsampled_data, output_path)
+}
+
+future_map(deg_files, downsample_deg)
+
+plan(sequential)
+length(downsampled.dir)
+
+
+```
+
