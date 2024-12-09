@@ -137,7 +137,7 @@ print(readLines(deg_file, n = 25)) #our data starts at line 20
 
 Right now the DEG files contain a bunch of metadata (the first 20 lines), and data from the entire track time, from `track_dataStart` to `track_dataEnd` in the `migrate_md` dataframe. On line 20, you can see the two columns (`datetime` and `wets0-20`) that log data for the device. The rows after line 20 sometimes contain random errors that occur while the device is logging data, so we have clean those out too and also isolate the date from the `datetime` column.
 
-### Cleaning
+## Cleaning DEGs
 
 I made a `clean_deg function` to remove the noise from the DEG files. 
 
@@ -161,7 +161,7 @@ fixed_md <- update_ret_date(clipping_md, deg.dir)
 
 ```
 
-### Batch clipping
+## Clipping DEGS
 
 I'm using `Furrr` to speed up the clipping task. [Purrr](purrr.tidyverse.org/) basically replaces R's `apply` family, and [Furrr](furrr.futureverse.org/) extends Purrr to support parallel processing. Purrr's `pmap()` family  applies a function row-wise over multiple inputs and bins the results into a single data frame (`pmap_dfr` - data frame row-bind). 
 
@@ -169,7 +169,6 @@ This works for our big clip job because we can use `Furrr` in combination with `
 
 I clipped the data sequentially with Purrr for 10 files first to get the logic down, and then switched to Furrr to build a bigger function (`clip_degs.R`).
 
-### clip_deg
 ```{r}
 source(here("utils/clip_deg.R"), echo = F)
 ```
@@ -203,7 +202,7 @@ Without using Furrr process took :
 * 85.6MB of memory on my machine 
 * 5.27 seconds for 10 files
 
-### Test batch clipping in parallel
+## Parallel Batch-clipping
 
 I have 8 cores on my machine
 
@@ -214,6 +213,7 @@ cores <- parallel::detectCores()
 
 ```
 
+### Testing 
 ```{r}
 
 # define function for a single row with clip deg
@@ -332,7 +332,7 @@ print(results_full)
 
 
 
-### Fixing DEG file issues
+## DEG File Issues
 
 Make a new metadata file that reviews the days deployed 
 ```{r}
@@ -389,6 +389,12 @@ deployment_md <- clipping_md %>%
 
 
 ```
+
+#### File: BH594_04Jul18_135310driftadj.deg
+
+Small note on this file - I accidentally wrote over it on V drive so we have to replace it with the original from backups. Fixed for now by replacing with anothe rfiles metadata info, file is titled `BH594_formatted_04Jul18_135310driftadj.deg` in the origin.dir folder.
+
+
 
 #### File: CD480_06Aug22_140316driftadj.deg
 
@@ -451,15 +457,16 @@ So really the last active day for this device was 01/05/2022
 
 
 
+
 #### File: BU784_14Aug20_141554driftadj.deg
 
 Also the file `BU784_14Aug20_141554driftadj.deg` only has 937 lines after filtering
+Looks like it was deployed for 135 days and died 7 days after it was deployed 
 
 ```{r}
 file <- deployment_md[deployment_md$wetdry_filename == "BU784_14Aug20_141554driftadj.deg", ]
 print(file)
 ```
-Looks like it was deployed for 135 days and died 7 days after it was deployed 
 
 
 Do we want to add a filtering step here for devices that didn't last over X number of days?
@@ -509,7 +516,7 @@ downsample_deg <- function(file_path) {
     group_by(bin) %>%
     
     summarize(
-      wets = round(mean(`wets0-20`, na.rm=TRUE), 3),
+      wets = round(mean(`wets0-20`, na.rm=TRUE), 3), #take the mean for binning
       .groups = "drop") %>%
     mutate(
       date = as.Date(bin),
@@ -527,8 +534,32 @@ downsample_deg <- function(file_path) {
 future_map(deg_files, downsample_deg)
 
 plan(sequential)
-length(downsampled.dir)
-
 
 ```
+
+
+#### Proportion wet or time wet 
+
+(Count wets in 2hr period * 30sec) / 72000sec)
+
+
+#### Number of switches
+
+between 0 and non-zero value
+
+
+#### Total time dry 
+when entire 10min sampling interval was dry (count 0s * 10min)
+
+
+#### Total time wet
+when entire 10min sampling interval was wet (count >=1 * 10min)
+
+
+#### Longest continuous time dry
+(longest number of consecutive rows with wets==0  * 10min)
+
+
+#### Longest continuous time wet
+(longest number of consecutive rows with wets>=1 * 10min)
 
