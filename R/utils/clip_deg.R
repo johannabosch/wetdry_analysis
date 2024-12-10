@@ -1,3 +1,22 @@
+fix_rets_welcome <- function() {
+  cat("\n")
+  cat("===================================================\n")
+  cat("             YOU LOADED clip_degs                  \n")
+  cat("===================================================\n")
+  cat("\n")
+  cat("this function clips DEG files based on deployment periods\n")
+  cat("for combined estimated and observed dates, where depDate_comb\n")
+  cat("is the deployment date and retDate_comb is the retrieval date\n")
+  
+  cat("\n")
+  cat("\n")
+  cat("- Ensure dependencies in project_settings.R\n")
+
+  
+  cat("=============================================\n\n")}
+
+fix_rets_welcome()
+
 clip_deg <- function(md_row, deg.dir, output.dir) {
   worker_log_file <- file.path(output.dir, paste0("clip_summary_worker_", Sys.getpid(), ".txt"))
   sink(worker_log_file, append = TRUE)

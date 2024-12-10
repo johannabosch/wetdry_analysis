@@ -13,9 +13,7 @@ clean_degs_welcome <- function() {
   cat("\n")
   cat("- Ensure dependencies in project_settings.R\n")
   cat("- Define origin.dir and deg.dir in project_settings.R\n")
-  cat("- md_rows_deg: # of lines to remove from DEG files \n")
-  cat("- n_cores: # of cores to use in parallel \n") 
-  cat("- subset: define a subset of files to test memory usage before writing files \n") 
+
 
   cat("=============================================\n\n")}
 

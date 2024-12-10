@@ -150,7 +150,7 @@ clean_degs(origin.dir, deg.dir)
 }
 ```
 
-
+Use this function to fix the retrieval dates in clipping_md when retrieval date is greater than the last day listed in the DEG
 ```{r}
 source(here("utils/fix_ret_dates.R"), echo = F)
 
