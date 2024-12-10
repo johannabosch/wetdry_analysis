@@ -1,4 +1,4 @@
-fix_rets_welcome <- function() {
+clip_degs_welcome <- function() {
   cat("\n")
   cat("===================================================\n")
   cat("             YOU LOADED clip_degs                  \n")
@@ -15,7 +15,7 @@ fix_rets_welcome <- function() {
   
   cat("=============================================\n\n")}
 
-fix_rets_welcome()
+clip_degs_welcome()
 
 clip_deg <- function(md_row, deg.dir, output.dir) {
   worker_log_file <- file.path(output.dir, paste0("clip_summary_worker_", Sys.getpid(), ".txt"))

@@ -150,7 +150,7 @@ clean_degs(origin.dir, deg.dir)
 }
 ```
 
-Use this function to fix the retrieval dates in clipping_md when retrieval date is greater than the last day listed in the DEG
+Use this function to fix the retrieval dates in clipping_md when retrieval date is greater than the last day listed in the DEG. This preps metadata for clipping the DEG files based on deployment periods.
 ```{r}
 source(here("utils/fix_ret_dates.R"), echo = F)
 
@@ -494,42 +494,13 @@ For example, within each 2hr period we need to assess:
 
 ```{r}
 #made a new dir called downsampled in /data
+source(here("utils/downsample_deg.R"), echo = F)
 
 #define deg files to use
 deg_files <- list.files(output.dir, pattern = "*.deg", full.names = TRUE)#[1:5] #add if you want to subset
 
 #set up a furrr plan for using 4 cores
 plan(multisession, workers = 4)
-
-#function to downsample by 2hrs - move to utils once ready
-downsample_deg <- function(file_path) {
-  deg_data <- read_csv(file_path, show_col_types = FALSE)
-  
-  #bring back a datetime column so R can read dates in POSIXct format
-  deg_data <- deg_data %>%
-    mutate(datetime = as.POSIXct(paste(date, time), format = "%Y-%m-%d %H:%M:%S", tz = "UTC")) %>%
-    filter(!is.na(datetime) & !is.na(`wets0-20`))
-
-  #downsample by grouping date and 2 hr bins
-  downsampled_data <- deg_data %>%
-    mutate(bin = floor_date(datetime, "2 hours")) %>% #bin by 2hrs
-    group_by(bin) %>%
-    
-    summarize(
-      wets = round(mean(`wets0-20`, na.rm=TRUE), 3), #take the mean for binning
-      .groups = "drop") %>%
-    mutate(
-      date = as.Date(bin),
-      start_time = format(bin, "%H:%M:%S"),
-      end_time = format(bin + hours(2) - seconds(1), "%H:%M:%S")) %>%
-    
-    select(date, start_time, end_time, wets)
-  
-  file_name <- basename(file_path)
-  output_path <- file.path(downsampled.dir, file_name)
-  
-  write_csv(downsampled_data, output_path)
-}
 
 future_map(deg_files, downsample_deg)
 
