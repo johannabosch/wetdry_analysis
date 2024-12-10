@@ -507,30 +507,90 @@ future_map(deg_files, downsample_deg)
 plan(sequential)
 
 ```
+ So our datasets `wets` values now represent the average number of 10-minute intervals that were wet during the 2-hour period. This means each 2hr period has 12 intervals of 10 minutes (600 secs).
+
+wets = 0 means 10min interval was entirely wet
+wets = 20 means 10min interval was entirely dry
+
+For one 10min interval,
+if wets=1, then 600s/20 = 30 seconds
+so 1 unit wets = 30 seconds wet per 10min interval
 
 
-#### Proportion wet or time wet 
+### Metrics
 
-(Count wets in 2hr period * 30sec) / 72000sec)
+```{r}
+plan(multisession, workers = 4)
+
+calc_metrics <- function(file_path) {
+  deg_data <- read_csv(file_path, show_col_types=FALSE)
+  
+  #start by calculating metrics for a single 2hr bin
+  metrics <- deg_data %>%
+    mutate(
+      bin_length = 7200, #2hrs in secs
+      
+      #proportion of time wet in 2hr period (wets*30 converts wetness level into secs spent wet)
+      # (600sec per 10min interval) / 20 = 30 seconds per unit 
+      prop_wet = (wets * 30) / bin_length, 
+      
+      #switches between wet (non-zero) and dry (zero) states
+      switches= ifelse(row_number() == 1,0,
+                       abs(diff(ifelse(wets > 0, 1, 0)))),
+      
+      #cumulative time spend dry (== 0) or wet (>0)
+      dry_time= ifelse(wets == 0, 10*60, 0), # if dry, time always 600 secs
+      wet_time = ifelse(wets > 0, 10*60, 0)  # if wet, time always 600 secs
+    ) %>%
+    
+    #group by days and summarize the metrics for the full deployment period
+    group_by(date) %>%
+    summarize(
+      total_prop_wet = sum(prop_wet, na.rm = TRUE),
+      total_switches = sum(switches, na.rm=TRUE),
+      total_dry_time = sum(dry_time, na.rm=TRUE),
+      total_wet_time = sum(wet_time, na.rm=TRUE),
+      
+      #use RLE (run length encoding) to find the longest sequence of wet/dry intervals in 600secs
+      longest_dry = max(rle(wets == 0)$lengths) * 10 * 60, #max period 
+      longest_wet = max(rle(wets>0)$lengths) *10 * 60, #max period wet
+      longest_very_wet = max(rle(wets > 15)$lengths) *10 * 60, #max period wet > 15
+      longest_entirely_wet = max(rle(wets == 20)$lengths) *10 * 60) #max period wet == 20
+  
+  return(metrics)
+}
+
+#get list of downsampled files to process 
+files <- list.files(downsampled.dir, full.names=TRUE)
+
+#apply calc_metrics using files
+metrics_list <- future_map(files, calc_metrics)
+
+#now we have the above metrics for each 2hr period in each file
+plan(sequential)
+```
 
 
-#### Number of switches
+Every bird now has the following metrics for every DAY the device was deployed:
 
-between 0 and non-zero value
+* **Total proportion of time wet per day:** proportion of seconds wet across all 2-hour bins for the day, where (count of wets in each bin * 30 seconds) / 7200 seconds.
 
+* **Total number of state switches (wet/dry transitions) per day:** number of times the device switched between wet (non-zero) and dry (zero) states across all 2-hour bins.
 
-#### Total time dry 
-when entire 10min sampling interval was dry (count 0s * 10min)
+* **Cumulative dry and wet times per day:** total time (in seconds) the device recorded as completely dry (wets == 0) or wet (wets > 0) during the sampling intervals within the day.
 
+* **Longest continuous periods of dry or wet states per day:** longest sequence of consecutive 10-minute intervals within a day where the device recorded:
 
-#### Total time wet
-when entire 10min sampling interval was wet (count >=1 * 10min)
+    Fully dry (wets == 0)
+    Wet (wets > 0)
+    Very wet (wets > 15)
+    Completely saturated (wets == 20)
+    
 
+### Visualizing 
 
-#### Longest continuous time dry
-(longest number of consecutive rows with wets==0  * 10min)
+```{r}
+example_bird <- files[1:2]
 
-
-#### Longest continuous time wet
-(longest number of consecutive rows with wets>=1 * 10min)
+example_metrics <- future_ma
 
