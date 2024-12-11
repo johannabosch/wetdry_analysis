@@ -335,6 +335,7 @@ print(results_full)
 ## DEG File Issues
 
 Make a new metadata file that reviews the days deployed 
+
 ```{r}
 deployment_md <- clipping_md %>%
   mutate(
@@ -388,13 +389,15 @@ deployment_md <- clipping_md %>%
          days_active_before_ret, days_inactive_before_ret, 
          days_active_after_ret)
 
-
+deployment_md
 ```
+
+There should only be 5 files with values for days_active_after_ret
+
 
 #### File: BH594_04Jul18_135310driftadj.deg
 
-Small note on this file - I accidentally wrote over it on V drive so we have to replace it with the original from backups. Fixed for now by replacing with anothe rfiles metadata info, file is titled `BH594_formatted_04Jul18_135310driftadj.deg` in the origin.dir folder.
-
+**KATIE** - Small note on this file - I accidentally wrote over it on V drive so we have to replace it with the original from backups. Fixed for now by replacing with another files metadata info, file is titled `BH594_formatted_04Jul18_135310driftadj.deg` in the origin.dir folder.
 
 
 #### File: CD480_06Aug22_140316driftadj.deg
@@ -529,7 +532,7 @@ Let's start with two files for comparison
 #get list of downsampled files to process 
 files <- list.files(downsampled.dir, full.names=TRUE)
 
-example_birds <- files[1:5]
+example_birds <- files[1:20]
 ```
 
 Function to calculate metrics per day
