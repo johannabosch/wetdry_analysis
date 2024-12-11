@@ -19,6 +19,8 @@ library(purrr)
 library(furrr)
 library(future)
 
+library(scales)
+
 options(scipen = 999, digits=4)
 
 # Set up folders

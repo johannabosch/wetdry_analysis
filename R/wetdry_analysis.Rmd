@@ -336,7 +336,6 @@ print(results_full)
 
 Make a new metadata file that reviews the days deployed 
 ```{r}
-
 deployment_md <- clipping_md %>%
   mutate(
     depDate_comb = as.Date(depDate_comb, format = "%d/%m/%Y"),
@@ -346,10 +345,12 @@ deployment_md <- clipping_md %>%
   rowwise() %>%
   mutate(
     last_active_day = {
+      
       deg_file <- file.path(deg.dir, wetdry_filename)
+      
       if (file.exists(deg_file)) {
         deg_data <- tryCatch(
-          read_csv(deg_file, col_types = cols(
+          read_csv(deg_file, col_types = cols( #define column types
             date = col_date(format = "%d/%m/%Y"),
             time = col_character(),
             `wets0-20` = col_double()
@@ -357,7 +358,7 @@ deployment_md <- clipping_md %>%
           error = function(e) NULL
         )
         if (!is.null(deg_data)) {
-          max(deg_data$date, na.rm = TRUE)
+          max(deg_data$date, na.rm = TRUE) #use the max deg date 
         } else {
           NA
         }
@@ -477,7 +478,7 @@ Like a quality filtering step?
 
 ## Down-sampling 
 
-We need to think about resolution carefully. Right now the files are logging every 10 minutes, which is too high of a resolution. Need to down-sample the dataset from 10min to some other interval that is meaningful to define states to.
+Right now the files are logging every 10 minutes, which is too high of a resolution. Need to down-sample the dataset from 10min to some other interval that is meaningful to define states to.
 
 12hrs seems too long given how far birds can move in this time, but 10min is far too short.
 
@@ -492,7 +493,8 @@ For example, within each 2hr period we need to assess:
 
 ### 2hr Periods
 
-```{r}
+```{r eval=FALSE}
+if (FALSE) {
 #made a new dir called downsampled in /data
 source(here("utils/downsample_deg.R"), echo = F)
 
@@ -505,6 +507,7 @@ plan(multisession, workers = 4)
 future_map(deg_files, downsample_deg)
 
 plan(sequential)
+}
 
 ```
  So our datasets `wets` values now represent the average number of 10-minute intervals that were wet during the 2-hour period. This means each 2hr period has 12 intervals of 10 minutes (600 secs).
@@ -526,7 +529,7 @@ Let's start with two files for comparison
 #get list of downsampled files to process 
 files <- list.files(downsampled.dir, full.names=TRUE)
 
-example_birds <- files[1:2]
+example_birds <- files[1:5]
 ```
 
 Function to calculate metrics per day
@@ -566,7 +569,6 @@ daily_metrics <- function(file_path) {
   
   return(metrics)
 }
-
 ```
 
 
@@ -589,12 +591,14 @@ If this function is applied, a bird would have the following metrics for every D
 #### DAILY PERIODS
 ```{r}
 example_daily_metrics <- future_map_dfr(example_birds, daily_metrics)
+
+example_daily_metrics
 ```
 
 
 ```{r}
 
-plot_daily_metrics <- function(metrics, metric_name, y_label, title) {
+plot_metrics <- function(metrics, metric_name, y_label, title) {
   ggplot(metrics, aes(x=as.Date(date), y=!!sym(metric_name), color = bird_id)) +
     geom_line() + 
     geom_point() + 
@@ -605,18 +609,21 @@ plot_daily_metrics <- function(metrics, metric_name, y_label, title) {
     theme_minimal() +
     theme(
       axis.text.x = element_text(angle = 45, hjust = 1), title = element_text(size=8),
-      legend.position = "bottom") +
+      legend.position = "bottom",  #this is not wokring
+      legend.direction = "vertical",
+      legend.box = "vertical",
+      legend.spacing.y = (unit(0.2, "cm")) +
     scale_x_date(
       breaks = "1 month",
       labels = date_format("%b %Y")
-    )
+    ))
 }
 
 plot_prop <- plot_metrics(example_daily_metrics, "total_prop_wet", 
                           "Proportion of period (day)", 
                           "Total Proportion of Wet Periods per Day")
 
-plot_switch <- plot_metrics(example_daily_metrics, "total_switches", 
+plot_switch <- plot_daily_metrics(example_daily_metrics, "total_switches", 
                             "Number of switches", 
                             "Total Switches Between Wet-Dry Per Day")
 
@@ -625,10 +632,8 @@ plot_switch <- plot_metrics(example_daily_metrics, "total_switches",
 
 ```
 
-So for these two birds we see a good trend, in Oct and Nov 2017 there is a low amount of wet periods, and in June and July 2018 as well. Between Dec 2017 and May 2018 there is a high proportion of wet periods. 
-
+So for these birds we see a good trend, between Dec 2017 and May 2018 there is a high proportion of wet periods. 
 The total number of times the device switches from wet to dry reduces during the periods where there is a lot of wets, seems to make sense.
-
 
 
 We can also consider the two hour periods and not fiddle around with summing up every metric by days
@@ -658,11 +663,12 @@ full_metrics <- function(file_path) {
 
 files <- list.files(downsampled.dir, full.names=TRUE)
 
-example_birds <- files[1:2]
+example_birds <- files[1:1]
 
 example_full_metrics <- future_map_dfr(example_birds, full_metrics)
 
 ```
+
 Lastly, let's look at all of the wet and dry periods throughout the entire deployment time so we can visualise how they change over time an dmaybe see when those really long periods of entirely wet are
 
 ```{r}
@@ -680,16 +686,15 @@ plot_data <- example_birds %>%
   lapply(prepare_plot_data) %>%
   bind_rows()
 
-ggplot(plot_data, aes(x=datetime_start, y=wets, color=bird_id)) +
+plot_all_wet_periods <- ggplot(plot_data, aes(x=datetime_start, y=wets, color=bird_id)) +
   geom_line() +
   labs(
     title = "Dry and Wet Periods Over Entire Deployment Period",
     x= "Time (2hr intervals)",
-    y= "wetness Level",
+    y= "Wetness",
     color = "Bird ID") +
   scale_y_continuous(
-    breaks = seq(0, 20, 5), 
-    labels = c("Dry", "Low Wet", "Moderate Wet", "High Wet", "Very Wet"))  +
+    breaks = seq(0, 20, 5)) +
   theme_minimal()
 
 
@@ -706,7 +711,6 @@ maybe i shouldnt be binning that way
 will look into different ways of handlig wets, maybe just leave at 10mins? but this resolution is already too high 
 
 what im doign now
-
 binning wets by 2 hours, taking average of wets to bin them here
 
 then im considering wets/dries for that entire deployment period (each point = 2hrs)
