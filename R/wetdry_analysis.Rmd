@@ -473,9 +473,7 @@ print(file)
 ```
 
 
-Do we want to add a filtering step here for devices that didn't last over X number of days?
-Like a quality filtering step?
-
+Do we want to add a filtering step here for devices that didn't last over X number of days? Like a quality filtering step?
 
 
 
@@ -513,7 +511,8 @@ plan(sequential)
 }
 
 ```
- So our datasets `wets` values now represent the average number of 10-minute intervals that were wet during the 2-hour period. This means each 2hr period has 12 intervals of 10 minutes (600 secs).
+
+So our dataset's `wets` values now represent the average number of 10-minute intervals that were wet during the 2-hour period. This means each 2hr period has 12 intervals of 10 minutes (600 secs).
 
 wets = 0 means 10min interval was entirely wet
 wets = 20 means 10min interval was entirely dry
@@ -601,7 +600,7 @@ example_daily_metrics
 
 ```{r}
 
-plot_metrics <- function(metrics, metric_name, y_label, title) {
+plot_daily_metrics <- function(metrics, metric_name, y_label, title) {
   ggplot(metrics, aes(x=as.Date(date), y=!!sym(metric_name), color = bird_id)) +
     geom_line() + 
     geom_point() + 
@@ -612,17 +611,17 @@ plot_metrics <- function(metrics, metric_name, y_label, title) {
     theme_minimal() +
     theme(
       axis.text.x = element_text(angle = 45, hjust = 1), title = element_text(size=8),
-      legend.position = "bottom",  #this is not wokring
+      legend.position = "right",  #this is not wokring
       legend.direction = "vertical",
       legend.box = "vertical",
-      legend.spacing.y = (unit(0.2, "cm")) +
+      legend.spacing.y = (unit(0.2, "cm")),
     scale_x_date(
       breaks = "1 month",
       labels = date_format("%b %Y")
     ))
 }
 
-plot_prop <- plot_metrics(example_daily_metrics, "total_prop_wet", 
+plot_prop <- plot_daily_metrics(example_daily_metrics, "total_prop_wet", 
                           "Proportion of period (day)", 
                           "Total Proportion of Wet Periods per Day")
 
