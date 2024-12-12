@@ -89,12 +89,19 @@ We want the following metrics for times the device was deployed:
 
 
 ## Wet-Dry Metrics (EXAMPLE)
-Let's start with 5 random files for comparison
+
+Let's start with the 2017-2018 files from Gull (10 files total)
 ```{r}
 #get list of downsampled files to process 
-files <- list.files(downsampled.dir, full.names=TRUE)
+gull_2017_files <- metrics_md %>%
+  filter(colony == "Gull", deployment_period == "2017-2018") %>%
+  pull(wetdry_filename)
 
-example_birds <- files[1:10]
+gull_2017_files <- paste0("filtered_", gull_2017_files)
+ 
+DEG_files <- list.files(downsampled.dir, full.names=TRUE)
+
+gull_2017_files <- DEG_files[basename(DEG_files) %in% gull_2017_files]
 ```
 
 
@@ -139,21 +146,21 @@ calc_daily_metrics <- function(file_path) {
 ```
 
 ```{r}
-example_daily_metrics <- future_map_dfr(example_birds, calc_daily_metrics)
+gull_2017_daily_metrics <- future_map_dfr(gull_2017_files, calc_daily_metrics)
 
-example_daily_metrics
+gull_2017_daily_metrics
 ```
 
 ###### Proportions & Switches
 
-
+Proportions:
 ```{r}
 
-plot_daily_prop <- ggplot(example_daily_metrics, aes(x = as.Date(date), y = total_prop_wet, color = bird_id)) +
-  geom_line() +
-  geom_point() +
+plot_gull_2017_prop <- ggplot(gull_2017_daily_metrics, aes(x = as.Date(date), y = total_prop_wet, color = bird_id)) +
+  geom_line(size = 0.2) +
+  geom_point(size = 1) +
   labs(
-    title = "Total Proportion of Wet Periods per Day",
+    title = "Total Proportion of Wet Periods per Day for Gull Island (2017-2018)",
     y = "Proportion of period (day)",
     x = "Time (days)",
     color = "Bird ID"
@@ -162,17 +169,28 @@ plot_daily_prop <- ggplot(example_daily_metrics, aes(x = as.Date(date), y = tota
   theme(
     axis.text.x = element_text(angle = 45, hjust = 1),
     title = element_text(size = 8),
-    legend.position = "none") +
+    legend.position = "right",
+    legend.direction = "vertical",
+    legend.box = "vertical",
+    legend.spacing.y = unit(0.2, "cm"))+
   scale_x_date(
     breaks = "1 month",
     labels = date_format("%b %Y")
   )
 
-plot_daily_switch <- ggplot(example_daily_metrics, aes(x = as.Date(date), y = total_switches, color = bird_id)) +
-  geom_line() +
-  geom_point() +
+plotly_gull_2017_prop <- ggplotly(plot_gull_2017_prop) %>%
+  layout(margin = list(l =50, r=50, b=100, t=50),
+         xaxis = list(tickangle=45))
+
+```
+
+Switches:
+```{r}
+plot_gull_2017_switch <- ggplot(gull_2017_daily_metrics, aes(x = as.Date(date), y = total_switches, color = bird_id)) +
+  geom_line(size=0.2) +
+  geom_point(size=1) +
   labs(
-    title = "Total Switches Between Wet-Dry Per Day",
+    title = "Total Switches Between Wet-Dry Per Day for Gull Island (2017-2018)",
     y = "Number of switches",
     x = "Time (days)",
     color = "Bird ID"
@@ -190,26 +208,38 @@ plot_daily_switch <- ggplot(example_daily_metrics, aes(x = as.Date(date), y = to
     breaks = "1 month",
     labels = date_format("%b %Y")
   )
+
+plotly_gull_2017_switch <- ggplotly(plot_gull_2017_switch) %>%
+  layout(margin = list(l =50, r=50, b=100, t=50),
+         xaxis = list(tickangle=45))
 ```
 
 Use patchwork to plot together
 ```{r}
-(plot_daily_prop|plot_daily_switch)
+subplot(plotly_gull_2017_prop, plotly_gull_2017_switch,
+        nrows = 2, shareX = TRUE, shareY = FALSE)
 ```
 
 
 
 ```{r}
-example_long_daily_metrics <- example_daily_metrics %>%
+#make data long to plot wetdry times together
+long_gull_2017_daily_metrics <- gull_2017_daily_metrics %>%
   pivot_longer(cols=c(total_dry_time, total_wet_time),
                names_to = "metric",
                values_to = "time")
 
-plot_daily_dry_wet <- ggplot(example_long_daily_metrics, aes(x = as.Date(date), y = time, color = bird_id, linetype = metric)) +
+plot_gull_2017_daily_dry_wet <- 
+  ggplot(long_gull_2017_daily_metrics,
+         aes(x = as.Date(date),
+             y = time, 
+             color = bird_id, 
+             linetype = metric)) +
+  
   geom_line() +
   geom_point() +
   labs(
-    title = "Total Wet-Dry Times per Day",
+    title = "Total Wet-Dry Times per Day for Gull Island (2017-2018)",
     y = "Time (seconds)",
     x = "Time (days)",
     color = "Bird ID",
@@ -227,7 +257,9 @@ plot_daily_dry_wet <- ggplot(example_long_daily_metrics, aes(x = as.Date(date), 
     values = c("total_dry_time" = "dashed", "total_wet_time" = "solid"),
     labels = c("dry Time", "Wet Time"))
 
-plot_daily_dry_wet
+plotly_gull_2017_daily_dry_wet <- ggplotly(plot_gull_2017_daily_dry_wet) %>%
+  layout(margin = list(l =50, r=50, b=100, t=50),
+         xaxis = list(tickangle=45))
 ```
 
 So for these birds we see a good trend, between Dec 2017 and May 2018 there is a high proportion of wet periods. 
