@@ -215,6 +215,11 @@ plot_daily_dry_wet <- ggplot(example_long_daily_metrics, aes(x = as.Date(date), 
     color = "Bird ID",
     linetype = "Metric") +
   theme_minimal() +
+  theme(
+    axis.text.x = element_text(angle = 45, hjust = 1),
+    title = element_text(size = 8),
+    legend.position = "right"
+  ) +
   scale_x_date(
     breaks = "1 month",
     labels = date_format("%b %Y"))+
