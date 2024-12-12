@@ -1,17 +1,15 @@
 # Metrics
 
-## Getting Started
+## Load settings
 
 ```{r include=FALSE}
 source(here::here("project_settings.R"), echo=TRUE)
 ```
 
-### Metrics
 
+We want the following metrics for times the device was deployed:
 
-If this function is applied, a bird would have the following metrics for every DAY the device was deployed:
-
-* **Total proportion of time wet per day:** proportion of seconds wet across all 2-hour bins for the day, where (count of wets in each bin * 30 seconds) / 7200 seconds.
+* **Total proportion of time wet:** proportion of seconds wet across all 2-hour bins for the day, where (count of wets in each bin * 30 seconds) / 7200 seconds.
 
 * **Total number of state switches (wet/dry transitions) per day:** number of times the device switched between wet (non-zero) and dry (zero) states across all 2-hour bins.
 
@@ -53,7 +51,7 @@ calc_daily_metrics <- function(file_path) {
     group_by(date) %>%
     summarize(
       bird_id = bird_id,
-      total_prop_wet = sum(prop_wet, na.rm = TRUE),
+      total_prop_wet = sum(prop_wet, na.rm = TRUE), #take sum of proportions for daily
       total_switches = sum(switches, na.rm=TRUE),
       total_dry_time = sum(dry_time, na.rm=TRUE),
       total_wet_time = sum(wet_time, na.rm=TRUE),
@@ -64,64 +62,220 @@ calc_daily_metrics <- function(file_path) {
 ```
 
 
-#### DAILY PERIODS
+## Wet-Dry Metrics
 
-Function for plotting daily metrics
-```{r}
-
-plot_daily_metrics <- function(metrics, metric_name, y_label, title) {
-  ggplot(metrics, aes(x=as.Date(date), y=!!sym(metric_name), color = bird_id)) +
-    geom_line() + 
-    geom_point() + 
-    labs(title = title,
-         y = y_label,
-         x = "Time (days)",
-         color = "Bird ID" ) +
-    theme_minimal() +
-    theme(
-      axis.text.x = element_text(angle = 45, hjust = 1), title = element_text(size=8),
-      legend.position = "right",  #this is not wokring
-      legend.direction = "vertical",
-      legend.box = "vertical",
-      legend.spacing.y = (unit(0.2, "cm")),
-    scale_x_date(
-      breaks = "1 month",
-      labels = date_format("%b %Y")
-    ))
-}
-```
 
 Let's start with 5 files for comparison
 ```{r}
 #get list of downsampled files to process 
 files <- list.files(downsampled.dir, full.names=TRUE)
 
-example_birds <- files[1:5]
+example_birds <- files[1:10]
 ```
 
 ```{r}
-example_daily_metrics <- future_map_dfr(example_birds, daily_metrics)
+md <- read.csv(file.path(data.dir, "MasterMetadata_LHSP_Tracking_NL_NB_NS_13Aug2024.csv"))
+
+colnames(md)
+
+
+
+#clean up the metadata so that we only include the necessary columns for clipping
+metrics_md <- md %>%
+  
+  filter(
+    #filter for MT devices
+    tagMake %in% c("Migrate Technology: W30A9-SEA", "Migrate Technology: W30A9-SEA-COOL"),
+    #remove any NA rows in wetdry_filename 
+    !is.na(wetdry_filename)) %>% 
+  
+  # merge estimated and observed columns 
+  mutate(
+    depDate_comb = as.Date(ifelse(!is.na(dep_dateEst), dep_dateEst, dep_date), format = "%Y-%m-%d"),
+    retDate_comb = as.Date(
+      ifelse(!is.na(ret_dateEst), substr(ret_dateEst, nchar(ret_dateEst) - 9, nchar(ret_dateEst)), 
+             ret_date), format = "%Y-%m-%d")) %>%
+  
+  mutate(depDate_comb = as.Date(depDate_comb),
+         retDate_comb = as.Date(retDate_comb)) %>%
+  
+  #only keep necessary columns 
+  select(wetdry_filename, depDate_comb, retDate_comb, colony) %>%
+  
+  #fix fomratted name for that one DEG file i manually changed
+  mutate(wetdry_filename = ifelse(
+      wetdry_filename == "BH594_04Jul18_135310driftadj.deg",
+      "BH594_formatted_04Jul18_135310driftadj.deg",
+      wetdry_filename))
+
+
+```
+
+```{r}
+example_daily_metrics <- future_map_dfr(example_birds, calc_daily_metrics)
 
 example_daily_metrics
 ```
 
+### Proportions & Switches
+
+#### Daily
 
 ```{r}
-plot_prop <- plot_daily_metrics(example_daily_metrics, "total_prop_wet", 
-                          "Proportion of period (day)", 
-                          "Total Proportion of Wet Periods per Day")
 
-plot_switch <- plot_daily_metrics(example_daily_metrics, "total_switches", 
-                            "Number of switches", 
-                            "Total Switches Between Wet-Dry Per Day")
+plot_daily_prop <- ggplot(example_daily_metrics, aes(x = as.Date(date), y = total_prop_wet, color = bird_id)) +
+  geom_line() +
+  geom_point() +
+  labs(
+    title = "Total Proportion of Wet Periods per Day",
+    y = "Proportion of period (day)",
+    x = "Time (days)",
+    color = "Bird ID"
+  ) +
+  theme_minimal() +
+  theme(
+    axis.text.x = element_text(angle = 45, hjust = 1),
+    title = element_text(size = 8),
+    legend.position = "none") +
+  scale_x_date(
+    breaks = "1 month",
+    labels = date_format("%b %Y")
+  )
 
-(plot_prop|plot_switch)
+plot_daily_switch <- ggplot(example_daily_metrics, aes(x = as.Date(date), y = total_switches, color = bird_id)) +
+  geom_line() +
+  geom_point() +
+  labs(
+    title = "Total Switches Between Wet-Dry Per Day",
+    y = "Number of switches",
+    x = "Time (days)",
+    color = "Bird ID"
+  ) +
+  theme_minimal() +
+  theme(
+    axis.text.x = element_text(angle = 45, hjust = 1),
+    title = element_text(size = 8),
+    legend.position = "right",
+    legend.direction = "vertical",
+    legend.box = "vertical",
+    legend.spacing.y = unit(0.2, "cm")
+  ) +
+  scale_x_date(
+    breaks = "1 month",
+    labels = date_format("%b %Y")
+  )
+```
+
+Use patchwork to plot together
+```{r}
+(plot_daily_prop|plot_daily_switch)
 ```
 
 So for these birds we see a good trend, between Dec 2017 and May 2018 there is a high proportion of wet periods. 
 The total number of times the device switches from wet to dry reduces during the periods where there is a lot of wets, seems to make sense.
 
+#### Monthly 
 
+What if we group by month not day?
+Will have to take an average instead of summing proportions since it's a longer timeframe summing doesn't make sense. 
+```{r}
+calc_monthly_metrics <- function(file_path) {
+  deg_data <- read_csv(file_path, show_col_types=FALSE)
+  
+  bird_id <- str_extract(basename(file_path), "(?<=filtered_)[A-Z-0-9]{5}")
+  
+  #start by calculating metrics for a single 2hr bin
+  metrics <- deg_data %>%
+    mutate(
+      bin_length = 7200, #2hrs in secs
+      
+      #proportion of time wet in 2hr period (wets*30 converts wetness level into secs spent wet)
+      # (600sec per 10min interval) / 20 = 30 seconds per unit 
+      prop_wet = (wets * 30) / bin_length, 
+      
+      #switches between wet (non-zero) and dry (zero) states
+      switches= ifelse(row_number() == 1,0,
+                       abs(diff(ifelse(wets > 0, 1, 0)))),
+      
+      #cumulative time spent dry (== 0) or wet (>0)
+      dry_time= ifelse(wets == 0, 10*60, 0), # if dry, time always 600 secs
+      wet_time = ifelse(wets > 0, 10*60, 0),  # if wet, time always 600 secs
+      
+      month = floor_date(as.Date(date), unit = "month")
+    ) %>%
+    
+    #summarize the metrics for the full deployment period, grouped by day
+    group_by(month) %>%
+    summarize(
+      bird_id = bird_id,
+      avg_prop_wet = mean(prop_wet, na.rm = TRUE), #take avg prop wet for monthly 
+      total_switches = sum(switches, na.rm=TRUE),
+      total_dry_time = sum(dry_time, na.rm=TRUE),
+      total_wet_time = sum(wet_time, na.rm=TRUE),
+      .groups = "drop" #ungroup after summarizing
+      )
+  
+  return(metrics)
+}
+
+example_monthly_metrics <- future_map_dfr(example_birds, calc_monthly_metrics)
+
+example_monthly_metrics
+
+plot_monthly_prop <- ggplot(example_monthly_metrics, aes(x = as.Date(month),
+                                                         y = avg_prop_wet,
+                                                         color = bird_id)) +
+  geom_line() +
+  geom_point() +
+  labs(
+    title = "Avg Proportion of Wet Periods per Month",
+    y = "Proportion of period (day)",
+    x = "Time (months)",
+    color = "Bird ID"
+  ) +
+  theme_minimal() +
+  theme(
+    axis.text.x = element_text(angle = 45, hjust = 1),
+    title = element_text(size = 8),
+    legend.position = "none") +
+  scale_x_date(
+    breaks = "1 month",
+    labels = date_format("%b %Y")
+  )
+
+
+plot_monthly_switch <- ggplot(example_monthly_metrics, aes(x = as.Date(month), 
+                                                           y = total_switches, 
+                                                           color = bird_id)) +
+  geom_line() +
+  geom_point() +
+  labs(
+    title = "Total Switches Between Wet-Dry Per Day",
+    y = "Number of switches",
+    x = "Time (months)",
+    color = "Bird ID"
+  ) +
+  theme_minimal() +
+  theme(
+    axis.text.x = element_text(angle = 45, hjust = 1),
+    title = element_text(size = 8),
+    legend.position = "right",
+    legend.direction = "vertical",
+    legend.box = "vertical",
+    legend.spacing.y = unit(0.2, "cm")
+  ) +
+  scale_x_date(
+    breaks = "1 month",
+    labels = date_format("%b %Y")
+  )
+
+
+(plot_monthly_prop|plot_monthly_switch)
+
+```
+
+
+### Longest Wet/Dry Periods
 We can also consider the two hour periods and not fiddle around with summing up every metric by days
 this would give us a finer resolution for looking at things like the longest period the device was wet/dry
 
