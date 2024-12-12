@@ -6,79 +6,13 @@
 source(here::here("project_settings.R"), echo=TRUE)
 ```
 
+## Reviewing Metadata
 
-We want the following metrics for times the device was deployed:
-
-* **Total proportion of time wet:** proportion of seconds wet across all 2-hour bins for the day, where (count of wets in each bin * 30 seconds) / 7200 seconds.
-
-* **Total number of state switches (wet/dry transitions) per day:** number of times the device switched between wet (non-zero) and dry (zero) states across all 2-hour bins.
-
-* **Cumulative dry and wet times per day:** total time (in seconds) the device recorded as completely dry (wets == 0) or wet (wets > 0) during the sampling intervals within the day.
-
-* **Longest continuous periods of dry or wet states throughout the whoel deployment period:** longest sequence of consecutive 10-minute intervals within the entire deployment period where the device recorded:
-
-    Fully dry (wets == 0)
-    Wet (wets > 0)
-    Very wet (wets > 15)
-    Completely saturated (wets == 20)
-
-Function to calculate metrics per day
-```{r}
-calc_daily_metrics <- function(file_path) {
-  deg_data <- read_csv(file_path, show_col_types=FALSE)
-  
-  bird_id <- str_extract(basename(file_path), "(?<=filtered_)[A-Z-0-9]{5}")
-  
-  #start by calculating metrics for a single 2hr bin
-  metrics <- deg_data %>%
-    mutate(
-      bin_length = 7200, #2hrs in secs
-      
-      #proportion of time wet in 2hr period (wets*30 converts wetness level into secs spent wet)
-      # (600sec per 10min interval) / 20 = 30 seconds per unit 
-      prop_wet = (wets * 30) / bin_length, 
-      
-      #switches between wet (non-zero) and dry (zero) states
-      switches= ifelse(row_number() == 1,0,
-                       abs(diff(ifelse(wets > 0, 1, 0)))),
-      
-      #cumulative time spent dry (== 0) or wet (>0)
-      dry_time= ifelse(wets == 0, 10*60, 0), # if dry, time always 600 secs
-      wet_time = ifelse(wets > 0, 10*60, 0)  # if wet, time always 600 secs
-    ) %>%
-    
-    #summarize the metrics for the full deployment period, grouped by day
-    group_by(date) %>%
-    summarize(
-      bird_id = bird_id,
-      total_prop_wet = sum(prop_wet, na.rm = TRUE), #take sum of proportions for daily
-      total_switches = sum(switches, na.rm=TRUE),
-      total_dry_time = sum(dry_time, na.rm=TRUE),
-      total_wet_time = sum(wet_time, na.rm=TRUE),
-      )
-  
-  return(metrics)
-}
-```
-
-
-## Wet-Dry Metrics
-
-
-Let's start with 5 files for comparison
-```{r}
-#get list of downsampled files to process 
-files <- list.files(downsampled.dir, full.names=TRUE)
-
-example_birds <- files[1:10]
-```
-
+Make a table to review how many files we have per deployment period per colony:
 ```{r}
 md <- read.csv(file.path(data.dir, "MasterMetadata_LHSP_Tracking_NL_NB_NS_13Aug2024.csv"))
 
 colnames(md)
-
-
 
 #clean up the metadata so that we only include the necessary columns for clipping
 metrics_md <- md %>%
@@ -121,7 +55,87 @@ metrics_md <- md %>%
     )
   )
 
+deployment_summary <- metrics_md %>%
+  
+  group_by(deployment_period, colony) %>%
+  
+  summarise(file_count=n(), .groups = "drop") %>%
+  
+  pivot_wider(names_from = colony,  #make tibble with colony columns
+              values_from = file_count, 
+              values_fill = 0 # fill missing vals with 0
+              ) %>%
+  mutate(TOTAL = rowSums(select(., -deployment_period))) %>%
+  
+  bind_rows(summarise(.,
+                      across(where(is.numeric), sum),
+                      deployment_period = "TOTAL"))
 
+deployment_summary
+
+```
+
+
+We want the following metrics for times the device was deployed:
+
+* **Total proportion of time wet:** proportion of seconds wet across all 2-hour bins for the day, where (count of wets in each bin * 30 seconds) / 7200 seconds.
+
+* **Total number of state switches (wet/dry transitions) per day:** number of times the device switched between wet (non-zero) and dry (zero) states across all 2-hour bins.
+
+* **Cumulative dry and wet times per day:** total time (in seconds) the device recorded as completely dry (wets == 0) or wet (wets > 0) during the sampling intervals within the day.
+
+* **Longest continuous periods of dry or wet states throughout the whoel deployment period:** longest sequence of consecutive 10-minute intervals within the entire deployment period where the device recorded
+
+
+
+## Wet-Dry Metrics (EXAMPLE)
+Let's start with 5 random files for comparison
+```{r}
+#get list of downsampled files to process 
+files <- list.files(downsampled.dir, full.names=TRUE)
+
+example_birds <- files[1:10]
+```
+
+
+##### Daily
+Function to calculate proportions, switches and wet/dry times PER DAY
+```{r}
+calc_daily_metrics <- function(file_path) {
+  deg_data <- read_csv(file_path, show_col_types=FALSE)
+  
+  bird_id <- str_extract(basename(file_path), "(?<=filtered_)[A-Z-0-9]{5}")
+  
+  #start by calculating metrics for a single 2hr bin
+  metrics <- deg_data %>%
+    mutate(
+      bin_length = 7200, #2hrs in secs
+      
+      #proportion of time wet in 2hr period (wets*30 converts wetness level into secs spent wet)
+      # (600sec per 10min interval) / 20 = 30 seconds per unit 
+      prop_wet = (wets * 30) / bin_length, 
+      
+      #switches between wet (non-zero) and dry (zero) states
+      switches= ifelse(row_number() == 1,0,
+                       abs(diff(ifelse(wets > 0, 1, 0)))),
+      
+      #cumulative time spent dry (== 0) or wet (>0)
+      dry_time= ifelse(wets == 0, 10*60, 0), # if dry, time always 600 secs
+      wet_time = ifelse(wets > 0, 10*60, 0)  # if wet, time always 600 secs
+    ) %>%
+    
+    #summarize the metrics for the full deployment period, grouped by day
+    group_by(date) %>%
+    summarize(
+      bird_id = bird_id,
+      total_prop_wet = sum(prop_wet, na.rm = TRUE), #take sum of proportions for daily
+      total_switches = sum(switches, na.rm=TRUE),
+      total_dry_time = sum(dry_time, na.rm=TRUE),
+      total_wet_time = sum(wet_time, na.rm=TRUE),
+      )
+  
+  return(metrics)
+}
 ```
 
 ```{r}
@@ -130,9 +144,8 @@ example_daily_metrics <- future_map_dfr(example_birds, calc_daily_metrics)
 example_daily_metrics
 ```
 
-### Proportions & Switches
+###### Proportions & Switches
 
-#### Daily
 
 ```{r}
 
@@ -183,6 +196,7 @@ Use patchwork to plot together
 ```{r}
 (plot_daily_prop|plot_daily_switch)
 ```
+
 
 So for these birds we see a good trend, between Dec 2017 and May 2018 there is a high proportion of wet periods. 
 The total number of times the device switches from wet to dry reduces during the periods where there is a lot of wets, seems to make sense.
