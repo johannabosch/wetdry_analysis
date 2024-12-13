@@ -103,12 +103,12 @@ metrics_md <- md %>%
   #categorize deployment periods in the dtaaframe
   mutate(
     deployment_period = case_when(
-      depDate_comb >= as.Date("2017-01-01") & depDate_comb < as.Date("2019-01-01") ~ "2017-2018",
-      depDate_comb >= as.Date("2018-01-01") & depDate_comb < as.Date("2020-01-01") ~ "2018-2019",
-      depDate_comb >= as.Date("2019-01-01") & depDate_comb < as.Date("2021-01-01") ~ "2019-2020",
-      depDate_comb >= as.Date("2020-01-01") & depDate_comb < as.Date("2022-01-01") ~ "2020-2021",
-      depDate_comb >= as.Date("2021-01-01") & depDate_comb < as.Date("2023-01-01") ~ "2021-2022",
-      depDate_comb >= as.Date("2022-01-01") & depDate_comb < as.Date("2024-01-01") ~ "2022-2023",
+    depDate_comb >= as.Date("2017-01-01") & retDate_comb <= as.Date("2018-12-31") ~ "2017-2018",
+    depDate_comb >= as.Date("2018-01-01") & retDate_comb <= as.Date("2019-12-31") ~ "2018-2019",
+    depDate_comb >= as.Date("2019-01-01") & retDate_comb <= as.Date("2020-12-31") ~ "2019-2020",
+    depDate_comb >= as.Date("2020-01-01") & retDate_comb <= as.Date("2021-12-31") ~ "2020-2021",
+    depDate_comb >= as.Date("2021-01-01") & retDate_comb <= as.Date("2022-12-31") ~ "2021-2022",
+    depDate_comb >= as.Date("2022-01-01") & retDate_comb <= as.Date("2023-12-31") ~ "2022-2023",
       TRUE ~ "Other"   # any records outside of these ranges
     )
   )
@@ -146,20 +146,21 @@ We want the following metrics for times the device was deployed:
 
 
 
-## Gull Island 2017-2018
+## Baccalieu - Ned Walsh 2017-2018
 
-Let's start with the 2017-2018 files from Gull (10 files total)
+Let's start with the 2017-2018 files from Baccalieu (6 files total)
 ```{r}
 #get list of downsampled files to process 
-gull_2017_files <- metrics_md %>%
-  filter(colony == "Gull", deployment_period == "2017-2018") %>%
+bacc_2017_files <- metrics_md %>%
+  filter(colony == "Baccalieu - Ned Walsh",
+         deployment_period == "2017-2018") %>%
   pull(wetdry_filename)
 
-gull_2017_files <- paste0("filtered_", gull_2017_files)
+bacc_2017_files <- paste0("filtered_", bacc_2017_files)
  
 DEG_files <- list.files(downsampled.dir, full.names=TRUE)
 
-gull_2017_files <- DEG_files[basename(DEG_files) %in% gull_2017_files]
+bacc_2017_files <- DEG_files[basename(DEG_files) %in% bacc_2017_files]
 ```
 
 
@@ -196,84 +197,69 @@ calc_daily_metrics <- function(file_path) {
       total_switches = sum(switches, na.rm=TRUE),
       total_dry_time = sum(dry_time, na.rm=TRUE),
       total_wet_time = sum(wet_time, na.rm=TRUE),
-      )
+      .groups="drop")
   
   return(metrics)
 }
 ```
 
 ```{r}
-gull_2017_daily_metrics <- future_map_dfr(gull_2017_files, calc_daily_metrics)
+bacc_2017_daily_metrics <- future_map_dfr(bacc_2017_files, calc_daily_metrics)
 
-gull_2017_daily_metrics
+bacc_2017_daily_metrics
 ```
 
 ##### Daily Proportions/Switches
 
 ```{r}
+#functions to plot proportions and switches
+plot_daily_metrics <- function(data, y_var, y_label, plot_title) {
+  ggplot(data, aes(x = as.Date(date), y = !!sym(y_var), color = bird_id)) +
+    geom_line(size = 0.2) +
+    geom_point(size = 1) +
+    labs(
+      title = plot_title,
+      x = "Time (days)",
+      y = y_label,
+      color = "Bird ID"
+    ) +
+    theme_minimal() +
+    theme(
+      axis.text.x = element_text(angle = 45, hjust = 1),
+      title = element_text(size = 8),
+      legend.position = "right",
+      legend.direction = "vertical",
+      legend.box = "vertical",
+      legend.spacing.y = unit(0.2, "cm")
+    ) +
+    scale_x_date(
+      breaks = "1 month",
+      labels = scales::date_format("%b %Y")
+    )
+}
 
-plot_gull_2017_prop <- ggplot(gull_2017_daily_metrics, aes(x = as.Date(date), y = total_prop_wet, color = bird_id)) +
-  geom_line(size = 0.2) +
-  geom_point(size = 1) +
-  labs(
-    title = "Total Proportion of Wet Periods per Day for Gull Island (2017-2018)",
-    y = "Proportion of period (day)",
-    x = "Time (days)",
-    color = "Bird ID"
-  ) +
-  theme_minimal() +
-  theme(
-    axis.text.x = element_text(angle = 45, hjust = 1),
-    title = element_text(size = 8),
-    legend.position = "right",
-    legend.direction = "vertical",
-    legend.box = "vertical",
-    legend.spacing.y = unit(0.2, "cm"))+
-  scale_x_date(
-    breaks = "1 month",
-    labels = date_format("%b %Y")
+# Plotly plots
+plotly_bacc_2017_daily_prop <- ggplotly(
+  plot_daily_metrics(
+    bacc_2017_daily_metrics,
+    y_var = "total_prop_wet",
+    y_label = "Proportion of Wet Periods (day)",
+    plot_title = "Daily Proportion of Wet Periods for Baccalieu - Ned Walsh (2017-2018)"
   )
+)
 
-plotly_gull_2017_daily_prop <- ggplotly(plot_gull_2017_prop) %>%
-  layout(margin = list(l =50, r=50, b=100, t=50),
-         xaxis = list(tickangle=45))
-
-
-```
-
-```{r}
-plot_gull_2017_switch <- ggplot(gull_2017_daily_metrics, aes(x = as.Date(date), y = total_switches, color = bird_id)) +
-  geom_line(size=0.2) +
-  geom_point(size=1) +
-  labs(
-    title = "Total Switches Between Wet-Dry Per Day for Gull Island (2017-2018)",
-    y = "Number of switches",
-    x = "Time (days)",
-    color = "Bird ID"
-  ) +
-  theme_minimal() +
-  theme(
-    axis.text.x = element_text(angle = 45, hjust = 1),
-    title = element_text(size = 8),
-    legend.position = "right",
-    legend.direction = "vertical",
-    legend.box = "vertical",
-    legend.spacing.y = unit(0.2, "cm")
-  ) +
-  scale_x_date(
-    breaks = "1 month",
-    labels = date_format("%b %Y")
+plotly_bacc_2017_daily_switch <- ggplotly(
+  plot_daily_metrics(
+    bacc_2017_daily_metrics,
+    y_var = "total_switches",
+    y_label = "Number of Wet-Dry Switches",
+    plot_title = "Daily Switches Between Wet-Dry Periods for Baccalieu - Ned Walsh (2017-2018)"
   )
+)
 
-plotly_gull_2017_daily_switch <- ggplotly(plot_gull_2017_switch) %>%
-  layout(margin = list(l =50, r=50, b=100, t=50),
-         xaxis = list(tickangle=45))
 
-```
-
-Use patchwork to plot together
-```{r}
-subplot(plotly_gull_2017_prop, plotly_gull_2017_switch,
+#Use patchwork to plot together
+subplot(plotly_bacc_2017_daily_prop, plotly_bacc_2017_daily_switch,
         nrows = 2, shareX = TRUE, shareY = FALSE)
 ```
 
@@ -281,20 +267,20 @@ subplot(plotly_gull_2017_prop, plotly_gull_2017_switch,
 
 ```{r}
 #make data long to plot wetdry times together
-long_gull_2017_daily_metrics <- gull_2017_daily_metrics %>%
+long_bacc_2017_daily_metrics <- bacc_2017_daily_metrics %>%
   pivot_longer(cols=c(total_dry_time, total_wet_time),
                names_to = "metric",
                values_to = "time")
 
-plot_gull_2017_daily_dry_wet <- 
-  ggplot(long_gull_2017_daily_metrics,
+plot_bacc_2017_daily_dry_wet <- 
+  ggplot(long_bacc_2017_daily_metrics,
          aes(x = as.Date(date),
              y = time, 
-             color = bird_id, 
-             linetype = metric)) +
+             color = metric)) +
   
   geom_line() +
-  geom_point() +
+  geom_point(size=0.5) +
+  facet_wrap(~ bird_id, scales = "free_y") + #facets by bird ID
   labs(
     title = "Total Wet-Dry Times per Day for Gull Island (2017-2018)",
     y = "Time (seconds)",
@@ -305,18 +291,21 @@ plot_gull_2017_daily_dry_wet <-
   theme(
     axis.text.x = element_text(angle = 45, hjust = 1),
     title = element_text(size = 8),
-    legend.position = "right"
+    legend.position = "top"
   ) +
   scale_x_date(
     breaks = "1 month",
     labels = date_format("%b %Y"))+
-  scale_linetype_manual(
-    values = c("total_dry_time" = "dashed", "total_wet_time" = "solid"),
+  scale_color_manual(
+    values = c("total_dry_time" = "lightgreen", "total_wet_time" = "darkblue"),
     labels = c("dry Time", "Wet Time"))
 
-plotly_gull_2017_daily_dry_wet <- ggplotly(plot_gull_2017_daily_dry_wet) %>%
+plotly_bacc_2017_daily_dry_wet <- ggplotly(plot_bacc_2017_daily_dry_wet) %>%
   layout(margin = list(l =50, r=50, b=100, t=50),
          xaxis = list(tickangle=45))
+
+
+plotly_bacc_2017_daily_dry_wet
 ```
 
 So for these birds we see a good trend, between Dec 2017 and May 2018 there is a high proportion of wet periods. 
@@ -367,11 +356,11 @@ calc_monthly_metrics <- function(file_path) {
   return(metrics)
 }
 
-gull_2017_monthly_metrics <- future_map_dfr(gull_2017_files, calc_monthly_metrics)
+bacc_2017_monthly_metrics <- future_map_dfr(bacc_2017_files, calc_monthly_metrics)
 
-gull_2017_monthly_metrics
+bacc_2017_monthly_metrics
 
-plot_gull_2017_monthly_prop <- ggplot(gull_2017_monthly_metrics, aes(x = as.Date(month),
+plot_bacc_2017_monthly_prop <- ggplot(bacc_2017_monthly_metrics, aes(x = as.Date(month),
                                                          y = avg_prop_wet,
                                                          color = bird_id)) +
   geom_line() +
@@ -393,7 +382,7 @@ plot_gull_2017_monthly_prop <- ggplot(gull_2017_monthly_metrics, aes(x = as.Date
   )
 
 
-plot_gull_2017_monthly_switch <- ggplot(gull_2017_monthly_metrics, aes(x = as.Date(month), 
+plot_bacc_2017_monthly_switch <- ggplot(bacc_2017_monthly_metrics, aes(x = as.Date(month), 
                                                            y = total_switches, 
                                                            color = bird_id)) +
   geom_line() +
@@ -420,15 +409,15 @@ plot_gull_2017_monthly_switch <- ggplot(gull_2017_monthly_metrics, aes(x = as.Da
 
 
 #turn into plotly objects
-plotly_gull_2017_monthly_prop <- ggplotly(plot_gull_2017_monthly_prop) %>%
+plotly_bacc_2017_monthly_prop <- ggplotly(plot_bacc_2017_monthly_prop) %>%
   layout(margin = list(l =50, r=50, b=100, t=50),
          xaxis = list(tickangle=45))
 
-plotly_gull_2017_monthly_switch <- ggplotly(plot_gull_2017_monthly_switch) %>%
+plotly_bacc_2017_monthly_switch <- ggplotly(plot_bacc_2017_monthly_switch) %>%
   layout(margin = list(l =50, r=50, b=100, t=50),
          xaxis = list(tickangle=45))
 
-subplot(plotly_gull_2017_monthly_prop, plotly_gull_2017_monthly_switch,
+subplot(plotly_bacc_2017_monthly_prop, plotly_bacc_2017_monthly_switch,
         nrows = 2, shareX = TRUE, shareY = FALSE)
 
 
@@ -494,6 +483,21 @@ calc_longest_wet_prds <- function(file_path) {
   datetime_start_maxwet <- deg_data$datetime_start[start_file]
   datetime_end_maxwet <- deg_data$datetime_start[end_file]
   
+    
+  # ================================
+  # Calculate longest periods (wets == 0)
+  # Where the bird remained dry for the 2-hour bins.
+  # ================================
+  rle_dry <- rle(deg_data$wets == 0)
+  longest_dry <- max(rle_dry$lengths[rle_dry$values])
+  total_dry_duration <- longest_dry * 2
+    
+  end_file <- cumsum(rle_dry$lengths)[which.max(rle_dry$lengths[rle_dry$values])] 
+  start_file <- end_file - longest_dry +1 
+  
+  datetime_start_dry <- deg_data$datetime_start[start_file]
+  datetime_end_dry <- deg_data$datetime_start[end_file]
+  
   
   #return dataframe
   return(data.frame(
@@ -503,40 +507,46 @@ calc_longest_wet_prds <- function(file_path) {
     datetime_start_wet = datetime_start_wet,
     datetime_end_wet = datetime_end_wet,
     datetime_start_maxwet = datetime_start_maxwet,
-    datetime_end_maxwet = datetime_end_maxwet
+    datetime_end_maxwet = datetime_end_maxwet,
+    datetime_start_dry = datetime_start_dry,
+    datetime_end_dry = datetime_end_dry
   ))
 }
 
-gull_2017_longest_wet_prds <- future_map_dfr(gull_2017_files, calc_longest_wet_prds)
 
+
+# run on gull 2017-2018 files
+bacc_2017_longest_wet_prds <- future_map_dfr(bacc_2017_files, calc_longest_wet_prds)
+```
+
+
+```{r}
 #timeline plot to visualize longest wet periods for birds on Gull Island 2017-2018
+plot_bacc_2017_longest_prds <- ggplot(bacc_2017_longest_wet_prds, aes(y=bird_id)) +
 
-plot_gull_2017_longest_prds <- ggplot(gull_2017_longest_wet_prds, aes(y=bird_id)) +
-  
-  geom_segment(aes(x = datetime_start_wet,
-                   xend = datetime_end_wet,
-                   yend= bird_id,
-                   color = bird_id,
-                   linetype="solid"), 
-               size = 1) +
-  
   geom_segment(aes(x = datetime_start_maxwet,
                    xend = datetime_end_maxwet,
+                   yend= bird_id, color = bird_id,linetype="solid"),
+               size = 1) +
+  
+  geom_segment(aes(x = datetime_start_dry,
+                   xend = datetime_end_dry,
                    yend= bird_id, color = bird_id,linetype="dotted"),
                size = 1) +
   
-  
-      labs(title = "Longest Wet Periods for Birds (2017)",
+      labs(title = "Longest Wet Periods for Baccalieu Island - Ned Walsh (2017-2018)",
            subtitle = "Dotted: Wet at least once in 2-hour bin | Solid: Entirely wet in 2-hour bin",
-           x = "Time",
-           y = "Bird ID",
-           color = "Bird ID",
-           ) +
+           x = "Time", y = "Bird ID", color = "Bird ID") +
   
+  scale_x_datetime(breaks = "1 month", labels = date_format("%b %Y")) +
   theme(axis.text.y = element_text(size = 10),plot.title = element_text(hjust = 0.5, face = "bold"))
   
-
+plot_bacc_2017_longest_prds
 ```
+
+
+#### Wet-Dry Full Deployment
+
 
 Lastly, let's look at all of the wet and dry periods throughout the entire deployment time so we can visualise how they change over time an dmaybe see when those really long periods of entirely wet are
 
@@ -547,27 +557,37 @@ prepare_plot_data <- function(file_path) {
       mutate(
       datetime_start = as.POSIXct(paste(date, start_time), format = "%Y-%m-%d %H:%M:%S"),
       bird_id = str_extract(basename(file_path), "(?<=filtered_)[A-Z-0-9]{5}")
-    )
+    ) %>%
+    
+    #aggregate the data into 6 hr bins from 2 hr bins
+    group_by(bird_id, time_window = as.Date(datetime_start)) %>%
+    summarize(avg_wets = mean(wets, na.rm=TRUE), .groups = "drop")
   return(deg_data)
 }
 
-plot_data <- example_birds %>%
+plot_data <- bacc_2017_files %>%
   lapply(prepare_plot_data) %>%
   bind_rows()
 
-plot_all_wet_periods <- ggplot(plot_data, aes(x=datetime_start, y=wets, color=bird_id)) +
+#plot data for all wets durign deployment periods
+plot_all_wet_periods <- ggplot(plot_data, aes(x=time_window, y=avg_wets, color=bird_id)) +
   geom_line() +
   labs(
-    title = "Dry and Wet Periods Over Entire Deployment Period",
+    title = "Dry and Wet Periods for Baccalieu Island - Ned Walsh (2017-2018)",
     x= "Time (2hr intervals)",
     y= "Wetness",
     color = "Bird ID") +
   scale_y_continuous(
     breaks = seq(0, 20, 5)) +
-  theme_minimal()
+  theme_minimal() +
+    scale_x_datetime(breaks = "1 month", labels = date_format("%b %Y"))
 
 
+plotly_bacc_2017_all_wet <- ggplotly(plot_all_wet_periods) %>%
+  layout(margin = list(l =50, r=50, b=100, t=50),
+         xaxis = list(tickangle=45))
 
+plotly_bacc_2017_all_wet
 ```
 
 
