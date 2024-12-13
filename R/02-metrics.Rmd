@@ -491,8 +491,8 @@ calc_longest_wet_prds <- function(file_path) {
   end_file <- cumsum(rle_max_wet$lengths)[which.max(rle_max_wet$lengths[rle_max_wet$values])] 
   start_file <- end_file - longest_wet +1 
   
-  datetime_start_maxwet <- deg_data$datetime_start_maxwet[start_file]
-  datetime_end_maxwet <- deg_data$datetime_start_maxwet[end_file]
+  datetime_start_maxwet <- deg_data$datetime_start[start_file]
+  datetime_end_maxwet <- deg_data$datetime_start[end_file]
   
   
   #return dataframe
@@ -510,29 +510,6 @@ calc_longest_wet_prds <- function(file_path) {
 gull_2017_longest_wet_prds <- future_map_dfr(gull_2017_files, calc_longest_wet_prds)
 
 
-plot_longest_wets_gull_2017 <- ggplot(gull_2017_longest_wet_prds, aes(x=bird_id)) +
-  geom_bar(aes(y=longest_wet, fill = "Longest wet"), stat = "identity", position = "dodge") +
-  geom_bar(aes(y=longest_very_wet, fill = "Longest very wet"), stat = "identity", position = "dodge") +
-  geom_bar(aes(y = longest_entirely_wet, fill = "Longest Entirely Wet"), stat = "identity", position = "dodge") +
-   labs(
-    title = "Longest Continuous Wet Periods for Gull Island (2017-2018)",
-    y = "Time (hours)",
-    x = "Bird ID",
-    fill = "Condition"
-  ) +
-  theme_minimal() +
-  theme(
-    axis.text.x = element_text(angle = 45, hjust = 1),
-    title = element_text(size = 10),
-    legend.position = "right"
-  )
-
-
-plotly_gull_2017_longest_wet <- ggplotly(plot_gull_2017_longest_wet) %>%
-    layout(
-    margin = list(l = 50, r = 50, b = 100, t = 50),
-    xaxis = list(tickangle = 45)
-  )
 ```
 
 Lastly, let's look at all of the wet and dry periods throughout the entire deployment time so we can visualise how they change over time an dmaybe see when those really long periods of entirely wet are
