@@ -399,7 +399,6 @@ There should only be 5 files with values for days_active_after_ret
 Noticed file `CD480_06Aug22_140316driftadj.deg` has DEG some dates listed as `2201-10-06`
 ```{r}
 file <- deployment_md[deployment_md$wetdry_filename == "CD480_06Aug22_140316driftadj.deg", ]
-print(file)
 ```
 
 The DEG file has a weird invalid byte error message and then date formatting messed up.
@@ -468,49 +467,3 @@ print(file)
 
 
 Do we want to add a filtering step here for devices that didn't last over X number of days? Like a quality filtering step?
-
-
-
-## Down-sampling 
-
-Right now the files are logging every 10 minutes, which is too high of a resolution. Need to down-sample the dataset from 10min to some other interval that is meaningful to define states to.
-
-12hrs seems too long given how far birds can move in this time, but 10min is far too short.
-
-Tempted to use 2hr resolution to match GPS. 
-For example, within each 2hr period we need to assess:
-•	Proportion wet or time wet ((Count wets in 2hr period * 30sec) / 72000sec)
-•	Number of switches between 0 and non-zero value
-•	Total time when entire 10min sampling interval was dry (count 0s * 10min)
-•	Total time when entire 10min sampling interval was wet (count >=1 * 10min)
-•	Longest continuous time dry (longest number of consecutive rows with wets==0  * 10min)
-•	Longest continuous time wet (longest number of consecutive rows with wets>=1 * 10min)
-
-### 2hr Periods
-
-```{r eval=FALSE}
-if (FALSE) {
-#made a new dir called downsampled in /data
-source(here("utils/downsample_deg.R"), echo = F)
-
-#define deg files to use
-deg_files <- list.files(output.dir, pattern = "*.deg", full.names = TRUE)#[1:5] #add if you want to subset
-
-#set up a furrr plan for using 4 cores
-plan(multisession, workers = 4)
-
-future_map(deg_files, downsample_deg)
-
-plan(sequential)
-}
-
-```
-
-So our dataset's `wets` values now represent the average number of 10-minute intervals that were wet during the 2-hour period. This means each 2hr period has 12 intervals of 10 minutes (600 secs).
-
-wets = 0 means 10min interval was entirely wet
-wets = 20 means 10min interval was entirely dry
-
-For one 10min interval,
-if wets=1, then 600s/20 = 30 seconds
-so 1 unit wets = 30 seconds wet per 10min interval
