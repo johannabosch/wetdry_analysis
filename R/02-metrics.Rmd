@@ -480,7 +480,7 @@ calc_longest_wet_prds <- function(file_path) {
   datetime_end_wet <- deg_data$datetime_start[end_file]
   
   
-    # ================================
+  # ================================
   # Calculate longest periods (wets == 20)
   # Where the bird was wet for the entire 2-hour bin.
   # ================================
@@ -509,6 +509,32 @@ calc_longest_wet_prds <- function(file_path) {
 
 gull_2017_longest_wet_prds <- future_map_dfr(gull_2017_files, calc_longest_wet_prds)
 
+#timeline plot to visualize longest wet periods for birds on Gull Island 2017-2018
+
+plot_gull_2017_longest_prds <- ggplot(gull_2017_longest_wet_prds, aes(y=bird_id)) +
+  
+  geom_segment(aes(x = datetime_start_wet,
+                   xend = datetime_end_wet,
+                   yend= bird_id,
+                   color = bird_id,
+                   linetype="solid"), 
+               size = 1) +
+  
+  geom_segment(aes(x = datetime_start_maxwet,
+                   xend = datetime_end_maxwet,
+                   yend= bird_id, color = bird_id,linetype="dotted"),
+               size = 1) +
+  
+  
+      labs(title = "Longest Wet Periods for Birds (2017)",
+           subtitle = "Dotted: Wet at least once in 2-hour bin | Solid: Entirely wet in 2-hour bin",
+           x = "Time",
+           y = "Bird ID",
+           color = "Bird ID",
+           ) +
+  
+  theme(axis.text.y = element_text(size = 10),plot.title = element_text(hjust = 0.5, face = "bold"))
+  
 
 ```
 
