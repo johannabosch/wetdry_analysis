@@ -44,6 +44,17 @@ plan(sequential)
 
 ```
 
+
+This is what the deg files look like now:
+```
+date,start_time,end_time,wets
+2022-09-08,00:00:00,01:59:59,0
+2022-09-08,02:00:00,03:59:59,0
+2022-09-08,04:00:00,05:59:59,0
+2022-09-08,06:00:00,07:59:59,...
+```
+
+
 So our dataset's `wets` values now represent the average number of 10-minute intervals that were wet during the 2-hour period. This means each 2hr period has 12 intervals of 10 minutes (600 secs).
 
 wets = 0 means 10min interval was entirely wet
@@ -431,39 +442,69 @@ this would give us a finer resolution for looking at things like the longest per
 **Working notes:**
 `at first I tried to calc Longest periods of wet (1-20), very wet (>15) and entriely wet (== 20), but I realised that doesn't make a lot of sense. We want to analyse sustained periods the bird was wet we shouldn't have to consider very wet or entirely wet. Instead I try to identify the start and end times of the longest sustained wet period for each bird`.
 
+Here I use `rle()` (run length encoding) to find cnosecutive runs of vals above 0 or equal to 20.
+This produces a vector `values` made up of TRUE/FALSE vals, and `lengths` which tracks the number of TRUE/FALSE vals occurring in a row.
+
+  example // 
+    vec <- c(TRUE, TRUE, FALSE, FALSE, FALSE, TRUE, TRUE, TRUE, FALSE)
+    len = c(2,3,3,1)
+
+
 ```{r}
 calc_longest_wet_prds <- function(file_path) {
+  
   deg_data <- read_csv(file_path, show_col_types = FALSE)
+  
+  #add a datetime_start column
   deg_data <- deg_data %>%
     mutate(datetime_start = as.POSIXct(paste(date, start_time), format = "%Y-%m-%d %H:%M:%S"))
+  
+  # define bird IDs
   bird_id <- str_extract(basename(file_path), "(?<=filtered_)[A-Z-0-9]{5}")
+
+  # ================================
+  # Calculate longest periods (wets > 0)
+  # Where the bird was wet at least once in a 2-hour bin
+  # ================================
   
-  #when avg wets is greater than 0
   rle_wet <- rle(deg_data$wets > 0)
-  longest_wet = max(rle_wet$lengths[rle_wet$values]) #longest run of wets>0
-  total_wet_duration <- longest_wet_bins * 2 #each bin = 2hrs
+  longest_wet = max(rle_wet$lengths[rle_wet$values]) #longest run of wets>0 from lengths of vals
+  total_wet_duration <- longest_wet * 2 #convert 2hr bins to total hrs
   
-  #when avg wets is consistently = 20
+  #find when the end and start of longest TRUE prd in the datasets
+  end_file <- cumsum(rle_wet$lengths)[ #cumul. sum of bin lengths for run end index
+    which.max(rle_wet$lengths[rle_wet$values])] #index = longest period
+  start_file <- end_file - longest_wet +1 #just subtract # of bins in wet prd
+  
+  datetime_start_wet <- deg_data$datetime_start[start_file]
+  datetime_end_wet <- deg_data$datetime_start[end_file]
+  
+  
+    # ================================
+  # Calculate longest periods (wets == 20)
+  # Where the bird was wet for the entire 2-hour bin.
+  # ================================
   rle_max_wet <- rle(deg_data$wets == 20)
   longest_max_wet <- max(rle_max_wet$lengths[rle_wet$values])
   total_max_wet_duration <- longest_max_wet * 2
+    
+  end_file <- cumsum(rle_max_wet$lengths)[which.max(rle_max_wet$lengths[rle_max_wet$values])] 
+  start_file <- end_file - longest_wet +1 
   
-  #find when the longest prd occurs
-  end_file <- cumsum(rle_wet$lengths)[which.max(rle_wet$lengths[rle_wet$values])]
-  start_file <- end_file - longest_wet +1
+  datetime_start_maxwet <- deg_data$datetime_start_maxwet[start_file]
+  datetime_end_maxwet <- deg_data$datetime_start_maxwet[end_file]
   
-  datetime_start <- deg_data$datetime_start[start_file]
-  datetime_end <- deg_data$datetime_start[end_file]
-
   
   #return dataframe
   return(data.frame(
     bird_id = bird_id,
-    longest_wet = longest_wet / 3600, #divide by 3600 to convert into hours
-    longest_very_wet = longest_very_wet / 3600,
-    longest_entirely_wet = longest_entirely_wet / 3600
-    ))
-  
+    longest_wet = total_wet_duration, # hours
+    longest_entirely_wet = total_max_wet_duration, # hours
+    datetime_start_wet = datetime_start_wet,
+    datetime_end_wet = datetime_end_wet,
+    datetime_start_maxwet = datetime_start_maxwet,
+    datetime_end_maxwet = datetime_end_maxwet
+  ))
 }
 
 gull_2017_longest_wet_prds <- future_map_dfr(gull_2017_files, calc_longest_wet_prds)
