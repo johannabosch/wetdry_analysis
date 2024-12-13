@@ -152,8 +152,7 @@ gull_2017_files <- DEG_files[basename(DEG_files) %in% gull_2017_files]
 ```
 
 
-##### Daily
-Function to calculate proportions, switches and wet/dry times PER DAY
+Function to calculate DAILY proportions, switches and wet/dry times
 ```{r}
 calc_daily_metrics <- function(file_path) {
   deg_data <- read_csv(file_path, show_col_types=FALSE)
@@ -198,9 +197,8 @@ gull_2017_daily_metrics <- future_map_dfr(gull_2017_files, calc_daily_metrics)
 gull_2017_daily_metrics
 ```
 
-###### Proportions & Switches
+##### Daily Proportions/Switches
 
-Proportions:
 ```{r}
 
 plot_gull_2017_prop <- ggplot(gull_2017_daily_metrics, aes(x = as.Date(date), y = total_prop_wet, color = bird_id)) +
@@ -225,13 +223,13 @@ plot_gull_2017_prop <- ggplot(gull_2017_daily_metrics, aes(x = as.Date(date), y 
     labels = date_format("%b %Y")
   )
 
-plotly_gull_2017_prop <- ggplotly(plot_gull_2017_prop) %>%
+plotly_gull_2017_daily_prop <- ggplotly(plot_gull_2017_prop) %>%
   layout(margin = list(l =50, r=50, b=100, t=50),
          xaxis = list(tickangle=45))
 
+
 ```
 
-Switches:
 ```{r}
 plot_gull_2017_switch <- ggplot(gull_2017_daily_metrics, aes(x = as.Date(date), y = total_switches, color = bird_id)) +
   geom_line(size=0.2) +
@@ -256,9 +254,10 @@ plot_gull_2017_switch <- ggplot(gull_2017_daily_metrics, aes(x = as.Date(date), 
     labels = date_format("%b %Y")
   )
 
-plotly_gull_2017_switch <- ggplotly(plot_gull_2017_switch) %>%
+plotly_gull_2017_daily_switch <- ggplotly(plot_gull_2017_switch) %>%
   layout(margin = list(l =50, r=50, b=100, t=50),
          xaxis = list(tickangle=45))
+
 ```
 
 Use patchwork to plot together
@@ -315,7 +314,7 @@ The total number of times the device switches from wet to dry reduces during the
 #### Monthly 
 
 What if we group by month not day?
-Will have to take an average instead of summing proportions since it's a longer timeframe summing doesn't make sense. 
+Will have to take an average instead of summing proportions, since it's a longer timeframe summing up proportions of wet/dry doesn't make sense. 
 ```{r}
 calc_monthly_metrics <- function(file_path) {
   deg_data <- read_csv(file_path, show_col_types=FALSE)
@@ -339,6 +338,7 @@ calc_monthly_metrics <- function(file_path) {
       dry_time= ifelse(wets == 0, 10*60, 0), # if dry, time always 600 secs
       wet_time = ifelse(wets > 0, 10*60, 0),  # if wet, time always 600 secs
       
+      #add to consider months
       month = floor_date(as.Date(date), unit = "month")
     ) %>%
     
@@ -356,11 +356,11 @@ calc_monthly_metrics <- function(file_path) {
   return(metrics)
 }
 
-example_monthly_metrics <- future_map_dfr(example_birds, calc_monthly_metrics)
+gull_2017_monthly_metrics <- future_map_dfr(gull_2017_files, calc_monthly_metrics)
 
-example_monthly_metrics
+gull_2017_monthly_metrics
 
-plot_monthly_prop <- ggplot(example_monthly_metrics, aes(x = as.Date(month),
+plot_gull_2017_monthly_prop <- ggplot(gull_2017_monthly_metrics, aes(x = as.Date(month),
                                                          y = avg_prop_wet,
                                                          color = bird_id)) +
   geom_line() +
@@ -382,7 +382,7 @@ plot_monthly_prop <- ggplot(example_monthly_metrics, aes(x = as.Date(month),
   )
 
 
-plot_monthly_switch <- ggplot(example_monthly_metrics, aes(x = as.Date(month), 
+plot_gull_2017_monthly_switch <- ggplot(gull_2017_monthly_metrics, aes(x = as.Date(month), 
                                                            y = total_switches, 
                                                            color = bird_id)) +
   geom_line() +
@@ -408,43 +408,90 @@ plot_monthly_switch <- ggplot(example_monthly_metrics, aes(x = as.Date(month),
   )
 
 
-(plot_monthly_prop|plot_monthly_switch)
+#turn into plotly objects
+plotly_gull_2017_monthly_prop <- ggplotly(plot_gull_2017_monthly_prop) %>%
+  layout(margin = list(l =50, r=50, b=100, t=50),
+         xaxis = list(tickangle=45))
+
+plotly_gull_2017_monthly_switch <- ggplotly(plot_gull_2017_monthly_switch) %>%
+  layout(margin = list(l =50, r=50, b=100, t=50),
+         xaxis = list(tickangle=45))
+
+subplot(plotly_gull_2017_monthly_prop, plotly_gull_2017_monthly_switch,
+        nrows = 2, shareX = TRUE, shareY = FALSE)
+
 
 ```
 
 
 ### Longest Wet/Dry Periods
 We can also consider the two hour periods and not fiddle around with summing up every metric by days
-this would give us a finer resolution for looking at things like the longest period the device was wet/dry
+this would give us a finer resolution for looking at things like the longest period the device was wet/dry.
+
+**Working notes:**
+`at first I tried to calc Longest periods of wet (1-20), very wet (>15) and entriely wet (== 20), but I realised that doesn't make a lot of sense. We want to analyse sustained periods the bird was wet we shouldn't have to consider very wet or entirely wet. Instead I try to identify the start and end times of the longest sustained wet period for each bird`.
 
 ```{r}
-full_metrics <- function(file_path) {
+calc_longest_wet_prds <- function(file_path) {
   deg_data <- read_csv(file_path, show_col_types = FALSE)
   deg_data <- deg_data %>%
     mutate(datetime_start = as.POSIXct(paste(date, start_time), format = "%Y-%m-%d %H:%M:%S"))
   bird_id <- str_extract(basename(file_path), "(?<=filtered_)[A-Z-0-9]{5}")
   
-  longest_dry = max(rle(deg_data$wets == 0)$lengths) * 10 * 60 # Longest continuous dry time
-  longest_wet = max(rle(deg_data$wets > 0)$lengths) * 10 * 60  # Longest continuous wet time
-  longest_very_wet = max(rle(deg_data$wets > 15)$lengths) *10 * 60 #max period wet > 15 in 600secs
-  longest_entirely_wet = max(rle(deg_data$wets == 20)$lengths) *10 * 60 #max period wet == 20 in 600secs
+  #when avg wets is greater than 0
+  rle_wet <- rle(deg_data$wets > 0)
+  longest_wet = max(rle_wet$lengths[rle_wet$values]) #longest run of wets>0
+  total_wet_duration <- longest_wet_bins * 2 #each bin = 2hrs
+  
+  #when avg wets is consistently = 20
+  rle_max_wet <- rle(deg_data$wets == 20)
+  longest_max_wet <- max(rle_max_wet$lengths[rle_wet$values])
+  total_max_wet_duration <- longest_max_wet * 2
+  
+  #find when the longest prd occurs
+  end_file <- cumsum(rle_wet$lengths)[which.max(rle_wet$lengths[rle_wet$values])]
+  start_file <- end_file - longest_wet +1
+  
+  datetime_start <- deg_data$datetime_start[start_file]
+  datetime_end <- deg_data$datetime_start[end_file]
 
+  
+  #return dataframe
   return(data.frame(
     bird_id = bird_id,
-    longest_dry = longest_dry / 3600, #divide by 3600 to convert into hours
-    longest_wet = longest_wet / 3600,
+    longest_wet = longest_wet / 3600, #divide by 3600 to convert into hours
     longest_very_wet = longest_very_wet / 3600,
     longest_entirely_wet = longest_entirely_wet / 3600
     ))
   
 }
 
-files <- list.files(downsampled.dir, full.names=TRUE)
+gull_2017_longest_wet_prds <- future_map_dfr(gull_2017_files, calc_longest_wet_prds)
 
-example_birds <- files[1:1]
 
-example_full_metrics <- future_map_dfr(example_birds, full_metrics)
+plot_longest_wets_gull_2017 <- ggplot(gull_2017_longest_wet_prds, aes(x=bird_id)) +
+  geom_bar(aes(y=longest_wet, fill = "Longest wet"), stat = "identity", position = "dodge") +
+  geom_bar(aes(y=longest_very_wet, fill = "Longest very wet"), stat = "identity", position = "dodge") +
+  geom_bar(aes(y = longest_entirely_wet, fill = "Longest Entirely Wet"), stat = "identity", position = "dodge") +
+   labs(
+    title = "Longest Continuous Wet Periods for Gull Island (2017-2018)",
+    y = "Time (hours)",
+    x = "Bird ID",
+    fill = "Condition"
+  ) +
+  theme_minimal() +
+  theme(
+    axis.text.x = element_text(angle = 45, hjust = 1),
+    title = element_text(size = 10),
+    legend.position = "right"
+  )
 
+
+plotly_gull_2017_longest_wet <- ggplotly(plot_gull_2017_longest_wet) %>%
+    layout(
+    margin = list(l = 50, r = 50, b = 100, t = 50),
+    xaxis = list(tickangle = 45)
+  )
 ```
 
 Lastly, let's look at all of the wet and dry periods throughout the entire deployment time so we can visualise how they change over time an dmaybe see when those really long periods of entirely wet are
