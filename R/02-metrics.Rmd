@@ -31,13 +31,15 @@ if (FALSE) {
 #made a new dir called downsampled in /data
 source(here("utils/downsample_deg.R"), echo = F)
 
+bin_time = 2
+
 #define deg files to use
 deg_files <- list.files(output.dir, pattern = "*.deg", full.names = TRUE)#[1:5] #add if you want to subset
 
 #set up a furrr plan for using 4 cores
 plan(multisession, workers = 4)
 
-future_map(deg_files, downsample_deg)
+future_map(deg_files, downsample_deg, bin_time = bin_time)
 
 plan(sequential)
 }
@@ -63,6 +65,31 @@ wets = 20 means 10min interval was entirely dry
 For one 10min interval,
 if wets=1, then 600s/20 = 30 seconds
 so 1 unit wets = 30 seconds wet per 10min interval
+
+
+### 1hr Periods
+
+```{r eval=FALSE}
+if (FALSE) {
+#made a new dir called downsampled in /data
+source(here("utils/downsample_deg.R"), echo = F)
+
+bin_time = 1
+
+#define deg files to use
+deg_files <- list.files(output.dir, pattern = "*.deg", full.names = TRUE)#[1:5] #add if you want to subset
+
+#set up a furrr plan for using 4 cores
+plan(multisession, workers = 4)
+
+future_map(deg_files, downsample_deg, bin_time = bin_time)
+
+plan(sequential)
+}
+
+```
+
+
 
 ## Reviewing Metadata
 
@@ -148,6 +175,11 @@ We want the following metrics for times the device was deployed:
 
 ## Baccalieu - Ned Walsh 2017-2018
 
+Decide what downsampled data you want to use based on the bin_time 
+```{r}
+(downsampled.dir <- file.path(data.dir, "downsampled_1hrs"))
+```
+
 Let's start with the 2017-2018 files from Baccalieu (6 files total)
 ```{r}
 #get list of downsampled files to process 
@@ -164,7 +196,72 @@ bacc_2017_files <- DEG_files[basename(DEG_files) %in% bacc_2017_files]
 ```
 
 
-Function to calculate DAILY proportions, switches and wet/dry times
+### Proportion/Switches
+
+Calculated by:
+* **2hr Periods** - Finest resolution, 
+* **Daily Periods** - Helps assess trends over long time periods, like looking at wet proportions/switches seasonally
+* **Monthly Periods** - Lowest resolution ()
+
+##### 2hr Periods
+
+Calculate Proportions/Switches within each 2hr Bin
+
+
+```{r}
+calc_metrics <- function(file_path) {
+  deg_data <- read_csv(file_path, show_col_types=FALSE)
+  
+  bird_id <- str_extract(basename(file_path), "(?<=filtered_)[A-Z-0-9]{5}")
+  
+  #start by calculating metrics for a single 2hr bin
+  metrics <- deg_data %>%
+    mutate(
+      bin_length = bin_time * 3600, #2hrs in secs
+      
+      #proportion of time wet in 2hr period (wets*30 converts wetness level into secs spent wet)
+      # (600sec per 10min interval) / 20 = 30 seconds per unit 
+      prop_wet = (wets * 30) / bin_length, 
+      
+      #switches between wet (non-zero) and dry (zero) states
+      switches= ifelse(row_number() == 1,0,
+                       abs(diff(ifelse(wets > 0, 1, 0)))),
+      
+      #cumulative time spent dry (== 0) or wet (>0)
+      dry_time= ifelse(wets == 0, 10*60, 0), # if dry, time always 600 secs
+      wet_time = ifelse(wets > 0, 10*60, 0),  # if wet, time always 600 secs
+    
+      bird_id = bird_id)
+
+  return(metrics)
+}
+
+bacc_2017_metrics <- future_map_dfr(bacc_2017_files, calc_metrics)
+
+```
+
+Plot proportions on a heatmap per device
+```{r}
+
+plotly_bacc_2017_metrics <- plot_ly(
+  data = bacc_2017_metrics,
+  x = ~date, y = ~bird_id, z = ~prop_wet,
+  type = "heatmap",
+  colors =c("white", "blue"),
+  colorbar = list(title= "Proportion Wet")
+) %>%
+  layout(
+    title = paste("Heatmap (bin =", bin_time, "hour): Baccalieu Island - Ned Walsh (2017-2018)"),
+    xaxis=list(title = "Date", tickformat = "%b %Y", tickangle = 45, tickmode = "linear", dtick="M1"),
+    yaxis = list(title = "Bird ID"),
+    margin = list(l = 100, b = 100, t = 50)
+  )
+
+plotly_bacc_2017_metrics
+
+```
+
+Aggregate bins to DAYS for visualising daily proportions, switches and wet/dry times
 ```{r}
 calc_daily_metrics <- function(file_path) {
   deg_data <- read_csv(file_path, show_col_types=FALSE)
@@ -174,7 +271,7 @@ calc_daily_metrics <- function(file_path) {
   #start by calculating metrics for a single 2hr bin
   metrics <- deg_data %>%
     mutate(
-      bin_length = 7200, #2hrs in secs
+      bin_length = bin_time * 3600, #2hrs in secs
       
       #proportion of time wet in 2hr period (wets*30 converts wetness level into secs spent wet)
       # (600sec per 10min interval) / 20 = 30 seconds per unit 
@@ -201,17 +298,30 @@ calc_daily_metrics <- function(file_path) {
   
   return(metrics)
 }
-```
 
-```{r}
 bacc_2017_daily_metrics <- future_map_dfr(bacc_2017_files, calc_daily_metrics)
 
 bacc_2017_daily_metrics
 ```
 
-##### Daily Proportions/Switches
+##### Daily Periods
 
+Let's use a lower resolution, down-sampling by 2hr periods instead
 ```{r}
+(downsampled.dir <- file.path(data.dir, "downsampled_1hrs"))
+
+#get list of downsampled files to process 
+bacc_2017_files <- metrics_md %>%
+  filter(colony == "Baccalieu - Ned Walsh",
+         deployment_period == "2017-2018") %>%
+  pull(wetdry_filename)
+
+bacc_2017_files <- paste0("filtered_", bacc_2017_files)
+ 
+DEG_files <- list.files(downsampled.dir, full.names=TRUE)
+
+bacc_2017_files <- DEG_files[basename(DEG_files) %in% bacc_2017_files]
+
 #functions to plot proportions and switches
 plot_daily_metrics <- function(data, y_var, y_label, plot_title) {
   ggplot(data, aes(x = as.Date(date), y = !!sym(y_var), color = bird_id)) +
@@ -253,7 +363,7 @@ plotly_bacc_2017_daily_switch <- ggplotly(
     bacc_2017_daily_metrics,
     y_var = "total_switches",
     y_label = "Number of Wet-Dry Switches",
-    plot_title = "Daily Switches Between Wet-Dry Periods for Baccalieu - Ned Walsh (2017-2018)"
+    plot_title = "Number of Switches Between Wet-Dry Periods Per Day for Baccalieu - Ned Walsh (2017-2018)"
   )
 )
 
@@ -311,7 +421,9 @@ plotly_bacc_2017_daily_dry_wet
 So for these birds we see a good trend, between Dec 2017 and May 2018 there is a high proportion of wet periods. 
 The total number of times the device switches from wet to dry reduces during the periods where there is a lot of wets, seems to make sense.
 
-#### Monthly 
+
+
+#### Monthly Periods
 
 What if we group by month not day?
 Will have to take an average instead of summing proportions, since it's a longer timeframe summing up proportions of wet/dry doesn't make sense. 
@@ -589,20 +701,5 @@ plotly_bacc_2017_all_wet <- ggplotly(plot_all_wet_periods) %>%
 
 plotly_bacc_2017_all_wet
 ```
-
-
-Okkkk thats fun
-
-ii shoudl look into how takign the average for every two hr period here impacts this 
-
-maybe i shouldnt be binning that way
-
-will look into different ways of handlig wets, maybe just leave at 10mins? but this resolution is already too high 
-
-what im doign now
-binning wets by 2 hours, taking average of wets to bin them here
-
-then im considering wets/dries for that entire deployment period (each point = 2hrs)
-but im also considering full daily metrics inside of that which probably isnt a great approach - look into binnig daily first instead of by 2hrs with average and then daily.
 
 

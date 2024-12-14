@@ -37,7 +37,5 @@ options(scipen = 999, digits=4)
 
 (log_file <- file.path(output.dir, "clip_summary.txt"))
 
-(downsampled.dir <- file.path(data.dir, "downsampled"))
-
 
 sessionInfo()
