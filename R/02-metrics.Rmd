@@ -219,13 +219,14 @@ calc_metrics <- function(file_path) {
     mutate(
       bin_length = bin_time * 3600, #2hrs in secs
       
+      wets = ifelse(is.ma(wets), 0, wets), #replace NAs with wets
+      
       #proportion of time wet in 2hr period (wets*30 converts wetness level into secs spent wet)
       # (600sec per 10min interval) / 20 = 30 seconds per unit 
-      prop_wet = (wets * 30) / bin_length, 
+      prop_wet = ifelse(bin_length >0, (wets * 30) / bin_length), 
       
       #switches between wet (non-zero) and dry (zero) states
-      switches= ifelse(row_number() == 1,0,
-                       abs(diff(ifelse(wets > 0, 1, 0)))),
+      switches = ifelse(row_number() == 1, 0, abs(diff(ifelse(wets > 0, 1, 0)))),
       
       #cumulative time spent dry (== 0) or wet (>0)
       dry_time= ifelse(wets == 0, 10*60, 0), # if dry, time always 600 secs
@@ -261,6 +262,9 @@ plotly_bacc_2017_metrics
 
 ```
 
+
+
+##### Daily Periods
 Aggregate bins to DAYS for visualising daily proportions, switches and wet/dry times
 ```{r}
 calc_daily_metrics <- function(file_path) {
@@ -272,10 +276,12 @@ calc_daily_metrics <- function(file_path) {
   metrics <- deg_data %>%
     mutate(
       bin_length = bin_time * 3600, #2hrs in secs
+     
+       wets = ifelse(is.ma(wets), 0, wets), #replace NAs with wets
       
       #proportion of time wet in 2hr period (wets*30 converts wetness level into secs spent wet)
       # (600sec per 10min interval) / 20 = 30 seconds per unit 
-      prop_wet = (wets * 30) / bin_length, 
+      prop_wet = ifelse(bin_length >0, (wets * 30) / bin_length), 
       
       #switches between wet (non-zero) and dry (zero) states
       switches= ifelse(row_number() == 1,0,
@@ -304,7 +310,6 @@ bacc_2017_daily_metrics <- future_map_dfr(bacc_2017_files, calc_daily_metrics)
 bacc_2017_daily_metrics
 ```
 
-##### Daily Periods
 
 Let's use a lower resolution, down-sampling by 2hr periods instead
 ```{r}
@@ -373,54 +378,8 @@ subplot(plotly_bacc_2017_daily_prop, plotly_bacc_2017_daily_switch,
         nrows = 2, shareX = TRUE, shareY = FALSE)
 ```
 
-
-
-```{r}
-#make data long to plot wetdry times together
-long_bacc_2017_daily_metrics <- bacc_2017_daily_metrics %>%
-  pivot_longer(cols=c(total_dry_time, total_wet_time),
-               names_to = "metric",
-               values_to = "time")
-
-plot_bacc_2017_daily_dry_wet <- 
-  ggplot(long_bacc_2017_daily_metrics,
-         aes(x = as.Date(date),
-             y = time, 
-             color = metric)) +
-  
-  geom_line() +
-  geom_point(size=0.5) +
-  facet_wrap(~ bird_id, scales = "free_y") + #facets by bird ID
-  labs(
-    title = "Total Wet-Dry Times per Day for Gull Island (2017-2018)",
-    y = "Time (seconds)",
-    x = "Time (days)",
-    color = "Bird ID",
-    linetype = "Metric") +
-  theme_minimal() +
-  theme(
-    axis.text.x = element_text(angle = 45, hjust = 1),
-    title = element_text(size = 8),
-    legend.position = "top"
-  ) +
-  scale_x_date(
-    breaks = "1 month",
-    labels = date_format("%b %Y"))+
-  scale_color_manual(
-    values = c("total_dry_time" = "lightgreen", "total_wet_time" = "darkblue"),
-    labels = c("dry Time", "Wet Time"))
-
-plotly_bacc_2017_daily_dry_wet <- ggplotly(plot_bacc_2017_daily_dry_wet) %>%
-  layout(margin = list(l =50, r=50, b=100, t=50),
-         xaxis = list(tickangle=45))
-
-
-plotly_bacc_2017_daily_dry_wet
-```
-
 So for these birds we see a good trend, between Dec 2017 and May 2018 there is a high proportion of wet periods. 
 The total number of times the device switches from wet to dry reduces during the periods where there is a lot of wets, seems to make sense.
-
 
 
 #### Monthly Periods
@@ -436,11 +395,13 @@ calc_monthly_metrics <- function(file_path) {
   #start by calculating metrics for a single 2hr bin
   metrics <- deg_data %>%
     mutate(
-      bin_length = 7200, #2hrs in secs
+      bin_length = bin_time*3600, #2hrs in secs
+      
+      wets = ifelse(is.ma(wets), 0, wets), #replace NAs with wets
       
       #proportion of time wet in 2hr period (wets*30 converts wetness level into secs spent wet)
       # (600sec per 10min interval) / 20 = 30 seconds per unit 
-      prop_wet = (wets * 30) / bin_length, 
+      prop_wet = ifelse(bin_length >0, (wets * 30) / bin_length), 
       
       #switches between wet (non-zero) and dry (zero) states
       switches= ifelse(row_number() == 1,0,
@@ -638,12 +599,17 @@ plot_bacc_2017_longest_prds <- ggplot(bacc_2017_longest_wet_prds, aes(y=bird_id)
 
   geom_segment(aes(x = datetime_start_maxwet,
                    xend = datetime_end_maxwet,
-                   yend= bird_id, color = bird_id,linetype="solid"),
+                   yend= bird_id, color = "blue"),
                size = 1) +
   
   geom_segment(aes(x = datetime_start_dry,
                    xend = datetime_end_dry,
-                   yend= bird_id, color = bird_id,linetype="dotted"),
+                   yend= bird_id, color = "black",linetype="dashed"),
+               size = 1) +
+  
+  geom_segment(aes(x = datetime_start_dry,
+                   xend = datetime_end_dry,
+                   yend= bird_id, color = "black",linetype="dotted"),
                size = 1) +
   
       labs(title = "Longest Wet Periods for Baccalieu Island - Ned Walsh (2017-2018)",
