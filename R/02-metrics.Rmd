@@ -177,7 +177,7 @@ We want the following metrics for times the device was deployed:
 
 Decide what downsampled data you want to use based on the bin_time 
 ```{r}
-(downsampled.dir <- file.path(data.dir, "downsampled_1hrs"))
+(downsampled.dir <- file.path(data.dir, "downsampled_2hrs"))
 ```
 
 Let's start with the 2017-2018 files from Baccalieu (6 files total)
@@ -193,13 +193,15 @@ bacc_2017_files <- paste0("filtered_", bacc_2017_files)
 DEG_files <- list.files(downsampled.dir, full.names=TRUE)
 
 bacc_2017_files <- DEG_files[basename(DEG_files) %in% bacc_2017_files]
+
+bin_time = 2
 ```
 
 
 ### Proportion/Switches
 
 Calculated by:
-* **2hr Periods** - Finest resolution, 
+* **Binned Periods** - Finest resolution, 
 * **Daily Periods** - Helps assess trends over long time periods, like looking at wet proportions/switches seasonally
 * **Monthly Periods** - Lowest resolution ()
 
@@ -219,7 +221,7 @@ calc_metrics <- function(file_path) {
     mutate(
       bin_length = bin_time * 3600, #2hrs in secs
       
-      wets = ifelse(is.ma(wets), 0, wets), #replace NAs with wets
+      wets = ifelse(is.na(wets), 0, wets), #replace NAs with wet=0
       
       #proportion of time wet in 2hr period (wets*30 converts wetness level into secs spent wet)
       # (600sec per 10min interval) / 20 = 30 seconds per unit 
@@ -239,12 +241,14 @@ calc_metrics <- function(file_path) {
 
 bacc_2017_metrics <- future_map_dfr(bacc_2017_files, calc_metrics)
 
+head(bacc_2017_metrics)
+
 ```
 
 Plot proportions on a heatmap per device
 ```{r}
 
-plotly_bacc_2017_metrics <- plot_ly(
+plotly_bacc_2017_heatmap_prop <- plot_ly(
   data = bacc_2017_metrics,
   x = ~date, y = ~bird_id, z = ~prop_wet,
   type = "heatmap",
@@ -258,7 +262,7 @@ plotly_bacc_2017_metrics <- plot_ly(
     margin = list(l = 100, b = 100, t = 50)
   )
 
-plotly_bacc_2017_metrics
+plotly_bacc_2017_heatmap_prop
 
 ```
 
@@ -277,7 +281,7 @@ calc_daily_metrics <- function(file_path) {
     mutate(
       bin_length = bin_time * 3600, #2hrs in secs
      
-       wets = ifelse(is.ma(wets), 0, wets), #replace NAs with wets
+       wets = ifelse(is.na(wets), 0, wets), #replace NAs with wets
       
       #proportion of time wet in 2hr period (wets*30 converts wetness level into secs spent wet)
       # (600sec per 10min interval) / 20 = 30 seconds per unit 
@@ -397,7 +401,7 @@ calc_monthly_metrics <- function(file_path) {
     mutate(
       bin_length = bin_time*3600, #2hrs in secs
       
-      wets = ifelse(is.ma(wets), 0, wets), #replace NAs with wets
+      wets = ifelse(is.na(wets), 0, wets), #replace NAs with wets
       
       #proportion of time wet in 2hr period (wets*30 converts wetness level into secs spent wet)
       # (600sec per 10min interval) / 20 = 30 seconds per unit 
@@ -498,22 +502,22 @@ subplot(plotly_bacc_2017_monthly_prop, plotly_bacc_2017_monthly_switch,
 
 
 ### Longest Wet/Dry Periods
-We can also consider the two hour periods and not fiddle around with summing up every metric by days
+We can also consider the binned periods and not fiddle around with summing up every metric by days
 this would give us a finer resolution for looking at things like the longest period the device was wet/dry.
 
 **Working notes:**
 `at first I tried to calc Longest periods of wet (1-20), very wet (>15) and entriely wet (== 20), but I realised that doesn't make a lot of sense. We want to analyse sustained periods the bird was wet we shouldn't have to consider very wet or entirely wet. Instead I try to identify the start and end times of the longest sustained wet period for each bird`.
 
-Here I use `rle()` (run length encoding) to find cnosecutive runs of vals above 0 or equal to 20.
+Here I use `rle()` (run length encoding) to find consecutive runs of vals above 0 or equal to 20.
 This produces a vector `values` made up of TRUE/FALSE vals, and `lengths` which tracks the number of TRUE/FALSE vals occurring in a row.
 
   example // 
     vec <- c(TRUE, TRUE, FALSE, FALSE, FALSE, TRUE, TRUE, TRUE, FALSE)
     len = c(2,3,3,1)
 
-
+***** this needs to be fixed somethign wrong with the PSTIXct dates for datetime_end
 ```{r}
-calc_longest_wet_prds <- function(file_path) {
+calc_longest_prds <- function(file_path) {
   
   deg_data <- read_csv(file_path, show_col_types = FALSE)
   
@@ -528,61 +532,44 @@ calc_longest_wet_prds <- function(file_path) {
   # Calculate longest periods (wets > 0)
   # Where the bird was wet at least once in a 2-hour bin
   # ================================
-  
-  rle_wet <- rle(deg_data$wets > 0)
-  longest_wet = max(rle_wet$lengths[rle_wet$values]) #longest run of wets>0 from lengths of vals
-  total_wet_duration <- longest_wet * 2 #convert 2hr bins to total hrs
-  
-  #find when the end and start of longest TRUE prd in the datasets
-  end_file <- cumsum(rle_wet$lengths)[ #cumul. sum of bin lengths for run end index
-    which.max(rle_wet$lengths[rle_wet$values])] #index = longest period
-  start_file <- end_file - longest_wet +1 #just subtract # of bins in wet prd
-  
-  datetime_start_wet <- deg_data$datetime_start[start_file]
-  datetime_end_wet <- deg_data$datetime_start[end_file]
-  
-  
-  # ================================
-  # Calculate longest periods (wets == 20)
-  # Where the bird was wet for the entire 2-hour bin.
-  # ================================
-  rle_max_wet <- rle(deg_data$wets == 20)
-  longest_max_wet <- max(rle_max_wet$lengths[rle_wet$values])
-  total_max_wet_duration <- longest_max_wet * 2
+  calc_prds <- function(condition) {
     
-  end_file <- cumsum(rle_max_wet$lengths)[which.max(rle_max_wet$lengths[rle_max_wet$values])] 
-  start_file <- end_file - longest_wet +1 
-  
-  datetime_start_maxwet <- deg_data$datetime_start[start_file]
-  datetime_end_maxwet <- deg_data$datetime_start[end_file]
-  
+    rle_data <- rle(condition)
     
-  # ================================
-  # Calculate longest periods (wets == 0)
-  # Where the bird remained dry for the 2-hour bins.
-  # ================================
-  rle_dry <- rle(deg_data$wets == 0)
-  longest_dry <- max(rle_dry$lengths[rle_dry$values])
-  total_dry_duration <- longest_dry * 2
+    if(!any(rle_data$values)) return(list(start=NA, end = NA, duration = 0))
     
-  end_file <- cumsum(rle_dry$lengths)[which.max(rle_dry$lengths[rle_dry$values])] 
-  start_file <- end_file - longest_dry +1 
-  
-  datetime_start_dry <- deg_data$datetime_start[start_file]
-  datetime_end_dry <- deg_data$datetime_start[end_file]
-  
-  
+    longest_run = max(rle_data$lengths[rle_data$values]) #longest run of wets>0 from lengths of vals
+    
+    end_x <- cumsum(rle_wet$lengths)[ #cumul. sum of bin lengths for run end index
+      which.max(rle_wet$lengths[rle_wet$values])] #index = longest period
+    
+    start_x <- end_x - longest_wet +1 #just subtract # of bins in wet prd
+    
+    #find when the end and start of longest TRUE prd in the datasets
+    list(
+      start = deg_data$datetime_start[start_x],
+      end = deg_data$datetime_start[end_x],
+      duration = longest_run * bin_time, #duration is the longest period we found times the bin time
+      )
+    
+  #calculate the periods 
+    longest_wet <- calc_prds(deg_data$wets>0)
+    longest_max_wet <- calc_prds(deg_data$wets==20)
+    longest_dry <- calc_prds(deg_data$wets==0)
+    
+    
   #return dataframe
   return(data.frame(
     bird_id = bird_id,
-    longest_wet = total_wet_duration, # hours
-    longest_entirely_wet = total_max_wet_duration, # hours
-    datetime_start_wet = datetime_start_wet,
-    datetime_end_wet = datetime_end_wet,
-    datetime_start_maxwet = datetime_start_maxwet,
-    datetime_end_maxwet = datetime_end_maxwet,
-    datetime_start_dry = datetime_start_dry,
-    datetime_end_dry = datetime_end_dry
+    longest_wet = longest_wet$duration,
+    longest_entirely_wet = longest_max_wet$duration,
+    longest_dry = longest_dry$duration,
+    datetime_start_wet = longest_wet$start,
+    datetime_end_wet = longest_wet$end,
+    datetime_start_maxwet = longest_max_wet$start,
+    datetime_end_maxwet = longest_max_wet$end,
+    datetime_start_dry = longest_dry$start,
+    datetime_end_dry = longest_dry$end
   ))
 }
 
@@ -590,41 +577,67 @@ calc_longest_wet_prds <- function(file_path) {
 
 # run on gull 2017-2018 files
 bacc_2017_longest_wet_prds <- future_map_dfr(bacc_2017_files, calc_longest_wet_prds)
+
+bacc_2017_longest_wet_prds
 ```
 
 
 ```{r}
 #timeline plot to visualize longest wet periods for birds on Gull Island 2017-2018
-plot_bacc_2017_longest_prds <- ggplot(bacc_2017_longest_wet_prds, aes(y=bird_id)) +
+plot_bacc_2017_longest_prds <- ggplot(bacc_2017_longest_wet_prds, aes(y = bird_id)) +
+  
+  # wet at least once in 2-hour bin (dotted black line)
+  geom_segment(aes(x = datetime_start_wet, 
+                   xend = datetime_end_wet, 
+                   yend = bird_id), 
+               size = 1, color = "blue3") +  
+  
+  # longest entirely wet period (solid blue line)
+  geom_segment(aes(x = datetime_start_maxwet, 
+                   xend = datetime_end_maxwet, 
+                   yend = bird_id), 
+               size = 1, color = "lightblue3") +
+  
+  # longest dry period (dashed blue line)
+  geom_segment(aes(x = datetime_start_dry, 
+                   xend = datetime_end_dry, 
+                   yend = bird_id), 
+               size = 1, color = "darkgrey") +
 
-  geom_segment(aes(x = datetime_start_maxwet,
-                   xend = datetime_end_maxwet,
-                   yend= bird_id, color = "blue"),
-               size = 1) +
   
-  geom_segment(aes(x = datetime_start_dry,
-                   xend = datetime_end_dry,
-                   yend= bird_id, color = "black",linetype="dashed"),
-               size = 1) +
+  # Labels and formatting
+  labs(title = "Longest Wet Periods for Baccalieu Island - Ned Walsh (2017-2018)",
+       subtitle = "Dotted: Wet at least once in 2-hour bin | Solid: Entirely wet in 2-hour bin",
+       x = "Time", y = "Bird ID") +
   
-  geom_segment(aes(x = datetime_start_dry,
-                   xend = datetime_end_dry,
-                   yend= bird_id, color = "black",linetype="dotted"),
-               size = 1) +
+  # Customize x-axis scale
+  scale_x_datetime(breaks = date_breaks("1 month"), labels = date_format("%b %Y")) +
   
-      labs(title = "Longest Wet Periods for Baccalieu Island - Ned Walsh (2017-2018)",
-           subtitle = "Dotted: Wet at least once in 2-hour bin | Solid: Entirely wet in 2-hour bin",
-           x = "Time", y = "Bird ID", color = "Bird ID") +
-  
-  scale_x_datetime(breaks = "1 month", labels = date_format("%b %Y")) +
-  theme(axis.text.y = element_text(size = 10),plot.title = element_text(hjust = 0.5, face = "bold"))
-  
+  # Theme adjustments
+  theme_minimal() +
+  theme(axis.text.y = element_text(size = 10),
+        plot.title = element_text(hjust = 0.5, face = "bold"),
+        plot.subtitle = element_text(hjust = 0.5))
+
+# Display the plot
 plot_bacc_2017_longest_prds
+
+plotly_bacc_2017_longest_prds <- ggplotly(plot_bacc_2017_longest_prds) %>%
+  layout(margin = list(l =50, r=50, b=100, t=50),
+         xaxis = list(tickangle=45))
+```
+Looks like dry periods are too short to visualise here
+Plot that next to our heatmap of proportions 
+
+```{r}
+
+
+subplot(plotly_bacc_2017_heatmap_prop, plot_bacc_2017_longest_prds,
+        nrows = 2, shareX = TRUE, shareY = FALSE)
 ```
 
 
 #### Wet-Dry Full Deployment
-
 
 Lastly, let's look at all of the wet and dry periods throughout the entire deployment time so we can visualise how they change over time an dmaybe see when those really long periods of entirely wet are
 
@@ -669,3 +682,28 @@ plotly_bacc_2017_all_wet
 ```
 
 
+```{r}
+bacc_2017_longest_wet_prds_long <- bacc_2017_longest_wet_prds %>%
+  pivot_longer(cols = starts_with("datetime"), 
+               names_to = "period_type", 
+               values_to = "datetime") %>%
+  filter(!is.na(datetime)) %>%
+  mutate(period_type = case_when(
+    str_detect(period_type, "start_wet") ~ "Wet (at least once)",
+    str_detect(period_type, "start_maxwet") ~ "Entirely Wet",
+    str_detect(period_type, "start_dry") ~ "Dry"
+  ))
+
+# Heatmap
+ggplot(bacc_2017_longest_wet_prds_long, aes(x = datetime, y = bird_id, fill = period_type)) +
+  geom_tile(alpha = 0.8) +
+  scale_fill_manual(values = c("Wet (at least once)" = "darkblue",
+                               "Entirely Wet" = "lightblue",
+                               "Dry" = "darkgrey")) +
+  labs(title = "Heatmap of Longest Periods",
+       x = "Time", y = "Bird ID",
+       fill = "Period Type") +
+  theme_minimal() +
+  theme(axis.text.y = element_text(size = 10),
+        plot.title = element_text(hjust = 0.5, face = "bold"))
+```
