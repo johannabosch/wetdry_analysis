@@ -13,5 +13,4 @@ data/downsampled*
 /data/problem_files
 /data/DEG_clean.zip
 
-!data/zipped/original_degs.zip
-!data/zipped/clipped_degs.zip
+!data/zipped/
