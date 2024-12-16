@@ -92,9 +92,11 @@ plan(sequential)
 
 ```
 
+
+
+### 5hr Periods
+
 Do it again for 5hr bin
-
-
 ```{r eval=FALSE}
 
 bin_time = 5
@@ -108,14 +110,14 @@ future_map(deg_files, downsample_deg, bin_time = bin_time, .progress = TRUE)
 
 plan(sequential)
 }
-
 ```
+
 
 ## Reviewing Metadata
 
 Make a table to review how many files we have per deployment period per colony:
 ```{r}
-md <- read.csv(file.path(data.dir, "MasterMetadata_LHSP_Tracking_NL_NB_NS_13Aug2024.csv"))
+md <- read.csv(file.path(data.dir, "MasterMetadata_LHSP_Tracking_NL_NB_NS_06Dec2024.csv"))
 
 colnames(md)
 
@@ -140,12 +142,6 @@ metrics_md <- md %>%
   
   #only keep necessary columns 
   select(wetdry_filename, depDate_comb, retDate_comb, colony) %>%
-  
-  #fix fomratted name for that one DEG file i manually changed
-  mutate(wetdry_filename = ifelse(
-      wetdry_filename == "BH594_04Jul18_135310driftadj.deg",
-      "BH594_formatted_04Jul18_135310driftadj.deg",
-      wetdry_filename))  %>%
   
   #categorize deployment periods in the dtaaframe
   mutate(
