@@ -105,6 +105,7 @@ plan(multisession, workers = 4)
 
 future_map(deg_files, downsample_deg, bin_time = bin_time, .progress = TRUE)
 
+
 plan(sequential)
 }
 
