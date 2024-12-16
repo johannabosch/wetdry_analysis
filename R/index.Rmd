@@ -10,3 +10,7 @@ output: bookdown::gitbook
 
 # Wet-Dry Analysis for Petrel GLS Devices
 
+This will be an intro area discussing stuff about the analysis and references
+
+Still need to make a references.bib file, contains BIBTEX references 
+(can make a BIBTEX file from Zotero)

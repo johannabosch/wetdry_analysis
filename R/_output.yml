@@ -1,0 +1,12 @@
+bookdown::gitbook:
+  css: style.css
+  config:
+    toc:
+      collapse: section
+      before: null
+      after: null
+bookdown::pdf_book: default
+bookdown::epub_book: default
+download:
+  - pdf
+  - epub

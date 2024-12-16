@@ -1,4 +1,4 @@
-# Clean-up and Downsample DEGS
+# Clean-up
 
 ## Getting started
 
