@@ -202,6 +202,7 @@ bin_time = 2
 ```
 
 Let's start with the 2017-2018 files from Baccalieu (6 files total)
+
 ```{r}
 #get list of downsampled files to process 
 bacc_2017_md <- metrics_md %>%
@@ -209,12 +210,11 @@ bacc_2017_md <- metrics_md %>%
          deployment_period == "2017-2018") %>%
   pull(wetdry_filename)
 
-bacc_2017_files <- paste0("filtered_", bacc_2017_files)
+bacc_2017_md <- paste0("filtered_", bacc_2017_md)
  
 DEG_files <- list.files(downsampled.dir, full.names=TRUE)
 
 bacc_2017_files <- DEG_files[basename(DEG_files) %in% bacc_2017_md]
-
 ```
 
 Pick a colony and time range to look at
@@ -505,7 +505,7 @@ plot_longest_prds <- ggplot(longest_prds, aes(y = bird_id)) +
   # Longest entirely wet period (solid blue line)
   geom_segment(aes(x = datetime_start_maxwet, 
                    xend = datetime_end_maxwet, yend = bird_id, color = "Max Wet Period"), 
-               size = 2) +
+               size = 1) +
 
   # Longest dry period (dashed blue line)
   geom_segment(aes(x =datetime_start_dry, 
@@ -545,11 +545,7 @@ plotly_longest_prds
 
 ```
 
-As a consequence, the lightblue line here showing the longest period when wet was greater than 0 looks like it spans across the whole time. There were definitely periods within those 2 hour bins when wets = 0 for longer though.
-
-```{r}
-plotly_bacc_2017_heatmap_prop
-```
+As a consequence, the lightblue line here showing the longest period when wet was greater than 0 looks like it spans across the whole time. There were definitely periods within those 2 hour bins when wets = 0 for longer though.\
 
 
 ### Wet-Dry Full Deployment
@@ -606,31 +602,4 @@ plotly_bacc_2017_all_wet <- ggplotly(plot_all_wet_periods) %>%
          xaxis = list(tickangle = 45))
 
 plotly_bacc_2017_all_wet
-```
-
-
-```{r}
-bacc_2017_longest_wet_prds_long <- bacc_2017_longest_wet_prds %>%
-  pivot_longer(cols = starts_with("datetime"), 
-               names_to = "period_type", 
-               values_to = "datetime") %>%
-  filter(!is.na(datetime)) %>%
-  mutate(period_type = case_when(
-    str_detect(period_type, "start_wet") ~ "Wet (at least once)",
-    str_detect(period_type, "start_maxwet") ~ "Entirely Wet",
-    str_detect(period_type, "start_dry") ~ "Dry"
-  ))
-
-# Heatmap
-ggplot(bacc_2017_longest_wet_prds_long, aes(x = datetime, y = bird_id, fill = period_type)) +
-  geom_tile(alpha = 0.8) +
-  scale_fill_manual(values = c("Wet (at least once)" = "darkblue",
-                               "Entirely Wet" = "lightblue",
-                               "Dry" = "darkgrey")) +
-  labs(title = "Heatmap of Longest Periods",
-       x = "Time", y = "Bird ID",
-       fill = "Period Type") +
-  theme_minimal() +
-  theme(axis.text.y = element_text(size = 10),
-        plot.title = element_text(hjust = 0.5, face = "bold"))
 ```
