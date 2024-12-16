@@ -25,7 +25,7 @@ The date window identified by these variables will include uninformative data be
 ```{r}
 
 #load the metadata
-md <- read.csv(file.path(data.dir, "MasterMetadata_LHSP_Tracking_NL_NB_NS_13Aug2024.csv"))
+md <- read.csv(file.path(data.dir, "MasterMetadata_LHSP_Tracking_NL_NB_NS_06Dec2024.csv"))
 
 # let's double check - every time there is an NA in retDate_comb, there should be no wet-dry file
 print(md %>%
@@ -49,13 +49,6 @@ MT_devices_retrieved <- (MT_devices %>%
   filter(tagMake %in% c("Migrate Technology: W30A9-SEA", "Migrate Technology: W30A9-SEA-COOL"), !is.na(wetdry_filename)) %>%
     select(wetdry_filename, tagID))
 ```
-
-
-SUMMARY:
-
-Migrate Tech devices total = 480 
-Devices with wet-dry data = 274
-Devices without wet-dry data = 206
 
 
 
@@ -93,16 +86,6 @@ clipping_md <- md %>%
 # checked that number of observations in `MT_devices_retrieved` is equal to `clipping_md`
 
 
-#fix fomratted name for that one DEG file i manually changed
-clipping_md <- clipping_md %>%
-  mutate(
-    wetdry_filename = ifelse(
-      wetdry_filename == "BH594_04Jul18_135310driftadj.deg",
-      "BH594_formatted_04Jul18_135310driftadj.deg",
-      wetdry_filename
-    )
-  )
-
 ```
 
 
@@ -138,6 +121,7 @@ I made a `clean_deg function` to remove the noise from the DEG files.
 ```{r eval = FALSE}
 
 source(here::here("utils/clean_degs.R"), echo=F)
+
 
 if (FALSE) {
 clean_degs(origin.dir, deg.dir)
@@ -306,7 +290,9 @@ if (FALSE) {
 plan(multisession, workers = cores/2)
 
 if (file.exists(log_file)) file.remove(log_file)
+  
 worker_logs <- list.files(output.dir, pattern = "^clip_summary_worker_.*\\.txt$", full.names = TRUE)
+
 if (length(worker_logs) > 0) file.remove(worker_logs)
 
 # Process the full dataset
@@ -322,6 +308,8 @@ aggregate_logs(output.dir, log_file)
 print(results_full)
 }
 ```
+
+
 274 files on 4 cores required 9.2MB of memory allocation and around 58 seconds.
 
 
@@ -388,12 +376,6 @@ deployment_md
 
 There should only be 5 files with values for days_active_after_ret
 
-
-#### File: BH594_04Jul18_135310driftadj.deg
-
-**KATIE** - Small note on this file - I accidentally wrote over it on V drive so we have to replace it with the original from backups. Fixed for now by replacing with another files metadata info, file is titled `BH594_formatted_04Jul18_135310driftadj.deg` in the origin.dir folder.
-
-
 #### File: CD480_06Aug22_140316driftadj.deg
 
 Noticed file `CD480_06Aug22_140316driftadj.deg` has DEG some dates listed as `2201-10-06`
@@ -451,8 +433,6 @@ When we applied clip_deg it filtered out all those messy dates leaving any dates
 The wets values from April 30 at 8AM to May 1 at 7AM were consistently equal to 20, so maybe something went wrong with the device there (`30/04/2022 08:19:47` to `01/05/2022 07:49:47`).
 
 So really the last active day for this device was 01/05/2022 
-
-
 
 
 #### File: BU784_14Aug20_141554driftadj.deg
