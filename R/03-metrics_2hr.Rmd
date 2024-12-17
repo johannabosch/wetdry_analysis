@@ -2,13 +2,16 @@
 
 We want the following metrics for times the device was deployed:
 
-* **Total proportion of time wet:** proportion of seconds wet across all 2-hour bins for the day, where (count of wets in each bin * 30 seconds) / 7200 seconds.
+* **Total proportion of time wet:** proportion of seconds wet across all 2-hour bins
 
 * **Total number of state switches (wet/dry transitions) per day:** number of times the device switched between wet (non-zero) and dry (zero) states across all 2-hour bins.
 
-* **Cumulative dry and wet times per day:** total time (in seconds) the device recorded as completely dry (wets == 0) or wet (wets > 0) during the sampling intervals within the day.
+* **Cumulative dry and wet times per day:** total time (in seconds) the device recorded as completely dry (wets == 0) or wet (wets > 0)
 
-* **Longest continuous periods of dry or wet states throughout the whoel deployment period:** longest sequence of consecutive 10-minute intervals within the entire deployment period where the device recorded
+* **Longest continuous periods of dry or wet states throughout the whole deployment period:** longest sequence of consecutive dy/wet 10-minute intervals within the entire deployment period
+
+
+I start with visualizing proportions/switches for Baccalieu Island (2017-2018) using both types of downsampled data (taking the average or sum of wets).
 
 ## Load settings
 
@@ -16,6 +19,7 @@ We want the following metrics for times the device was deployed:
 source(here::here("project_settings.R"), echo=TRUE)
 ```
 
+## USING AVERAGE WETS
 
 ## Baccalieu - Ned Walsh 2017-2018
 
@@ -55,10 +59,11 @@ Calculated by:
 * **Daily Periods** - Helps assess trends over long time periods, like looking at wet proportions/switches seasonally
 * **Monthly Periods** - Lowest resolution ()
 
-##### 2hr Periods
 
-Calculate Proportions/Switches within each 2hr Bin
 
+Calculate Switches within each 2hr Bin
+
+**NOTE**: using wets > 0 after averaging will not capture the underlying switches in the 10-minute data, once we bin this data we lose access to those switch points.
 
 ```{r}
 calc_metrics <- function(file_path) {
@@ -78,6 +83,7 @@ calc_metrics <- function(file_path) {
       prop_wet = ifelse(bin_length >0, (wets * 30) / bin_length), 
       
       #switches between wet (non-zero) and dry (zero) states
+      #
       switches = ifelse(row_number() == 1, 0, abs(diff(ifelse(wets > 0, 1, 0)))),
       
       #cumulative time spent dry (== 0) or wet (>0)
@@ -94,7 +100,7 @@ bin_metrics <- future_map_dfr(chosen_files, calc_metrics)
 head(bin_metrics)
 
 ```
-
+#### Heatmap
 Plot proportions on a heatmap per device
 ```{r}
 
@@ -116,10 +122,50 @@ plotly_heatmap_prop
 
 ```
 
+#### Line-plot
+```{r}
+plot_metrics <- function(data, y_var, y_label, plot_title) {
+  ggplot(data, aes(x = as.POSIXct(date), y = !!sym(y_var), color = bird_id)) +
+    geom_line(size = 0.2) +
+    geom_point(size = 0.8) +
+    labs(
+      title = plot_title,
+      x = "Time (2-hour bins)",
+      y = y_label,
+      color = "Bird ID"
+    ) +
+    theme_minimal() +
+    theme(
+      axis.text.x = element_text(angle = 45, hjust = 1),
+      title = element_text(size = 8),
+      legend.position = "right",
+      legend.direction = "vertical",
+      legend.box = "vertical",
+      legend.spacing.y = unit(0.2, "cm")
+    ) +
+    scale_x_datetime(
+      breaks = "1 month",
+      labels = scales::date_format("%b %Y")
+    )
+}
+```
 
+```{r}
+plotly_prop <- ggplotly(plot_metrics(bin_metrics, y_var = "prop_wet", y_label = "Proportion of Wet Periods (2hr bins)", plot_title = "Proportion of wet time across deployments (2hr bins)"))
 
-##### Daily Periods
-Aggregate bins to DAYS for visualising daily proportions, switches and wet/dry times
+plotly_prop
+
+```
+
+```{r}
+plotly_switch <- ggplotly(plot_metrics(bin_metrics, y_var = "switches", y_label = "Number of Wet-Dry Switches (2-hour bins)", plot_title = "Switches Between Wet-Dry States Across Deployment Period"))
+
+plotly_switch
+```
+
+### Daily Proportions/Switches
+
+Aggregate bins to DAYS for visualizing daily proportions, switches and wet/dry times
 ```{r}
 calc_daily_metrics <- function(file_path) {
   deg_data <- read_csv(file_path, show_col_types=FALSE)
@@ -163,7 +209,6 @@ daily_metrics <- future_map_dfr(chosen_files, calc_daily_metrics)
 
 daily_metrics
 ```
-
 
 ```{r}
 
@@ -218,9 +263,7 @@ subplot(plotly_daily_prop, plotly_daily_switch,
         nrows = 2, shareX = TRUE, shareY = FALSE)
 ```
 
-So for these birds we see a good trend, between Dec 2017 and May 2018 there is a high proportion of wet periods. 
-The total number of times the device switches from wet to dry reduces during the periods where there is a lot of wets, seems to make sense.
-
+So when we look by day, for these birds we see a good trend, between Dec 2017 and May 2018 there is a high proportion of wet periods. The total number of times the device switches from wet to dry reduces during the periods where there is a lot of wets, seems to make sense.
 
 ### Longest Wet/Dry Periods
 We can also consider the binned periods and not fiddle around with summing up every metric by days
@@ -429,204 +472,3 @@ plotly_bacc_2017_all_wet <- ggplotly(plot_all_wet_periods) %>%
 
 plotly_bacc_2017_all_wet
 ```
-
-
-## All 2021 files 
-
-```{r}
-
-#keep using 2hr bins
-(downsampled.dir <- file.path(data.dir, "downsampled_2hrs"))
-
-bin_time = 2
-
-#get list of downsampled files to process 
-md_2021 <- metrics_md %>%
-  filter(deployment_period == "2021-2022") %>%
-  pull(wetdry_filename)
-
-md_2021 <- paste0("filtered_", md_2021)
- 
-DEG_files <- list.files(downsampled.dir, full.names=TRUE)
-
-files_2021 <- DEG_files[basename(DEG_files) %in% md_2021]
-
-chosen_files <- files_2021
-
-```
-
-### Proportion/Switches
-
-Calculated by:
-* **Binned Periods** - Finest resolution, 
-* **Daily Periods** - Helps assess trends over long time periods, like looking at wet proportions/switches seasonally
-* **Monthly Periods** - Lowest resolution ()
-
-##### 2hr Periods
-
-Calculate Proportions/Switches within each 2hr Bin
-
-
-```{r}
-calc_metrics <- function(file_path) {
-  deg_data <- read_csv(file_path, show_col_types=FALSE)
-  
-  bird_id <- str_extract(basename(file_path), "(?<=filtered_)[A-Z-0-9]{5}")
-  
-  #start by calculating metrics for a single 2hr bin
-  metrics <- deg_data %>%
-    mutate(
-      bin_length = bin_time * 3600, #2hrs in secs
-      
-      wets = ifelse(is.na(wets), 0, wets), #replace NAs with wet=0
-      
-      #proportion of time wet in 2hr period (wets*30 converts wetness level into secs spent wet)
-      # (600sec per 10min interval) / 20 = 30 seconds per unit 
-      prop_wet = ifelse(bin_length >0, (wets * 30) / bin_length), 
-      
-      #switches between wet (non-zero) and dry (zero) states
-      switches = ifelse(row_number() == 1, 0, abs(diff(ifelse(wets > 0, 1, 0)))),
-      
-      #cumulative time spent dry (== 0) or wet (>0)
-      dry_time= ifelse(wets == 0, 10*60, 0), # if dry, time always 600 secs
-      wet_time = ifelse(wets > 0, 10*60, 0),  # if wet, time always 600 secs
-    
-      bird_id = bird_id)
-
-  return(metrics)
-}
-
-bin_metrics <- future_map_dfr(chosen_files, calc_metrics, .progress = TRUE)
-
-head(bin_metrics)
-
-```
-
-Plot proportions on a heatmap per device
-```{r}
-
-plotly_heatmap_prop <- plot_ly(
-  data = bin_metrics,
-  x = ~date, y = ~bird_id, z = ~prop_wet,
-  type = "heatmap",
-  colors =c("white", "blue"),
-  colorbar = list(title= "Proportion Wet")
-) %>%
-  layout(
-    title = paste("Heatmap (bin =", bin_time, "hour)"),
-    xaxis=list(title = "Date", tickformat = "%b %Y", tickangle = 45, tickmode = "linear", dtick="M1"),
-    yaxis = list(title = "Bird ID"),
-    margin = list(l = 100, b = 100, t = 50)
-  )
-
-plotly_heatmap_prop
-
-```
-
-CH007 has a deployment period 3 months longer than most 
-
-
-
-##### Daily Periods
-Aggregate bins to DAYS for visualising daily proportions, switches and wet/dry times
-```{r}
-calc_daily_metrics <- function(file_path) {
-  deg_data <- read_csv(file_path, show_col_types=FALSE)
-  
-  bird_id <- str_extract(basename(file_path), "(?<=filtered_)[A-Z-0-9]{5}")
-  
-  #start by calculating metrics for a single 2hr bin
-  metrics <- deg_data %>%
-    mutate(
-      bin_length = bin_time * 3600, #2hrs in secs
-     
-       wets = ifelse(is.na(wets), 0, wets), #replace NAs with wets
-      
-      #proportion of time wet in 2hr period (wets*30 converts wetness level into secs spent wet)
-      # (600sec per 10min interval) / 20 = 30 seconds per unit 
-      prop_wet = ifelse(bin_length >0, (wets * 30) / bin_length), 
-      
-      #switches between wet (non-zero) and dry (zero) states
-      switches= ifelse(row_number() == 1,0,
-                       abs(diff(ifelse(wets > 0, 1, 0)))),
-      
-      #cumulative time spent dry (== 0) or wet (>0)
-      dry_time= ifelse(wets == 0, 10*60, 0), # if dry, time always 600 secs
-      wet_time = ifelse(wets > 0, 10*60, 0)  # if wet, time always 600 secs
-    ) %>%
-    
-    #summarize the metrics for the full deployment period, grouped by day
-    group_by(date) %>%
-    summarize(
-      bird_id = bird_id,
-      total_prop_wet = sum(prop_wet, na.rm = TRUE), #take sum of proportions for daily
-      total_switches = sum(switches, na.rm=TRUE),
-      total_dry_time = sum(dry_time, na.rm=TRUE),
-      total_wet_time = sum(wet_time, na.rm=TRUE),
-      .groups="drop")
-  
-  return(metrics)
-}
-
-daily_metrics <- future_map_dfr(chosen_files, calc_daily_metrics)
-
-daily_metrics
-```
-
-
-Let's use a lower resolution, down-sampling by 2hr periods instead
-```{r}
-
-#functions to plot proportions and switches
-plot_daily_metrics <- function(data, y_var, y_label, plot_title) {
-  ggplot(data, aes(x = as.Date(date), y = !!sym(y_var), color = bird_id)) +
-    geom_line(size = 0.2) +
-    geom_point(size = 1) +
-    labs(
-      title = plot_title,
-      x = "Time (days)",
-      y = y_label,
-      color = "Bird ID"
-    ) +
-    theme_minimal() +
-    theme(
-      axis.text.x = element_text(angle = 45, hjust = 1),
-      title = element_text(size = 8),
-      legend.position = "right",
-      legend.direction = "vertical",
-      legend.box = "vertical",
-      legend.spacing.y = unit(0.2, "cm")
-    ) +
-    scale_x_date(
-      breaks = "1 month",
-      labels = scales::date_format("%b %Y")
-    )
-}
-
-# Plotly plots
-plotly_daily_prop <- ggplotly(
-  plot_daily_metrics(
-    daily_metrics,
-    y_var = "total_prop_wet",
-    y_label = "Proportion of Wet Periods (day)",
-    plot_title = "Daily Proportion of Wet Periods"
-  )
-)
-
-plotly_daily_switch <- ggplotly(
-  plot_daily_metrics(
-    daily_metrics,
-    y_var = "total_switches",
-    y_label = "Number of Wet-Dry Switches",
-    plot_title = "Number of Switches Between Wet-Dry Periods Per Day"
-  )
-)
-
-
-#Use patchwork to plot together
-subplot(plotly_daily_prop, plotly_daily_switch,
-        nrows = 2, shareX = TRUE, shareY = FALSE)
-```
-
-So for these birds we see a good trend, between Dec 2017 and May 2018 there is a high proportion of wet periods. 
-The total number of times the device switches from wet to dry reduces during the periods where there is a lot of wets, seems to make sense.

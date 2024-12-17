@@ -8,6 +8,7 @@ Run a 2state HMM on the wetdry data to uncover patterns of wet and dry based on 
 source(here::here("project_settings.R"), echo=TRUE)
 ```
 
+**FIX FILE CD480 FIRST 
 
 To make a data frame that contains:
 

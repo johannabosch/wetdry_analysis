@@ -1,0 +1,75 @@
+
+### Calculating Switches
+
+Before downsampling the data let's calculate the number of switches between wet and dry states in a 10min interval
+
+Our current DEG files look like this:
+
+```
+date,time,wets0-20
+2017-09-20,00:08:08,0
+2017-09-20,00:18:08,0
+2017-09-20,00:28:08,0
+2017-09-20,00:38:08,0
+2017-09-20,00:48:08,0
+2017-09-20,00:58:08,0
+2017-09-20,01:08:08,0
+```
+
+
+To calculate switches between 10min intervals, we need to transform wet values to a binary (wets>0 or wets==0)
+Let's add a column to our DEG files that tracks switches, 
+
+Example //
+
+If we have a vector of wets equal to:
+```[0, 20, 18, 0, 4, 2]```
+
+The binary would be:
+```[0, 1, 1, 0, 1, 1]```
+        
+Then we need to calculate the difference between each value.
+  
+  ```diff(c(0, 1, 1, 0, 1, 1))```
+  
+  Output:
+  ```[1, 0, -1, 1, 0]```
+
+Finally, we dont want negatives, so we can count absolute values
+  
+  ```abs(c(1, 0, -1, 1, 0))```
+  
+  Final Output:
+  ```[1, 0, 1, 1, 0]```
+
+The function below does this for one file
+
+```{r}
+calc_switch <- function(file_path) {
+  deg_data <- read_csv(file_path, show_col_types=FALSE)
+  bird_id <- str_extract(basename(file_path), "(?<=filtered_)[A-Z-0-9]{5}")
+  
+  #calc numb. of switches per file
+  switches_data <- deg_data %>%
+    mutate(
+      #switches between wet (non-zero) and dry (zero) states
+      #row_number() assigns a unique number to each row to reference row positions
+      #if it is the first row, set state to 0 since there are no rows to compare with
+      #for all other rows (else case), calculate the numb. of switches 
+      switches = ifelse(
+        row_number() == 1, 0, 
+        abs(diff( #calculates absolute values for state changes (1 or -1 depending on direction)
+          ifelse(wets > 0, 1, 0)))),  #if wets>0 use 1, if not use 0 (transforms wets to binary)
+      
+      bird_id = bird_id)
+
+  return(switches_data)
+}
+```
+
+The we can apply that function to all our files in our `clipped` directory
+```{r}
+switch_metrics <- future_map_dfr(chosen_files, calc_switches)
+```
+
+

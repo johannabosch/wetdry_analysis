@@ -1,12 +1,12 @@
-downsample_welcome <- function() {
+downsample_sum_welcome <- function() {
   cat("\n")
   cat("===================================================\n")
-  cat("             YOU LOADED downsample_deg                \n")
+  cat("            YOU LOADED downsample_deg_sum          \n")
   cat("===================================================\n")
   cat("\n")
   cat("this function subsamples DEG files by an allotted time period\n")
   cat("Combines each 10 minute period into X hr periods\n")
-  cat("(define X using bin_time), and takes the mean of\n")
+  cat("(define X using bin_time), and takes the sum of\n")
   cat("wets0-20 for each bin_time period.\n\n")
   cat("\n")
   cat("- Ensure dependencies in project_settings.R\n")
@@ -15,10 +15,10 @@ downsample_welcome <- function() {
   
   cat("=============================================\n\n")}
 
-downsample_welcome()
+downsample_sum_welcome()
 
 #function to downsample by 2hrs - move to utils once ready
-downsample_deg <- function(file_path, bin_time = bin_time) {
+downsample_deg_sum <- function(file_path, bin_time = bin_time) {
   deg_data <- read_csv(file_path, show_col_types = FALSE)
   
   #bring back a datetime column so R can read dates in POSIXct format
@@ -32,8 +32,9 @@ downsample_deg <- function(file_path, bin_time = bin_time) {
     group_by(bin) %>%
     
     summarize(
-      wets = round(mean(`wets0-20`, na.rm=TRUE), 3), #take the mean for binning
+      wets = round(sum(`wets0-20`, na.rm=TRUE), 3), #take the sum for binning
       .groups = "drop") %>%
+    
     mutate(
       date = as.Date(bin),
       start_time = format(bin, "%H:%M:%S"),
@@ -44,7 +45,7 @@ downsample_deg <- function(file_path, bin_time = bin_time) {
   file_name <- basename(file_path)
   
   #assign output directory name based on bin time
-  output_dir <- file.path(data.dir, paste0("downsampled_", bin_time, "hrs"))
+  output_dir <- file.path(data.dir, paste0("downsampled_sum_", bin_time, "hrs"))
   
   #create output dir if it doesn't exist
   if (!dir.exists(output_dir)) {

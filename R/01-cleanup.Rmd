@@ -368,7 +368,7 @@ deployment_md <- clipping_md %>%
 deployment_md
 ```
 
-There should only be 5 files with values for days_active_after_ret
+There should only be 4 files with values for days_active_after_ret
 
 #### File: CD480_06Aug22_140316driftadj.deg
 
