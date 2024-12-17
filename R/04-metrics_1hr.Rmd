@@ -1,17 +1,27 @@
 # Metrics for 1hr Bins
 
+## Load settings
+
+```{r include=FALSE}
+source(here::here("project_settings.R"), echo=TRUE)
+```
+
+
 ## Baccalieu - Ned Walsh 2017-2018
 
-Decide what downsampled data you want to use and redefine bin_time 
+Let's use 1hr bins this time 
 ```{r}
 (downsampled.dir <- file.path(data.dir, "downsampled_1hrs"))
 
 bin_time = 1
 ```
 
-Let's start with the 2017-2018 files from Baccalieu (6 files total)
+Start with the 2017-2018 files from Baccalieu (6 files total)
 
 ```{r}
+
+metrics_md <- read.csv(file.path(data.dir, "metrics_md.csv"))
+
 #get list of downsampled files to process 
 bacc_2017_md <- metrics_md %>%
   filter(colony == "Baccalieu - Ned Walsh",
@@ -96,6 +106,11 @@ plotly_heatmap_prop <- plot_ly(
 plotly_heatmap_prop
 
 ```
+
+Proportion scales for 1hr and 2hr bins are quite different.
+
+For 1-hour bins, bin_length = 3600 seconds. For 2-hour bins, bin_length = 7200 seconds
+Wetness intervals are averaged over a larger time when bins = 2hrs, so when you aggregate over a longer period it's les sliekly for the bin to contain a higher wetness level. 
 
 
 
@@ -200,25 +215,11 @@ subplot(plotly_daily_prop, plotly_daily_switch,
         nrows = 2, shareX = TRUE, shareY = FALSE)
 ```
 
-So for these birds we see a good trend, between Dec 2017 and May 2018 there is a high proportion of wet periods. 
-The total number of times the device switches from wet to dry reduces during the periods where there is a lot of wets, seems to make sense.
+Number of switches mor ein detail here for 1hr bins
 
 
 ### Longest Wet/Dry Periods
-We can also consider the binned periods and not fiddle around with summing up every metric by days
-this would give us a finer resolution for looking at things like the longest period the device was wet/dry.
 
-**Working notes:**
-`at first I tried to calc Longest periods of wet (1-20), very wet (>15) and entriely wet (== 20), but I realised that doesn't make a lot of sense. We want to analyse sustained periods the bird was wet we shouldn't have to consider very wet or entirely wet. Instead I try to identify the start and end times of the longest sustained wet period for each bird`.
-
-Here I use `rle()` (run length encoding) to find consecutive runs of vals above 0 or equal to 20.
-This produces a vector `values` made up of TRUE/FALSE vals, and `lengths` which tracks the number of TRUE/FALSE vals occurring in a row.
-
-  example // 
-    vec <- c(TRUE, TRUE, FALSE, FALSE, FALSE, TRUE, TRUE, TRUE, FALSE)
-    len = c(2,3,3,1)
-
-***** this needs to be fixed somethign wrong with the PSTIXct dates for datetime_end
 ```{r}
 calc_longest_prds <- function(file_path) {
   
@@ -239,13 +240,13 @@ calc_longest_prds <- function(file_path) {
   # Calculate longest periods
   # ================================
   calc_prds <- function(condition) {
-    
     rle_data <- rle(condition)
-
-    longest_run = max(rle_data$lengths[rle_data$values]) #longest run of wets>0 from lengths of vals
+    if (!any(rle_data$values)) {return(list(start = NA, end = NA, duration = 0))}
+  
+  longest_run <- max(rle_data$lengths[rle_data$values]) #longest run of wets>0 from lengths of vals
 
     end_x <- cumsum(rle_data$lengths)[ #cumul. sum of bin lengths for run end index
-      which.max(rle_data$lengths[rle_data$values])] #index = longest period
+    which.max(rle_data$lengths[rle_data$values]) ]#index = longest period
     
     start_x <- end_x - longest_run +1 #just subtract # of bins in wet prd
 
@@ -253,7 +254,7 @@ calc_longest_prds <- function(file_path) {
     list(
       start = deg_data$datetime_start[start_x],
       end = deg_data$datetime_start[end_x],
-      duration = longest_run * 2) #duration is the longest period we found times the bin time
+      duration = longest_run * 1) #duration is the longest period we found times the bin time
     }
   
   #calculate the periods 
@@ -307,7 +308,7 @@ plot_longest_prds <- ggplot(longest_prds, aes(y = bird_id)) +
   # Longest when wet > 5
   geom_segment(aes(x = datetime_start_wetter, 
                    xend = datetime_end_wetter, yend = bird_id, color = "Wetter > 5"), 
-               size = 2) +  
+               size = 1) +  
   
   # Longest entirely wet period (solid blue line)
   geom_segment(aes(x = datetime_start_maxwet, 
@@ -352,12 +353,12 @@ plotly_longest_prds
 
 ```
 
-As a consequence, the lightblue line here showing the longest period when wet was greater than 0 looks like it spans across the whole time. There were definitely periods within those 1 hour bins when wets = 0 for longer though.\
+As a consequence, the light blue line here showing the longest period when wet was greater than 0 looks like it spans across the whole time. There were definitely periods within those 1 hour bins when wets = 0 for longer though.\
 
 
 ### Wet-Dry Full Deployment
 
-Lastly, let's look at all of the wet and dry periods throughout the entire deployment time so we can visualise how they change over time an dmaybe see when those really long periods of entirely wet are
+Lastly, let's look at all of the wet and dry periods throughout the entire deployment time so we can visualise how they change over time and maybe see when those really long periods of entirely wet are
 
 ```{r}
 prepare_plot_data <- function(file_path) {

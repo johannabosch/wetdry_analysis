@@ -1,0 +1,524 @@
+<!DOCTYPE html>
+<html lang="" xml:lang="">
+<head>
+
+  <meta charset="utf-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <title>3 Downsampling | wetdry_analysis</title>
+  <meta name="description" content="3 Downsampling | wetdry_analysis" />
+  <meta name="generator" content="bookdown 0.41 and GitBook 2.6.7" />
+
+  <meta property="og:title" content="3 Downsampling | wetdry_analysis" />
+  <meta property="og:type" content="book" />
+  
+  
+  
+
+  <meta name="twitter:card" content="summary" />
+  <meta name="twitter:title" content="3 Downsampling | wetdry_analysis" />
+  
+  
+  
+
+<meta name="author" content="Johanna Bosch" />
+
+
+<meta name="date" content="2024-12-17" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black" />
+  
+  
+<link rel="prev" href="clean-up.html"/>
+<link rel="next" href="metrics-for-2hr-bins.html"/>
+<script src="libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/fuse.js@6.4.6/dist/fuse.min.js"></script>
+<link href="libs/gitbook-2.6.7/css/style.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-table.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-bookdown.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-highlight.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-search.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-fontsettings.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-clipboard.css" rel="stylesheet" />
+
+
+
+
+
+
+
+
+<link href="libs/anchor-sections-1.1.0/anchor-sections.css" rel="stylesheet" />
+<link href="libs/anchor-sections-1.1.0/anchor-sections-hash.css" rel="stylesheet" />
+<script src="libs/anchor-sections-1.1.0/anchor-sections.js"></script>
+<link href="libs/htmltools-fill-0.5.8.1/fill.css" rel="stylesheet" />
+<script src="libs/htmlwidgets-1.6.4/htmlwidgets.js"></script>
+<script src="libs/plotly-binding-4.10.4/plotly.js"></script>
+<script src="libs/typedarray-0.1/typedarray.min.js"></script>
+<link href="libs/crosstalk-1.2.1/css/crosstalk.min.css" rel="stylesheet" />
+<script src="libs/crosstalk-1.2.1/js/crosstalk.min.js"></script>
+<link href="libs/plotly-htmlwidgets-css-2.11.1/plotly-htmlwidgets.css" rel="stylesheet" />
+<script src="libs/plotly-main-2.11.1/plotly-latest.min.js"></script>
+
+
+<style type="text/css">
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+    color: #aaaaaa;
+  }
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code span.at { color: #7d9029; } /* Attribute */
+code span.bn { color: #40a070; } /* BaseN */
+code span.bu { color: #008000; } /* BuiltIn */
+code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code span.ch { color: #4070a0; } /* Char */
+code span.cn { color: #880000; } /* Constant */
+code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code span.dt { color: #902000; } /* DataType */
+code span.dv { color: #40a070; } /* DecVal */
+code span.er { color: #ff0000; font-weight: bold; } /* Error */
+code span.ex { } /* Extension */
+code span.fl { color: #40a070; } /* Float */
+code span.fu { color: #06287e; } /* Function */
+code span.im { color: #008000; font-weight: bold; } /* Import */
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code span.op { color: #666666; } /* Operator */
+code span.ot { color: #007020; } /* Other */
+code span.pp { color: #bc7a00; } /* Preprocessor */
+code span.sc { color: #4070a0; } /* SpecialChar */
+code span.ss { color: #bb6688; } /* SpecialString */
+code span.st { color: #4070a0; } /* String */
+code span.va { color: #19177c; } /* Variable */
+code span.vs { color: #4070a0; } /* VerbatimString */
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+</style>
+
+<style type="text/css">
+  
+  div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+</style>
+
+<link rel="stylesheet" href="style.css" type="text/css" />
+</head>
+
+<body>
+
+
+
+  <div class="book without-animation with-summary font-size-2 font-family-1" data-basepath=".">
+
+    <div class="book-summary">
+      <nav role="navigation">
+
+<ul class="summary">
+<li class="chapter" data-level="1" data-path="index.html"><a href="index.html"><i class="fa fa-check"></i><b>1</b> Wet-Dry Analysis for Petrel GLS Devices</a></li>
+<li class="chapter" data-level="2" data-path="clean-up.html"><a href="clean-up.html"><i class="fa fa-check"></i><b>2</b> Clean-up</a>
+<ul>
+<li class="chapter" data-level="2.1" data-path="clean-up.html"><a href="clean-up.html#getting-started"><i class="fa fa-check"></i><b>2.1</b> Getting started</a></li>
+<li class="chapter" data-level="2.2" data-path="clean-up.html"><a href="clean-up.html#metadata"><i class="fa fa-check"></i><b>2.2</b> Metadata</a>
+<ul>
+<li class="chapter" data-level="2.2.1" data-path="clean-up.html"><a href="clean-up.html#review"><i class="fa fa-check"></i><b>2.2.1</b> Review</a></li>
+<li class="chapter" data-level="2.2.2" data-path="clean-up.html"><a href="clean-up.html#housekeeping"><i class="fa fa-check"></i><b>2.2.2</b> Housekeeping</a></li>
+</ul></li>
+<li class="chapter" data-level="2.3" data-path="clean-up.html"><a href="clean-up.html#deg-files"><i class="fa fa-check"></i><b>2.3</b> DEG files</a></li>
+<li class="chapter" data-level="2.4" data-path="clean-up.html"><a href="clean-up.html#cleaning-degs"><i class="fa fa-check"></i><b>2.4</b> Cleaning DEGs</a></li>
+<li class="chapter" data-level="2.5" data-path="clean-up.html"><a href="clean-up.html#clipping-degs"><i class="fa fa-check"></i><b>2.5</b> Clipping DEGS</a></li>
+<li class="chapter" data-level="2.6" data-path="clean-up.html"><a href="clean-up.html#parallel-batch-clipping"><i class="fa fa-check"></i><b>2.6</b> Parallel Batch-clipping</a>
+<ul>
+<li class="chapter" data-level="2.6.1" data-path="clean-up.html"><a href="clean-up.html#testing"><i class="fa fa-check"></i><b>2.6.1</b> Testing</a></li>
+<li class="chapter" data-level="2.6.2" data-path="clean-up.html"><a href="clean-up.html#final-clip"><i class="fa fa-check"></i><b>2.6.2</b> Final clip</a></li>
+</ul></li>
+<li class="chapter" data-level="2.7" data-path="clean-up.html"><a href="clean-up.html#deg-file-issues"><i class="fa fa-check"></i><b>2.7</b> DEG File Issues</a></li>
+</ul></li>
+<li class="chapter" data-level="3" data-path="downsampling.html"><a href="downsampling.html"><i class="fa fa-check"></i><b>3</b> Downsampling</a>
+<ul>
+<li class="chapter" data-level="3.1" data-path="downsampling.html"><a href="downsampling.html#load-settings"><i class="fa fa-check"></i><b>3.1</b> Load settings</a></li>
+<li class="chapter" data-level="3.2" data-path="downsampling.html"><a href="downsampling.html#down-sampling-by-hour"><i class="fa fa-check"></i><b>3.2</b> Down-sampling by hour</a>
+<ul>
+<li class="chapter" data-level="3.2.1" data-path="downsampling.html"><a href="downsampling.html#hr-periods"><i class="fa fa-check"></i><b>3.2.1</b> 2hr Periods</a></li>
+<li class="chapter" data-level="3.2.2" data-path="downsampling.html"><a href="downsampling.html#hr-periods-1"><i class="fa fa-check"></i><b>3.2.2</b> 1hr Periods</a></li>
+<li class="chapter" data-level="3.2.3" data-path="downsampling.html"><a href="downsampling.html#hr-periods-2"><i class="fa fa-check"></i><b>3.2.3</b> 5hr Periods</a></li>
+</ul></li>
+<li class="chapter" data-level="3.3" data-path="downsampling.html"><a href="downsampling.html#reviewing-metadata"><i class="fa fa-check"></i><b>3.3</b> Reviewing Metadata</a></li>
+</ul></li>
+<li class="chapter" data-level="4" data-path="metrics-for-2hr-bins.html"><a href="metrics-for-2hr-bins.html"><i class="fa fa-check"></i><b>4</b> Metrics for 2hr Bins</a>
+<ul>
+<li class="chapter" data-level="4.1" data-path="metrics-for-2hr-bins.html"><a href="metrics-for-2hr-bins.html#load-settings-1"><i class="fa fa-check"></i><b>4.1</b> Load settings</a></li>
+<li class="chapter" data-level="4.2" data-path="metrics-for-2hr-bins.html"><a href="metrics-for-2hr-bins.html#baccalieu---ned-walsh-2017-2018"><i class="fa fa-check"></i><b>4.2</b> Baccalieu - Ned Walsh 2017-2018</a>
+<ul>
+<li class="chapter" data-level="4.2.1" data-path="metrics-for-2hr-bins.html"><a href="metrics-for-2hr-bins.html#proportionswitches"><i class="fa fa-check"></i><b>4.2.1</b> Proportion/Switches</a></li>
+<li class="chapter" data-level="4.2.2" data-path="metrics-for-2hr-bins.html"><a href="metrics-for-2hr-bins.html#longest-wetdry-periods"><i class="fa fa-check"></i><b>4.2.2</b> Longest Wet/Dry Periods</a></li>
+<li class="chapter" data-level="4.2.3" data-path="metrics-for-2hr-bins.html"><a href="metrics-for-2hr-bins.html#wet-dry-full-deployment"><i class="fa fa-check"></i><b>4.2.3</b> Wet-Dry Full Deployment</a></li>
+</ul></li>
+<li class="chapter" data-level="4.3" data-path="metrics-for-2hr-bins.html"><a href="metrics-for-2hr-bins.html#all-2021-files"><i class="fa fa-check"></i><b>4.3</b> All 2021 files</a>
+<ul>
+<li class="chapter" data-level="4.3.1" data-path="metrics-for-2hr-bins.html"><a href="metrics-for-2hr-bins.html#proportionswitches-1"><i class="fa fa-check"></i><b>4.3.1</b> Proportion/Switches</a></li>
+</ul></li>
+</ul></li>
+<li class="chapter" data-level="5" data-path="metrics-for-1hr-bins.html"><a href="metrics-for-1hr-bins.html"><i class="fa fa-check"></i><b>5</b> Metrics for 1hr Bins</a>
+<ul>
+<li class="chapter" data-level="5.1" data-path="metrics-for-1hr-bins.html"><a href="metrics-for-1hr-bins.html#load-settings-2"><i class="fa fa-check"></i><b>5.1</b> Load settings</a></li>
+<li class="chapter" data-level="5.2" data-path="metrics-for-1hr-bins.html"><a href="metrics-for-1hr-bins.html#baccalieu---ned-walsh-2017-2018-1"><i class="fa fa-check"></i><b>5.2</b> Baccalieu - Ned Walsh 2017-2018</a>
+<ul>
+<li class="chapter" data-level="5.2.1" data-path="metrics-for-1hr-bins.html"><a href="metrics-for-1hr-bins.html#proportionswitches-2"><i class="fa fa-check"></i><b>5.2.1</b> Proportion/Switches</a></li>
+<li class="chapter" data-level="5.2.2" data-path="metrics-for-1hr-bins.html"><a href="metrics-for-1hr-bins.html#longest-wetdry-periods-1"><i class="fa fa-check"></i><b>5.2.2</b> Longest Wet/Dry Periods</a></li>
+<li class="chapter" data-level="5.2.3" data-path="metrics-for-1hr-bins.html"><a href="metrics-for-1hr-bins.html#wet-dry-full-deployment-1"><i class="fa fa-check"></i><b>5.2.3</b> Wet-Dry Full Deployment</a></li>
+</ul></li>
+<li class="chapter" data-level="5.3" data-path="metrics-for-1hr-bins.html"><a href="metrics-for-1hr-bins.html#all-2021-files-1"><i class="fa fa-check"></i><b>5.3</b> All 2021 files</a>
+<ul>
+<li class="chapter" data-level="5.3.1" data-path="metrics-for-1hr-bins.html"><a href="metrics-for-1hr-bins.html#proportionswitches-3"><i class="fa fa-check"></i><b>5.3.1</b> Proportion/Switches</a></li>
+</ul></li>
+</ul></li>
+<li class="chapter" data-level="6" data-path="metrics-for-5hr-bins.html"><a href="metrics-for-5hr-bins.html"><i class="fa fa-check"></i><b>6</b> Metrics for 5hr Bins</a>
+<ul>
+<li class="chapter" data-level="6.1" data-path="metrics-for-5hr-bins.html"><a href="metrics-for-5hr-bins.html#load-settings-3"><i class="fa fa-check"></i><b>6.1</b> Load settings</a></li>
+<li class="chapter" data-level="6.2" data-path="metrics-for-5hr-bins.html"><a href="metrics-for-5hr-bins.html#baccalieu---ned-walsh-2017-2018-2"><i class="fa fa-check"></i><b>6.2</b> Baccalieu - Ned Walsh 2017-2018</a>
+<ul>
+<li class="chapter" data-level="6.2.1" data-path="metrics-for-5hr-bins.html"><a href="metrics-for-5hr-bins.html#proportionswitches-4"><i class="fa fa-check"></i><b>6.2.1</b> Proportion/Switches</a></li>
+<li class="chapter" data-level="6.2.2" data-path="metrics-for-5hr-bins.html"><a href="metrics-for-5hr-bins.html#longest-wetdry-periods-2"><i class="fa fa-check"></i><b>6.2.2</b> Longest Wet/Dry Periods</a></li>
+<li class="chapter" data-level="6.2.3" data-path="metrics-for-5hr-bins.html"><a href="metrics-for-5hr-bins.html#wet-dry-full-deployment-2"><i class="fa fa-check"></i><b>6.2.3</b> Wet-Dry Full Deployment</a></li>
+</ul></li>
+<li class="chapter" data-level="6.3" data-path="metrics-for-5hr-bins.html"><a href="metrics-for-5hr-bins.html#all-2021-files-2"><i class="fa fa-check"></i><b>6.3</b> All 2021 files</a>
+<ul>
+<li class="chapter" data-level="6.3.1" data-path="metrics-for-5hr-bins.html"><a href="metrics-for-5hr-bins.html#proportionswitches-5"><i class="fa fa-check"></i><b>6.3.1</b> Proportion/Switches</a></li>
+</ul></li>
+</ul></li>
+<li class="chapter" data-level="7" data-path="hidden-markov-modelling-hmm.html"><a href="hidden-markov-modelling-hmm.html"><i class="fa fa-check"></i><b>7</b> Hidden Markov Modelling (HMM)</a>
+<ul>
+<li class="chapter" data-level="7.1" data-path="hidden-markov-modelling-hmm.html"><a href="hidden-markov-modelling-hmm.html#prep-the-data"><i class="fa fa-check"></i><b>7.1</b> Prep the data</a></li>
+</ul></li>
+</ul>
+
+      </nav>
+    </div>
+
+    <div class="book-body">
+      <div class="body-inner">
+        <div class="book-header" role="navigation">
+          <h1>
+            <i class="fa fa-circle-o-notch fa-spin"></i><a href="./">wetdry_analysis</a>
+          </h1>
+        </div>
+
+        <div class="page-wrapper" tabindex="-1" role="main">
+          <div class="page-inner">
+
+            <section class="normal" id="section-">
+<div id="downsampling" class="section level1 hasAnchor" number="3">
+<h1><span class="header-section-number">3</span> Downsampling<a href="downsampling.html#downsampling" class="anchor-section" aria-label="Anchor link to header"></a></h1>
+<div id="load-settings" class="section level2 hasAnchor" number="3.1">
+<h2><span class="header-section-number">3.1</span> Load settings<a href="downsampling.html#load-settings" class="anchor-section" aria-label="Anchor link to header"></a></h2>
+</div>
+<div id="down-sampling-by-hour" class="section level2 hasAnchor" number="3.2">
+<h2><span class="header-section-number">3.2</span> Down-sampling by hour<a href="downsampling.html#down-sampling-by-hour" class="anchor-section" aria-label="Anchor link to header"></a></h2>
+<p>Right now the files are logging every 10 minutes, which is too high of a resolution. Need to down-sample the dataset from 10min to some other interval that is meaningful to define states to.</p>
+<p>12hrs seems too long given how far birds can move in this time, but 10min is far too short.</p>
+<p>Tempted to use 2hr resolution to match GPS.
+For example, within each 2hr period we need to assess:</p>
+<p>• Proportion wet or time wet ((Count wets in 2hr period * 30sec) / 72000sec)
+• Number of switches between 0 and non-zero value
+• Total time when entire 10min sampling interval was dry (count 0s * 10min)
+• Total time when entire 10min sampling interval was wet (count &gt;=1 * 10min)
+• Longest continuous time dry (longest number of consecutive rows with wets==0 * 10min)
+• Longest continuous time wet (longest number of consecutive rows with wets&gt;=1 * 10min)</p>
+<div id="hr-periods" class="section level3 hasAnchor" number="3.2.1">
+<h3><span class="header-section-number">3.2.1</span> 2hr Periods<a href="downsampling.html#hr-periods" class="anchor-section" aria-label="Anchor link to header"></a></h3>
+<div class="sourceCode" id="cb34"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb34-1"><a href="downsampling.html#cb34-1" tabindex="-1"></a><span class="co">#made a new dir called downsampled in /data</span></span>
+<span id="cb34-2"><a href="downsampling.html#cb34-2" tabindex="-1"></a><span class="fu">source</span>(<span class="fu">here</span>(<span class="st">&quot;utils/downsample_deg.R&quot;</span>), <span class="at">echo =</span> F)</span>
+<span id="cb34-3"><a href="downsampling.html#cb34-3" tabindex="-1"></a></span>
+<span id="cb34-4"><a href="downsampling.html#cb34-4" tabindex="-1"></a>bin_time <span class="ot">=</span> <span class="dv">2</span></span>
+<span id="cb34-5"><a href="downsampling.html#cb34-5" tabindex="-1"></a></span>
+<span id="cb34-6"><a href="downsampling.html#cb34-6" tabindex="-1"></a><span class="co">#define deg files to use</span></span>
+<span id="cb34-7"><a href="downsampling.html#cb34-7" tabindex="-1"></a>deg_files <span class="ot">&lt;-</span> <span class="fu">list.files</span>(output.dir, <span class="at">pattern =</span> <span class="st">&quot;*.deg&quot;</span>, <span class="at">full.names =</span> <span class="cn">TRUE</span>)<span class="co">#[1:5] #add if you want to subset</span></span>
+<span id="cb34-8"><a href="downsampling.html#cb34-8" tabindex="-1"></a></span>
+<span id="cb34-9"><a href="downsampling.html#cb34-9" tabindex="-1"></a></span>
+<span id="cb34-10"><a href="downsampling.html#cb34-10" tabindex="-1"></a><span class="cf">if</span> (<span class="cn">FALSE</span>) {</span>
+<span id="cb34-11"><a href="downsampling.html#cb34-11" tabindex="-1"></a><span class="co">#set up a furrr plan for using 4 cores</span></span>
+<span id="cb34-12"><a href="downsampling.html#cb34-12" tabindex="-1"></a><span class="fu">plan</span>(multisession, <span class="at">workers =</span> <span class="dv">4</span>)</span>
+<span id="cb34-13"><a href="downsampling.html#cb34-13" tabindex="-1"></a></span>
+<span id="cb34-14"><a href="downsampling.html#cb34-14" tabindex="-1"></a><span class="fu">future_map</span>(deg_files, downsample_deg, <span class="at">bin_time =</span> bin_time, <span class="at">.progress =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb34-15"><a href="downsampling.html#cb34-15" tabindex="-1"></a></span>
+<span id="cb34-16"><a href="downsampling.html#cb34-16" tabindex="-1"></a><span class="fu">plan</span>(sequential)</span>
+<span id="cb34-17"><a href="downsampling.html#cb34-17" tabindex="-1"></a>}</span></code></pre></div>
+<p>This is what the deg files look like now:</p>
+<pre><code>date,start_time,end_time,wets
+2022-09-08,00:00:00,01:59:59,0
+2022-09-08,02:00:00,03:59:59,0
+2022-09-08,04:00:00,05:59:59,0
+2022-09-08,06:00:00,07:59:59,...</code></pre>
+<p>wets = 0 means 10min interval was entirely wet
+wets = 20 means 10min interval was entirely dry</p>
+<p>For one 10min interval,
+if wets=1, then 600s/20 = 30 seconds
+so 1 unit wets = 30 seconds wet per 10min interval</p>
+<p>So our dataset’s <code>wets</code> values now represent the average number of 10-minute intervals that were wet during the 2-hour period. This means each 2hr period has 12 intervals of 10 minutes (600 secs).</p>
+</div>
+<div id="hr-periods-1" class="section level3 hasAnchor" number="3.2.2">
+<h3><span class="header-section-number">3.2.2</span> 1hr Periods<a href="downsampling.html#hr-periods-1" class="anchor-section" aria-label="Anchor link to header"></a></h3>
+<div class="sourceCode" id="cb36"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb36-1"><a href="downsampling.html#cb36-1" tabindex="-1"></a><span class="co">#made a new dir called downsampled in /data</span></span>
+<span id="cb36-2"><a href="downsampling.html#cb36-2" tabindex="-1"></a><span class="fu">source</span>(<span class="fu">here</span>(<span class="st">&quot;utils/downsample_deg.R&quot;</span>), <span class="at">echo =</span> F)</span>
+<span id="cb36-3"><a href="downsampling.html#cb36-3" tabindex="-1"></a></span>
+<span id="cb36-4"><a href="downsampling.html#cb36-4" tabindex="-1"></a>bin_time <span class="ot">=</span> <span class="dv">1</span></span>
+<span id="cb36-5"><a href="downsampling.html#cb36-5" tabindex="-1"></a></span>
+<span id="cb36-6"><a href="downsampling.html#cb36-6" tabindex="-1"></a><span class="co">#define deg files to use</span></span>
+<span id="cb36-7"><a href="downsampling.html#cb36-7" tabindex="-1"></a>deg_files <span class="ot">&lt;-</span> <span class="fu">list.files</span>(output.dir, <span class="at">pattern =</span> <span class="st">&quot;*.deg&quot;</span>, <span class="at">full.names =</span> <span class="cn">TRUE</span>)<span class="co">#[1:5] #add if you want to subset</span></span>
+<span id="cb36-8"><a href="downsampling.html#cb36-8" tabindex="-1"></a></span>
+<span id="cb36-9"><a href="downsampling.html#cb36-9" tabindex="-1"></a><span class="cf">if</span> (<span class="cn">FALSE</span>) {</span>
+<span id="cb36-10"><a href="downsampling.html#cb36-10" tabindex="-1"></a><span class="co">#set up a furrr plan for using 4 cores</span></span>
+<span id="cb36-11"><a href="downsampling.html#cb36-11" tabindex="-1"></a><span class="fu">plan</span>(multisession, <span class="at">workers =</span> <span class="dv">4</span>)</span>
+<span id="cb36-12"><a href="downsampling.html#cb36-12" tabindex="-1"></a></span>
+<span id="cb36-13"><a href="downsampling.html#cb36-13" tabindex="-1"></a><span class="fu">future_map</span>(deg_files, downsample_deg, <span class="at">bin_time =</span> bin_time, <span class="at">.progress =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb36-14"><a href="downsampling.html#cb36-14" tabindex="-1"></a></span>
+<span id="cb36-15"><a href="downsampling.html#cb36-15" tabindex="-1"></a><span class="fu">plan</span>(sequential)</span>
+<span id="cb36-16"><a href="downsampling.html#cb36-16" tabindex="-1"></a>}</span></code></pre></div>
+<pre><code>date,start_time,end_time,wets
+2017-09-20,00:00:00,00:59:59,0
+2017-09-20,01:00:00,01:59:59,0
+2017-09-20,02:00:00,02:59:59,0
+2017-09-20,03:00:00,03:59:59,0
+2017-09-20,04:00:00,04:59:59,0
+2017-09-20,05:00:00,05:59:59,5.333
+2017-09-20,06:00:00,06:59:59,6.333</code></pre>
+</div>
+<div id="hr-periods-2" class="section level3 hasAnchor" number="3.2.3">
+<h3><span class="header-section-number">3.2.3</span> 5hr Periods<a href="downsampling.html#hr-periods-2" class="anchor-section" aria-label="Anchor link to header"></a></h3>
+<p>Do it again for 5hr bin</p>
+<div class="sourceCode" id="cb38"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb38-1"><a href="downsampling.html#cb38-1" tabindex="-1"></a>bin_time <span class="ot">=</span> <span class="dv">5</span></span>
+<span id="cb38-2"><a href="downsampling.html#cb38-2" tabindex="-1"></a></span>
+<span id="cb38-3"><a href="downsampling.html#cb38-3" tabindex="-1"></a><span class="cf">if</span> (<span class="cn">FALSE</span>) {</span>
+<span id="cb38-4"><a href="downsampling.html#cb38-4" tabindex="-1"></a></span>
+<span id="cb38-5"><a href="downsampling.html#cb38-5" tabindex="-1"></a><span class="fu">plan</span>(multisession, <span class="at">workers =</span> <span class="dv">4</span>)</span>
+<span id="cb38-6"><a href="downsampling.html#cb38-6" tabindex="-1"></a></span>
+<span id="cb38-7"><a href="downsampling.html#cb38-7" tabindex="-1"></a><span class="fu">future_map</span>(deg_files, downsample_deg, <span class="at">bin_time =</span> bin_time, <span class="at">.progress =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb38-8"><a href="downsampling.html#cb38-8" tabindex="-1"></a></span>
+<span id="cb38-9"><a href="downsampling.html#cb38-9" tabindex="-1"></a></span>
+<span id="cb38-10"><a href="downsampling.html#cb38-10" tabindex="-1"></a><span class="fu">plan</span>(sequential)</span>
+<span id="cb38-11"><a href="downsampling.html#cb38-11" tabindex="-1"></a>}</span></code></pre></div>
+<pre><code>date,start_time,end_time,wets
+2017-09-20,00:00:00,04:59:59,0
+2017-09-20,05:00:00,09:59:59,4.867
+2017-09-20,10:00:00,14:59:59,2.6
+2017-09-20,15:00:00,19:59:59,2.733
+2017-09-20,20:00:00,00:59:59,5.375
+2017-09-21,00:00:00,04:59:59,5.067
+2017-09-21,05:00:00,09:59:59,7.567
+2017-09-21,10:00:00,14:59:59,2.2</code></pre>
+</div>
+</div>
+<div id="reviewing-metadata" class="section level2 hasAnchor" number="3.3">
+<h2><span class="header-section-number">3.3</span> Reviewing Metadata<a href="downsampling.html#reviewing-metadata" class="anchor-section" aria-label="Anchor link to header"></a></h2>
+<p>Make a table to review how many files we have per deployment period per colony:</p>
+<div class="sourceCode" id="cb40"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb40-1"><a href="downsampling.html#cb40-1" tabindex="-1"></a>md <span class="ot">&lt;-</span> <span class="fu">read.csv</span>(<span class="fu">file.path</span>(data.dir, <span class="st">&quot;MasterMetadata_LHSP_Tracking_NL_NB_NS_06Dec2024.csv&quot;</span>))</span>
+<span id="cb40-2"><a href="downsampling.html#cb40-2" tabindex="-1"></a></span>
+<span id="cb40-3"><a href="downsampling.html#cb40-3" tabindex="-1"></a><span class="fu">colnames</span>(md)</span></code></pre></div>
+<pre><code>##  [1] &quot;colony&quot;                 &quot;tagType&quot;                &quot;tagMake&quot;               
+##  [4] &quot;tagID&quot;                  &quot;tagProg&quot;                &quot;tagProgStartUTC&quot;       
+##  [7] &quot;band&quot;                   &quot;sex&quot;                    &quot;dep_recap&quot;             
+## [10] &quot;dep_handlerInits&quot;       &quot;dep_lat&quot;                &quot;dep_lon&quot;               
+## [13] &quot;dep_burrowID&quot;           &quot;dep_plotID&quot;             &quot;dep_date&quot;              
+## [16] &quot;dep_dateEst&quot;            &quot;dep_yr&quot;                 &quot;dep_mo&quot;                
+## [19] &quot;dep_datetimeUTC&quot;        &quot;dep_startHandle&quot;        &quot;dep_time&quot;              
+## [22] &quot;dep_durHandle&quot;          &quot;dep_brStatus&quot;           &quot;dep_burrowCont&quot;        
+## [25] &quot;dep_mass&quot;               &quot;dep_wing&quot;               &quot;dep_wingType&quot;          
+## [28] &quot;dep_tarsus&quot;             &quot;dep_bill&quot;               &quot;dep_tail&quot;              
+## [31] &quot;dep_eggAge&quot;             &quot;dep_eggWid&quot;             &quot;dep_eggLen&quot;            
+## [34] &quot;dep_chkAge&quot;             &quot;dep_notes&quot;              &quot;dep_techNotes&quot;         
+## [37] &quot;ret_handlerInits&quot;       &quot;ret_birdYN&quot;             &quot;ret_tagYN&quot;             
+## [40] &quot;ret_date&quot;               &quot;ret_dateEst&quot;            &quot;ret_yr&quot;                
+## [43] &quot;ret_mo&quot;                 &quot;ret_datetimeUTC&quot;        &quot;ret_time&quot;              
+## [46] &quot;ret_endHandle&quot;          &quot;ret_durHandle&quot;          &quot;ret_burrowID&quot;          
+## [49] &quot;ret_burrowCont&quot;         &quot;ret_mass&quot;               &quot;ret_massChange&quot;        
+## [52] &quot;ret_eggAge&quot;             &quot;ret_eggWid&quot;             &quot;ret_eggLen&quot;            
+## [55] &quot;ret_chkAge&quot;             &quot;ret_spotCardYN&quot;         &quot;ret_bloodCapAmt&quot;       
+## [58] &quot;ret_feathType&quot;          &quot;ret_feathNum&quot;           &quot;ret_notes&quot;             
+## [61] &quot;ret_notesTissue&quot;        &quot;ret_tagStatus&quot;          &quot;ret_trackType&quot;         
+## [64] &quot;wetdry_filename&quot;        &quot;track_filename&quot;         &quot;track_dataStart&quot;       
+## [67] &quot;track_dataEnd&quot;          &quot;IPorig_track_filename&quot;  &quot;sourceFile&quot;            
+## [70] &quot;gtDep_site&quot;             &quot;gtDep_lat&quot;              &quot;gtDep_lon&quot;             
+## [73] &quot;gtDep_startDate&quot;        &quot;gtDep_startTime&quot;        &quot;gtDep_endDate&quot;         
+## [76] &quot;gtDep_endTime&quot;          &quot;gtDep_startDatetimeUTC&quot; &quot;gtDep_endDatetimeUTC&quot;  
+## [79] &quot;gtDep_notes&quot;            &quot;gtRet_site&quot;             &quot;gtRet_lat&quot;             
+## [82] &quot;gtRet_lon&quot;              &quot;gtRet_startDate&quot;        &quot;gtRet_startTime&quot;       
+## [85] &quot;gtRet_endDate&quot;          &quot;gtRet_endTime&quot;          &quot;gtRet_startDatetimeUTC&quot;
+## [88] &quot;gtRet_endDatetimeUTC&quot;   &quot;gtRet_notes&quot;            &quot;gtRet_filename&quot;        
+## [91] &quot;ESRF&quot;                   &quot;ret_brStatus&quot;           &quot;simulMateTrack&quot;        
+## [94] &quot;repGLS&quot;                 &quot;repGPS&quot;                 &quot;repGLSGPS&quot;</code></pre>
+<div class="sourceCode" id="cb42"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb42-1"><a href="downsampling.html#cb42-1" tabindex="-1"></a><span class="co">#clean up the metadata so that we only include the necessary columns for clipping</span></span>
+<span id="cb42-2"><a href="downsampling.html#cb42-2" tabindex="-1"></a>metrics_md <span class="ot">&lt;-</span> md <span class="sc">%&gt;%</span></span>
+<span id="cb42-3"><a href="downsampling.html#cb42-3" tabindex="-1"></a>  </span>
+<span id="cb42-4"><a href="downsampling.html#cb42-4" tabindex="-1"></a>  <span class="fu">filter</span>(</span>
+<span id="cb42-5"><a href="downsampling.html#cb42-5" tabindex="-1"></a>    <span class="co">#filter for MT devices</span></span>
+<span id="cb42-6"><a href="downsampling.html#cb42-6" tabindex="-1"></a>    tagMake <span class="sc">%in%</span> <span class="fu">c</span>(<span class="st">&quot;Migrate Technology: W30A9-SEA&quot;</span>, <span class="st">&quot;Migrate Technology: W30A9-SEA-COOL&quot;</span>),</span>
+<span id="cb42-7"><a href="downsampling.html#cb42-7" tabindex="-1"></a>    <span class="co">#remove any NA rows in wetdry_filename </span></span>
+<span id="cb42-8"><a href="downsampling.html#cb42-8" tabindex="-1"></a>    <span class="sc">!</span><span class="fu">is.na</span>(wetdry_filename)) <span class="sc">%&gt;%</span> </span>
+<span id="cb42-9"><a href="downsampling.html#cb42-9" tabindex="-1"></a>  </span>
+<span id="cb42-10"><a href="downsampling.html#cb42-10" tabindex="-1"></a>  <span class="co"># merge estimated and observed columns </span></span>
+<span id="cb42-11"><a href="downsampling.html#cb42-11" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
+<span id="cb42-12"><a href="downsampling.html#cb42-12" tabindex="-1"></a>    <span class="at">depDate_comb =</span> <span class="fu">as.Date</span>(<span class="fu">ifelse</span>(<span class="sc">!</span><span class="fu">is.na</span>(dep_dateEst), dep_dateEst, dep_date), <span class="at">format =</span> <span class="st">&quot;%Y-%m-%d&quot;</span>),</span>
+<span id="cb42-13"><a href="downsampling.html#cb42-13" tabindex="-1"></a>    <span class="at">retDate_comb =</span> <span class="fu">as.Date</span>(</span>
+<span id="cb42-14"><a href="downsampling.html#cb42-14" tabindex="-1"></a>      <span class="fu">ifelse</span>(<span class="sc">!</span><span class="fu">is.na</span>(ret_dateEst), <span class="fu">substr</span>(ret_dateEst, <span class="fu">nchar</span>(ret_dateEst) <span class="sc">-</span> <span class="dv">9</span>, <span class="fu">nchar</span>(ret_dateEst)), </span>
+<span id="cb42-15"><a href="downsampling.html#cb42-15" tabindex="-1"></a>             ret_date), <span class="at">format =</span> <span class="st">&quot;%Y-%m-%d&quot;</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb42-16"><a href="downsampling.html#cb42-16" tabindex="-1"></a>  </span>
+<span id="cb42-17"><a href="downsampling.html#cb42-17" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">depDate_comb =</span> <span class="fu">as.Date</span>(depDate_comb),</span>
+<span id="cb42-18"><a href="downsampling.html#cb42-18" tabindex="-1"></a>         <span class="at">retDate_comb =</span> <span class="fu">as.Date</span>(retDate_comb)) <span class="sc">%&gt;%</span></span>
+<span id="cb42-19"><a href="downsampling.html#cb42-19" tabindex="-1"></a>  </span>
+<span id="cb42-20"><a href="downsampling.html#cb42-20" tabindex="-1"></a>  <span class="co">#only keep necessary columns </span></span>
+<span id="cb42-21"><a href="downsampling.html#cb42-21" tabindex="-1"></a>  <span class="fu">select</span>(wetdry_filename, depDate_comb, retDate_comb, colony) <span class="sc">%&gt;%</span></span>
+<span id="cb42-22"><a href="downsampling.html#cb42-22" tabindex="-1"></a>  </span>
+<span id="cb42-23"><a href="downsampling.html#cb42-23" tabindex="-1"></a>  <span class="co">#categorize deployment periods in the dtaaframe</span></span>
+<span id="cb42-24"><a href="downsampling.html#cb42-24" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
+<span id="cb42-25"><a href="downsampling.html#cb42-25" tabindex="-1"></a>    <span class="at">deployment_period =</span> <span class="fu">case_when</span>(</span>
+<span id="cb42-26"><a href="downsampling.html#cb42-26" tabindex="-1"></a>    depDate_comb <span class="sc">&gt;=</span> <span class="fu">as.Date</span>(<span class="st">&quot;2017-01-01&quot;</span>) <span class="sc">&amp;</span> retDate_comb <span class="sc">&lt;=</span> <span class="fu">as.Date</span>(<span class="st">&quot;2018-12-31&quot;</span>) <span class="sc">~</span> <span class="st">&quot;2017-2018&quot;</span>,</span>
+<span id="cb42-27"><a href="downsampling.html#cb42-27" tabindex="-1"></a>    depDate_comb <span class="sc">&gt;=</span> <span class="fu">as.Date</span>(<span class="st">&quot;2018-01-01&quot;</span>) <span class="sc">&amp;</span> retDate_comb <span class="sc">&lt;=</span> <span class="fu">as.Date</span>(<span class="st">&quot;2019-12-31&quot;</span>) <span class="sc">~</span> <span class="st">&quot;2018-2019&quot;</span>,</span>
+<span id="cb42-28"><a href="downsampling.html#cb42-28" tabindex="-1"></a>    depDate_comb <span class="sc">&gt;=</span> <span class="fu">as.Date</span>(<span class="st">&quot;2019-01-01&quot;</span>) <span class="sc">&amp;</span> retDate_comb <span class="sc">&lt;=</span> <span class="fu">as.Date</span>(<span class="st">&quot;2020-12-31&quot;</span>) <span class="sc">~</span> <span class="st">&quot;2019-2020&quot;</span>,</span>
+<span id="cb42-29"><a href="downsampling.html#cb42-29" tabindex="-1"></a>    depDate_comb <span class="sc">&gt;=</span> <span class="fu">as.Date</span>(<span class="st">&quot;2020-01-01&quot;</span>) <span class="sc">&amp;</span> retDate_comb <span class="sc">&lt;=</span> <span class="fu">as.Date</span>(<span class="st">&quot;2021-12-31&quot;</span>) <span class="sc">~</span> <span class="st">&quot;2020-2021&quot;</span>,</span>
+<span id="cb42-30"><a href="downsampling.html#cb42-30" tabindex="-1"></a>    depDate_comb <span class="sc">&gt;=</span> <span class="fu">as.Date</span>(<span class="st">&quot;2021-01-01&quot;</span>) <span class="sc">&amp;</span> retDate_comb <span class="sc">&lt;=</span> <span class="fu">as.Date</span>(<span class="st">&quot;2022-12-31&quot;</span>) <span class="sc">~</span> <span class="st">&quot;2021-2022&quot;</span>,</span>
+<span id="cb42-31"><a href="downsampling.html#cb42-31" tabindex="-1"></a>    depDate_comb <span class="sc">&gt;=</span> <span class="fu">as.Date</span>(<span class="st">&quot;2022-01-01&quot;</span>) <span class="sc">&amp;</span> retDate_comb <span class="sc">&lt;=</span> <span class="fu">as.Date</span>(<span class="st">&quot;2023-12-31&quot;</span>) <span class="sc">~</span> <span class="st">&quot;2022-2023&quot;</span>,</span>
+<span id="cb42-32"><a href="downsampling.html#cb42-32" tabindex="-1"></a>    depDate_comb <span class="sc">&gt;=</span> <span class="fu">as.Date</span>(<span class="st">&quot;2023-01-01&quot;</span>) <span class="sc">&amp;</span> retDate_comb <span class="sc">&lt;=</span> <span class="fu">as.Date</span>(<span class="st">&quot;2024-12-31&quot;</span>) <span class="sc">~</span> <span class="st">&quot;2023-2024&quot;</span>,</span>
+<span id="cb42-33"><a href="downsampling.html#cb42-33" tabindex="-1"></a>    <span class="cn">TRUE</span> <span class="sc">~</span> <span class="st">&quot;Other&quot;</span>   <span class="co"># any records outside of these ranges</span></span>
+<span id="cb42-34"><a href="downsampling.html#cb42-34" tabindex="-1"></a>    )</span>
+<span id="cb42-35"><a href="downsampling.html#cb42-35" tabindex="-1"></a>  )</span>
+<span id="cb42-36"><a href="downsampling.html#cb42-36" tabindex="-1"></a></span>
+<span id="cb42-37"><a href="downsampling.html#cb42-37" tabindex="-1"></a>deployment_summary <span class="ot">&lt;-</span> metrics_md <span class="sc">%&gt;%</span></span>
+<span id="cb42-38"><a href="downsampling.html#cb42-38" tabindex="-1"></a>  </span>
+<span id="cb42-39"><a href="downsampling.html#cb42-39" tabindex="-1"></a>  <span class="fu">group_by</span>(deployment_period, colony) <span class="sc">%&gt;%</span></span>
+<span id="cb42-40"><a href="downsampling.html#cb42-40" tabindex="-1"></a>  </span>
+<span id="cb42-41"><a href="downsampling.html#cb42-41" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="at">file_count=</span><span class="fu">n</span>(), <span class="at">.groups =</span> <span class="st">&quot;drop&quot;</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb42-42"><a href="downsampling.html#cb42-42" tabindex="-1"></a>  </span>
+<span id="cb42-43"><a href="downsampling.html#cb42-43" tabindex="-1"></a>  <span class="fu">pivot_wider</span>(<span class="at">names_from =</span> colony,  <span class="co">#make tibble with colony columns</span></span>
+<span id="cb42-44"><a href="downsampling.html#cb42-44" tabindex="-1"></a>              <span class="at">values_from =</span> file_count, </span>
+<span id="cb42-45"><a href="downsampling.html#cb42-45" tabindex="-1"></a>              <span class="at">values_fill =</span> <span class="dv">0</span> <span class="co"># fill missing vals with 0</span></span>
+<span id="cb42-46"><a href="downsampling.html#cb42-46" tabindex="-1"></a>              ) <span class="sc">%&gt;%</span></span>
+<span id="cb42-47"><a href="downsampling.html#cb42-47" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">TOTAL =</span> <span class="fu">rowSums</span>(<span class="fu">select</span>(., <span class="sc">-</span>deployment_period))) <span class="sc">%&gt;%</span></span>
+<span id="cb42-48"><a href="downsampling.html#cb42-48" tabindex="-1"></a>  </span>
+<span id="cb42-49"><a href="downsampling.html#cb42-49" tabindex="-1"></a>  <span class="fu">bind_rows</span>(<span class="fu">summarise</span>(.,</span>
+<span id="cb42-50"><a href="downsampling.html#cb42-50" tabindex="-1"></a>                      <span class="fu">across</span>(<span class="fu">where</span>(is.numeric), sum),</span>
+<span id="cb42-51"><a href="downsampling.html#cb42-51" tabindex="-1"></a>                      <span class="at">deployment_period =</span> <span class="st">&quot;TOTAL&quot;</span>))</span>
+<span id="cb42-52"><a href="downsampling.html#cb42-52" tabindex="-1"></a></span>
+<span id="cb42-53"><a href="downsampling.html#cb42-53" tabindex="-1"></a>deployment_summary</span></code></pre></div>
+<pre><code>## # A tibble: 8 × 8
+##   deployment_period `Baccalieu - Ned Walsh` `Bon Portage` Country  Gull  Kent
+##   &lt;chr&gt;                               &lt;int&gt;         &lt;int&gt;   &lt;int&gt; &lt;int&gt; &lt;int&gt;
+## 1 2017-2018                               6             0       0     0     0
+## 2 2018-2019                               0             5       6    10    10
+## 3 2019-2020                              10            17      17    23    16
+## 4 2021-2022                              20             0      16    16    27
+## 5 2022-2023                               7            13       0    11     0
+## 6 2023-2024                              12             0       0    12     0
+## 7 Other                                   0             0       0     2     0
+## 8 TOTAL                                  55            35      39    74    53
+## # ℹ 2 more variables: `Middle Lawn` &lt;int&gt;, TOTAL &lt;dbl&gt;</code></pre>
+<p>Looks like there were 3 devices that stayed out for longer than a year.
+Lets handle these later on*</p>
+<p>Where do these fall in terms of categorization?</p>
+<div class="sourceCode" id="cb44"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb44-1"><a href="downsampling.html#cb44-1" tabindex="-1"></a><span class="fu">print</span>(metrics_md[metrics_md<span class="sc">$</span>deployment_period <span class="sc">==</span><span class="st">&quot;Other&quot;</span>, ])</span></code></pre></div>
+<pre><code>##                      wetdry_filename depDate_comb retDate_comb      colony
+## 154         BU971_25Nov23_194250.deg   2019-09-22   2023-08-22        Gull
+## 177 CD493_22Jun23_004919driftadj.deg   2021-09-16   2023-01-05        Gull
+## 258 CD501_25Nov23_184453driftadj.deg   2021-09-22   2023-01-01 Middle Lawn
+##     deployment_period
+## 154             Other
+## 177             Other
+## 258             Other</code></pre>
+<p>Save the metadata file for when we run HMM</p>
+<div class="sourceCode" id="cb46"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb46-1"><a href="downsampling.html#cb46-1" tabindex="-1"></a><span class="fu">write.csv</span>(metrics_md, <span class="fu">file.path</span>(data.dir, <span class="st">&quot;metrics_md.csv&quot;</span>))</span></code></pre></div>
+
+</div>
+</div>
+            </section>
+
+          </div>
+        </div>
+      </div>
+<a href="clean-up.html" class="navigation navigation-prev " aria-label="Previous page"><i class="fa fa-angle-left"></i></a>
+<a href="metrics-for-2hr-bins.html" class="navigation navigation-next " aria-label="Next page"><i class="fa fa-angle-right"></i></a>
+    </div>
+  </div>
+<script src="libs/gitbook-2.6.7/js/app.min.js"></script>
+<script src="libs/gitbook-2.6.7/js/clipboard.min.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-search.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-sharing.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-fontsettings.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-bookdown.js"></script>
+<script src="libs/gitbook-2.6.7/js/jquery.highlight.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-clipboard.js"></script>
+<script>
+gitbook.require(["gitbook"], function(gitbook) {
+gitbook.start({
+"sharing": {
+"github": false,
+"facebook": true,
+"twitter": true,
+"linkedin": false,
+"weibo": false,
+"instapaper": false,
+"vk": false,
+"whatsapp": false,
+"all": ["facebook", "twitter", "linkedin", "weibo", "instapaper"]
+},
+"fontsettings": {
+"theme": "white",
+"family": "sans",
+"size": 2
+},
+"edit": {
+"link": null,
+"text": null
+},
+"history": {
+"link": null,
+"text": null
+},
+"view": {
+"link": null,
+"text": null
+},
+"download": null,
+"search": {
+"engine": "fuse",
+"options": null
+},
+"toc": {
+"collapse": "section"
+}
+});
+});
+</script>
+
+</body>
+
+</html>

@@ -10,6 +10,12 @@ We want the following metrics for times the device was deployed:
 
 * **Longest continuous periods of dry or wet states throughout the whoel deployment period:** longest sequence of consecutive 10-minute intervals within the entire deployment period where the device recorded
 
+## Load settings
+
+```{r include=FALSE}
+source(here::here("project_settings.R"), echo=TRUE)
+```
+
 
 ## Baccalieu - Ned Walsh 2017-2018
 
@@ -252,13 +258,13 @@ calc_longest_prds <- function(file_path) {
   # Calculate longest periods
   # ================================
   calc_prds <- function(condition) {
-    
     rle_data <- rle(condition)
-
-    longest_run = max(rle_data$lengths[rle_data$values]) #longest run of wets>0 from lengths of vals
+    if (!any(rle_data$values)) {return(list(start = NA, end = NA, duration = 0))}
+  
+  longest_run <- max(rle_data$lengths[rle_data$values]) #longest run of wets>0 from lengths of vals
 
     end_x <- cumsum(rle_data$lengths)[ #cumul. sum of bin lengths for run end index
-      which.max(rle_data$lengths[rle_data$values])] #index = longest period
+    which.max(rle_data$lengths[rle_data$values]) ]#index = longest period
     
     start_x <- end_x - longest_run +1 #just subtract # of bins in wet prd
 
@@ -320,7 +326,7 @@ plot_longest_prds <- ggplot(longest_prds, aes(y = bird_id)) +
   # Longest when wet > 5
   geom_segment(aes(x = datetime_start_wetter, 
                    xend = datetime_end_wetter, yend = bird_id, color = "Wetter > 5"), 
-               size = 2) +  
+               size = 1) +  
   
   # Longest entirely wet period (solid blue line)
   geom_segment(aes(x = datetime_start_maxwet, 
