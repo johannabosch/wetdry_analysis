@@ -1,0 +1,25 @@
+# Hidden Markov Modelling (HMM)
+
+Create a clean df for HMM
+
+## Prep the data
+
+```{r include=FALSE}
+source(here::here("project_settings.R"), echo=TRUE)
+```
+
+
+```{r}
+
+```
+
+
+```{r}
+hmm_data <- bacc_2017_metrics %>%
+  select(bird_id, start_time, prop_wet) %>%
+  mutate(
+  time_bin = as.POSIXct(paste(date, start_time), format = "%Y-%m-%d %H:%M:%S"),
+  state = ifelse(prop_wet>0.5, 1, 0) #binary state for wet/dry if we want to use it
+  )
+
+```

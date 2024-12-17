@@ -96,12 +96,6 @@ The number of DEG files we have in that original folder should equal `MT_devices
 ```{r}
 print(length(list.files(origin.dir, pattern = "\\.deg$", full.names = TRUE))) #checks out!
 ```
-Check out a random DEG file for a single bird first(`BH594_04Jul18_135310driftadj.deg`)
-
-```{r}
-#info on that bird from our metadata
-clipping_md[which(clipping_md$wetdry_filename == "BH594_formatted_04Jul18_135310driftadj.deg"), ]
-```
 So we want to clip this for our known deployment times from the metadata
 For this bird we want to filter the DEG file to keep any dates from 2017-09-20 to 2018-06-29.
 ```{r}

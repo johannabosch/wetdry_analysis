@@ -37,7 +37,7 @@ downsample_deg <- function(file_path, bin_time = bin_time) {
     mutate(
       date = as.Date(bin),
       start_time = format(bin, "%H:%M:%S"),
-      end_time = format(bin + hours(2) - seconds(1), "%H:%M:%S")) %>%
+      end_time = format(bin + hours(bin_time) - seconds(1), "%H:%M:%S")) %>%
     
     select(date, start_time, end_time, wets)
   

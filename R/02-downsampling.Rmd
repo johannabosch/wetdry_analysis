@@ -57,15 +57,15 @@ date,start_time,end_time,wets
 2022-09-08,06:00:00,07:59:59,...
 ```
 
-
-So our dataset's `wets` values now represent the average number of 10-minute intervals that were wet during the 2-hour period. This means each 2hr period has 12 intervals of 10 minutes (600 secs).
-
 wets = 0 means 10min interval was entirely wet
 wets = 20 means 10min interval was entirely dry
 
 For one 10min interval,
 if wets=1, then 600s/20 = 30 seconds
 so 1 unit wets = 30 seconds wet per 10min interval
+
+So our dataset's `wets` values now represent the average number of 10-minute intervals that were wet during the 2-hour period. This means each 2hr period has 12 intervals of 10 minutes (600 secs).
+
 
 
 ### 1hr Periods
@@ -91,6 +91,17 @@ plan(sequential)
 
 ```
 
+```
+date,start_time,end_time,wets
+2017-09-20,00:00:00,00:59:59,0
+2017-09-20,01:00:00,01:59:59,0
+2017-09-20,02:00:00,02:59:59,0
+2017-09-20,03:00:00,03:59:59,0
+2017-09-20,04:00:00,04:59:59,0
+2017-09-20,05:00:00,05:59:59,5.333
+2017-09-20,06:00:00,06:59:59,6.333
+```
+
 
 
 ### 5hr Periods
@@ -109,5 +120,95 @@ future_map(deg_files, downsample_deg, bin_time = bin_time, .progress = TRUE)
 
 plan(sequential)
 }
+```
+
+```
+date,start_time,end_time,wets
+2017-09-20,00:00:00,04:59:59,0
+2017-09-20,05:00:00,09:59:59,4.867
+2017-09-20,10:00:00,14:59:59,2.6
+2017-09-20,15:00:00,19:59:59,2.733
+2017-09-20,20:00:00,00:59:59,5.375
+2017-09-21,00:00:00,04:59:59,5.067
+2017-09-21,05:00:00,09:59:59,7.567
+2017-09-21,10:00:00,14:59:59,2.2
+```
+
+## Reviewing Metadata
+
+Make a table to review how many files we have per deployment period per colony:
+```{r}
+md <- read.csv(file.path(data.dir, "MasterMetadata_LHSP_Tracking_NL_NB_NS_06Dec2024.csv"))
+
+colnames(md)
+
+#clean up the metadata so that we only include the necessary columns for clipping
+metrics_md <- md %>%
+  
+  filter(
+    #filter for MT devices
+    tagMake %in% c("Migrate Technology: W30A9-SEA", "Migrate Technology: W30A9-SEA-COOL"),
+    #remove any NA rows in wetdry_filename 
+    !is.na(wetdry_filename)) %>% 
+  
+  # merge estimated and observed columns 
+  mutate(
+    depDate_comb = as.Date(ifelse(!is.na(dep_dateEst), dep_dateEst, dep_date), format = "%Y-%m-%d"),
+    retDate_comb = as.Date(
+      ifelse(!is.na(ret_dateEst), substr(ret_dateEst, nchar(ret_dateEst) - 9, nchar(ret_dateEst)), 
+             ret_date), format = "%Y-%m-%d")) %>%
+  
+  mutate(depDate_comb = as.Date(depDate_comb),
+         retDate_comb = as.Date(retDate_comb)) %>%
+  
+  #only keep necessary columns 
+  select(wetdry_filename, depDate_comb, retDate_comb, colony) %>%
+  
+  #categorize deployment periods in the dtaaframe
+  mutate(
+    deployment_period = case_when(
+    depDate_comb >= as.Date("2017-01-01") & retDate_comb <= as.Date("2018-12-31") ~ "2017-2018",
+    depDate_comb >= as.Date("2018-01-01") & retDate_comb <= as.Date("2019-12-31") ~ "2018-2019",
+    depDate_comb >= as.Date("2019-01-01") & retDate_comb <= as.Date("2020-12-31") ~ "2019-2020",
+    depDate_comb >= as.Date("2020-01-01") & retDate_comb <= as.Date("2021-12-31") ~ "2020-2021",
+    depDate_comb >= as.Date("2021-01-01") & retDate_comb <= as.Date("2022-12-31") ~ "2021-2022",
+    depDate_comb >= as.Date("2022-01-01") & retDate_comb <= as.Date("2023-12-31") ~ "2022-2023",
+    depDate_comb >= as.Date("2023-01-01") & retDate_comb <= as.Date("2024-12-31") ~ "2023-2024",
+    TRUE ~ "Other"   # any records outside of these ranges
+    )
+  )
+
+deployment_summary <- metrics_md %>%
+  
+  group_by(deployment_period, colony) %>%
+  
+  summarise(file_count=n(), .groups = "drop") %>%
+  
+  pivot_wider(names_from = colony,  #make tibble with colony columns
+              values_from = file_count, 
+              values_fill = 0 # fill missing vals with 0
+              ) %>%
+  mutate(TOTAL = rowSums(select(., -deployment_period))) %>%
+  
+  bind_rows(summarise(.,
+                      across(where(is.numeric), sum),
+                      deployment_period = "TOTAL"))
+
+deployment_summary
+
+```
+
+Looks like there were 3 devices that stayed out for longer than a year.
+Lets handle these later on*
+
+Where do these fall in terms of categorization?
+
+```{r}
+print(metrics_md[metrics_md$deployment_period =="Other", ])
+```
+
+Save the metadata file for when we run HMM
+```{r}
+write.csv(metrics_md, file.path(data.dir, "metrics_md.csv"))
 ```
 
