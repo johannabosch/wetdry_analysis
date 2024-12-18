@@ -1,4 +1,10 @@
-# Calculate Proportions Wet
+# Proportions Wet
+
+**NOTE**: using wets > 0 after averaging will not capture the underlying switches in the 10-minute data, once we bin this data we lose access to those switch points. This is why we calculated switches before down sampling. Proportions can be calculated in 2hr bins because looking at the 10min bins is way too high of a resolution.
+
+First I calculate proportions in a 2hr bin for both types of downsampled data (taking the mean of wets vs sum of wets to compare which is better).
+
+Then I look at proportions in the 1hr and 5hr bins to compare to 2hr bins.
 
 ## Load settings
 
@@ -6,60 +12,19 @@
 source(here::here("project_settings.R"), echo=TRUE)
 ```
 
-## USING AVERAGE WETS
 
-## Baccalieu - Ned Walsh 2017-2018
+## Calclate Proportions
 
-Decide what downsampled data you want to use and redefine bin_time 
+Function to calculate proportion:
 ```{r}
-(downsampled.dir <- file.path(data.dir, "downsampled_2hrs"))
 
-bin_time = 2
-```
-
-Let's start with the 2017-2018 files from Baccalieu (6 files total)
-
-```{r}
-#get list of downsampled files to process 
-bacc_2017_md <- metrics_md %>%
-  filter(colony == "Baccalieu - Ned Walsh",
-         deployment_period == "2017-2018") %>%
-  pull(wetdry_filename)
-
-bacc_2017_md <- paste0("filtered_", bacc_2017_md)
- 
-DEG_files <- list.files(downsampled.dir, full.names=TRUE)
-
-bacc_2017_files <- DEG_files[basename(DEG_files) %in% bacc_2017_md]
-```
-
-Pick a colony and time range to look at
-```{r}
-chosen_files <- bacc_2017_files
-```
-
-
-### Proportion/Switches
-
-Calculated by:
-* **Binned Periods** - Finest resolution, 
-* **Daily Periods** - Helps assess trends over long time periods, like looking at wet proportions/switches seasonally
-* **Monthly Periods** - Lowest resolution ()
-
-
-
-Calculate Switches within each 2hr Bin
-
-**NOTE**: using wets > 0 after averaging will not capture the underlying switches in the 10-minute data, once we bin this data we lose access to those switch points.
-
-```{r}
-calc_metrics <- function(file_path) {
+calc_prop <- function(file_path) {
   deg_data <- read_csv(file_path, show_col_types=FALSE)
   
   bird_id <- str_extract(basename(file_path), "(?<=filtered_)[A-Z-0-9]{5}")
   
   #start by calculating metrics for a single 2hr bin
-  metrics <- deg_data %>%
+  prop_data <- deg_data %>%
     mutate(
       bin_length = bin_time * 3600, #2hrs in secs
       
@@ -67,79 +32,43 @@ calc_metrics <- function(file_path) {
       
       #proportion of time wet in 2hr period (wets*30 converts wetness level into secs spent wet)
       # (600sec per 10min interval) / 20 = 30 seconds per unit 
-      prop_wet = ifelse(bin_length >0, (wets * 30) / bin_length), 
+      prop_wet = ifelse(bin_length > 0, (wets * 30) / bin_length), 
       
-      #switches between wet (non-zero) and dry (zero) states
-      #
-      switches = ifelse(row_number() == 1, 0, abs(diff(ifelse(wets > 0, 1, 0)))),
-      
-      #cumulative time spent dry (== 0) or wet (>0)
-      dry_time= ifelse(wets == 0, 10*60, 0), # if dry, time always 600 secs
-      wet_time = ifelse(wets > 0, 10*60, 0),  # if wet, time always 600 secs
-    
       bird_id = bird_id)
 
-  return(metrics)
+  return(prop_data)
 }
+```
 
-bin_metrics <- future_map_dfr(chosen_files, calc_metrics)
+### Mean of wets
+
+Applying the function to our DEG files downsampled by 2hrs using mean wets:
+```{r}
+
+(downsampled.dir <- file.path(data.dir, "downsampled_2hrs_avg"))
+
+bin_time = 2
+
+prop_metrics <- future_map_dfr(DEG_files, calc_prop)
 
 head(bin_metrics)
 
 ```
-#### Heatmap
-Plot proportions on a heatmap per device
+
+
+### Sum of wets
+
+
+Applying the function to our DEG files downsampled by 2hrs using mean wets:
 ```{r}
 
-plotly_heatmap_prop <- plot_ly(
-  data = bin_metrics,
-  x = ~date, y = ~bird_id, z = ~prop_wet,
-  type = "heatmap",
-  colors =c("white", "blue"),
-  colorbar = list(title= "Proportion Wet")
-) %>%
-  layout(
-    title = paste("Heatmap (bin =", bin_time, "hour)"),
-    xaxis=list(title = "Date", tickformat = "%b %Y", tickangle = 45, tickmode = "linear", dtick="M1"),
-    yaxis = list(title = "Bird ID"),
-    margin = list(l = 100, b = 100, t = 50)
-  )
+(downsampled.dir <- file.path(data.dir, "downsampled_2hrs_sum"))
 
-plotly_heatmap_prop
+bin_time = 2
+
+prop_metrics <- future_map_dfr(DEG_files, calc_prop)
+
+head(bin_metrics)
 
 ```
 
-#### Line-plot
-```{r}
-plot_metrics <- function(data, y_var, y_label, plot_title) {
-  ggplot(data, aes(x = as.POSIXct(date), y = !!sym(y_var), color = bird_id)) +
-    geom_line(size = 0.2) +
-    geom_point(size = 0.8) +
-    labs(
-      title = plot_title,
-      x = "Time (2-hour bins)",
-      y = y_label,
-      color = "Bird ID"
-    ) +
-    theme_minimal() +
-    theme(
-      axis.text.x = element_text(angle = 45, hjust = 1),
-      title = element_text(size = 8),
-      legend.position = "right",
-      legend.direction = "vertical",
-      legend.box = "vertical",
-      legend.spacing.y = unit(0.2, "cm")
-    ) +
-    scale_x_datetime(
-      breaks = "1 month",
-      labels = scales::date_format("%b %Y")
-    )
-}
-```
-
-```{r}
-plotly_prop <- ggplotly(plot_metrics(bin_metrics, y_var = "prop_wet", y_label = "Proportion of Wet Periods (2hr bins)", plot_title = "Proportion of wet time across deployments (2hr bins)"))
-
-plotly_prop
-
-```

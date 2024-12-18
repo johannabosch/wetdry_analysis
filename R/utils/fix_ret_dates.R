@@ -1,8 +1,9 @@
 fix_rets_welcome <- function() {
   cat("\n")
-  cat("===================================================\n")
-  cat("             YOU LOADED fix_ret_dates                 \n")
-  cat("===================================================\n")
+  cat("=================================================== \n")
+  cat("             YOU LOADED fix_ret_dates                  \n")
+  cat("   view this function in wey-dry_analysis/R/utils   \n")
+  cat("=================================================== \n")  
   cat("\n")
   cat("this function fixes the retrieval dates in a metadata file\n")
   cat("In cases where retDate_comb is greater than the last date \n")

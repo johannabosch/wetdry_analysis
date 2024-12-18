@@ -1,8 +1,9 @@
 downsample_sum_welcome <- function() {
   cat("\n")
-  cat("===================================================\n")
-  cat("            YOU LOADED downsample_deg_sum          \n")
-  cat("===================================================\n")
+  cat("=================================================== \n")
+  cat("            YOU LOADED downsample_deg_sum           \n")
+  cat("   view this function in wey-dry_analysis/R/utils   \n")
+  cat("=================================================== \n")  
   cat("\n")
   cat("this function subsamples DEG files by an allotted time period\n")
   cat("Combines each 10 minute period into X hr periods\n")
@@ -45,7 +46,7 @@ downsample_deg_sum <- function(file_path, bin_time = bin_time) {
   file_name <- basename(file_path)
   
   #assign output directory name based on bin time
-  output_dir <- file.path(data.dir, paste0("downsampled_sum_", bin_time, "hrs"))
+  output_dir <- file.path(data.dir, paste0("downsampled_sum_", bin_time, "hrs_sum"))
   
   #create output dir if it doesn't exist
   if (!dir.exists(output_dir)) {

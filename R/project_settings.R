@@ -25,14 +25,12 @@ options(scipen = 999, digits=4)
 
 # Set up folders
 (proj.dir <- file.path("C:/Users/BoschJ/Desktop/wet-dry_analysis"))
-(data.dir <- file.path(proj.dir, "data"))
 (R.dir <- file.path(proj.dir, "R"))
 (plot.dir <- file.path(proj.dir, "plots"))
 
+(data.dir <- file.path(proj.dir, "data"))
 (origin.dir <- file.path(data.dir,"DEG"))
-
 (deg.dir <- file.path(data.dir, "DEG_clean"))
-
 (output.dir <- file.path(data.dir, "clipped"))
 
 (log_file <- file.path(output.dir, "clip_summary.txt"))

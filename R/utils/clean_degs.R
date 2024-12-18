@@ -1,8 +1,9 @@
 clean_degs_welcome <- function() {
   cat("\n")
-  cat("===================================================\n")
-  cat("             YOU LOADED clean_degs                 \n")
-  cat("===================================================\n")
+  cat("=================================================== \n")
+  cat("             YOU LOADED clean_degs                  \n")
+  cat("   view this function in wey-dry_analysis/R/utils   \n")
+  cat("=================================================== \n")
   cat("\n")
   cat("this function preps DEG files for downsteam analyses\n")
   cat("It removes the metadata rows from a DEG file and\n")

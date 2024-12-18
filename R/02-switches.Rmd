@@ -1,10 +1,10 @@
 
-### Calculating Switches
+# Wet-Dry Switches
 
-Before downsampling the data let's calculate the number of switches between wet and dry states in a 10min interval
+Before downsampling the data let's calculate the number of switches between wet and dry states in a 10min interval.
+This will be a binary indicator (wets>0 or wets==0) that we can use along with the proportions.
 
 Our current DEG files look like this:
-
 ```
 date,time,wets0-20
 2017-09-20,00:08:08,0
@@ -16,9 +16,7 @@ date,time,wets0-20
 2017-09-20,01:08:08,0
 ```
 
-
-To calculate switches between 10min intervals, we need to transform wet values to a binary (wets>0 or wets==0)
-Let's add a column to our DEG files that tracks switches, 
+To calculate switches between 10min intervals, we need to transform wet values to a binary 
 
 Example //
 
@@ -35,14 +33,14 @@ Then we need to calculate the difference between each value.
   Output:
   ```[1, 0, -1, 1, 0]```
 
-Finally, we dont want negatives, so we can count absolute values
+Finally, we don't want negatives, so we can count absolute values
   
   ```abs(c(1, 0, -1, 1, 0))```
   
   Final Output:
   ```[1, 0, 1, 1, 0]```
 
-The function below does this for one file
+The function below does this for one file, adding a column to our DEG files that tracks switches
 
 ```{r}
 calc_switch <- function(file_path) {
@@ -67,9 +65,18 @@ calc_switch <- function(file_path) {
 }
 ```
 
-The we can apply that function to all our files in our `clipped` directory
+Then we can apply that function to all our files in our `clipped` directory
 ```{r}
-switch_metrics <- future_map_dfr(chosen_files, calc_switches)
+
+#define deg files to use
+deg_files <- list.files(output.dir, pattern = "*.deg", full.names = TRUE)#[1:5] #add if you want to subset
+
+plan(multisession, workers = 4)
+
+switch_metrics <- future_map_dfr(deg_files, calc_switches)
+
+plan(sequential)
+
 ```
 
 

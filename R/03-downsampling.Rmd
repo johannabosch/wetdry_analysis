@@ -6,85 +6,13 @@
 source(here::here("project_settings.R"), echo=TRUE)
 ```
 
-
-## Reviewing Metadata
-
-Make a table to review how many files we have per deployment period per colony:
-```{r}
-md <- read.csv(file.path(data.dir, "MasterMetadata_LHSP_Tracking_NL_NB_NS_06Dec2024.csv"))
-
-colnames(md)
-
-#clean up the metadata so that we only include the necessary columns for clipping
-metrics_md <- md %>%
-  
-  filter(
-    #filter for MT devices
-    tagMake %in% c("Migrate Technology: W30A9-SEA", "Migrate Technology: W30A9-SEA-COOL"),
-    #remove any NA rows in wetdry_filename 
-    !is.na(wetdry_filename)) %>% 
-  
-  # merge estimated and observed columns 
-  mutate(
-    depDate_comb = as.Date(ifelse(!is.na(dep_dateEst), dep_dateEst, dep_date), format = "%Y-%m-%d"),
-    retDate_comb = as.Date(
-      ifelse(!is.na(ret_dateEst), substr(ret_dateEst, nchar(ret_dateEst) - 9, nchar(ret_dateEst)), 
-             ret_date), format = "%Y-%m-%d")) %>%
-  
-  mutate(depDate_comb = as.Date(depDate_comb),
-         retDate_comb = as.Date(retDate_comb)) %>%
-  
-  #only keep necessary columns 
-  select(wetdry_filename, depDate_comb, retDate_comb, colony) %>%
-  
-  #categorize deployment periods in the dtaaframe
-  mutate(
-    deployment_period = case_when(
-    depDate_comb >= as.Date("2017-01-01") & retDate_comb <= as.Date("2018-12-31") ~ "2017-2018",
-    depDate_comb >= as.Date("2018-01-01") & retDate_comb <= as.Date("2019-12-31") ~ "2018-2019",
-    depDate_comb >= as.Date("2019-01-01") & retDate_comb <= as.Date("2020-12-31") ~ "2019-2020",
-    depDate_comb >= as.Date("2020-01-01") & retDate_comb <= as.Date("2021-12-31") ~ "2020-2021",
-    depDate_comb >= as.Date("2021-01-01") & retDate_comb <= as.Date("2022-12-31") ~ "2021-2022",
-    depDate_comb >= as.Date("2022-01-01") & retDate_comb <= as.Date("2023-12-31") ~ "2022-2023",
-    depDate_comb >= as.Date("2023-01-01") & retDate_comb <= as.Date("2024-12-31") ~ "2023-2024",
-    TRUE ~ "Other"   # any records outside of these ranges
-    )
-  )
-
-deployment_summary <- metrics_md %>%
-  
-  group_by(deployment_period, colony) %>%
-  
-  summarise(file_count=n(), .groups = "drop") %>%
-  
-  pivot_wider(names_from = colony,  #make tibble with colony columns
-              values_from = file_count, 
-              values_fill = 0 # fill missing vals with 0
-              ) %>%
-  mutate(TOTAL = rowSums(select(., -deployment_period))) %>%
-  
-  bind_rows(summarise(.,
-                      across(where(is.numeric), sum),
-                      deployment_period = "TOTAL"))
-
-deployment_summary
-
-```
-
-Where do these fall in terms of categorization?
-
-```{r}
-print(metrics_md[metrics_md$deployment_period =="Other", ])
-```
-
 Save the metadata file for when we run HMM
 ```{r}
-write.csv(metrics_md, file.path(data.dir, "metrics_md.csv"))
+metrics_md <- read.csv(file.path(data.dir, "metrics_md.csv"))
 ```
 
 
-
-## Down-sampling (mean wets)
+## Down-sampling (MEAN wets)
 
 Right now the files are logging every 10 minutes, which is too high of a resolution. Need to down-sample the dataset from 10min to some other interval that is meaningful to define states to.
 
@@ -149,10 +77,13 @@ So our dataset's `wets` values now represent the average number of 10-minute int
 
 ```{r eval=FALSE}
 
-bin_time = 1
+#define what deg files to use
+deg_files <- list.files(file.path(data.dir, "downsampled_2hr_avg"),
+                        pattern = "*.deg", 
+                        full.names = TRUE)#[1:5] #add if you want to subset
+#set your bin_time
+bin_time = 2
 
-#define deg files to use
-deg_files <- list.files(output.dir, pattern = "*.deg", full.names = TRUE)#[1:5] #add if you want to subset
 
 if (FALSE) {
 #set up a furrr plan for using 4 cores
@@ -209,11 +140,7 @@ date,start_time,end_time,wets
 ```
 
 
-Looks like there were 3 devices that stayed out for longer than a year.
-Lets handle these later on*
-
-
-## Down-sampling (sum wets)
+## Down-sampling (SUM wets)
 
 Downsample the data taking the sum, files end up in `downsampled_sum_Xhrs`
 (I only did this for 2hr bins so far)

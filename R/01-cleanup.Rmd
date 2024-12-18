@@ -7,7 +7,9 @@ source(here::here("project_settings.R"), echo=TRUE)
 
 ```
 
-## Metadata
+## Metadata 
+
+### Review
 
 What we need from the metadata file:
 `track_dataStart:` first date in raw trackfile (as downloaded from the tag)
@@ -17,10 +19,7 @@ What we need from the metadata file:
 `ret_dateEst:`  estimate of retrieval date if not reported in original datasheet OR estimate of the last day of reliable light data if the logger battery died while still at sea
 `track_dataEnd:` last date in raw trackfile (as downloaded from the tag)
 
-The date window identified by these variables will include uninformative data before deployment and after retrieval,
-`track_dataEnd can be useful in identifying if/when a logger battery died at sea (track_dataEnd < ret_date).` When building the logic for cleaning up the DEG files, we can't forget to include scenarios where the device stopped collecting data before the retrieval date, so `ret_date` will be greater than the maximum date found in the DEG file.
-
-### Review
+The date window identified by these variables will include uninformative data before deployment and after retrieval, `track_dataEnd can be useful in identifying if/when a logger battery died at sea (track_dataEnd < ret_date).` When building the logic for cleaning up the DEG files, we can't forget to include scenarios where the device stopped collecting data before the retrieval date, so `ret_date` will be greater than the maximum date found in the DEG file.
 
 ```{r}
 
@@ -50,11 +49,9 @@ MT_devices_retrieved <- (MT_devices %>%
     select(wetdry_filename, tagID))
 ```
 
-
-
 ### Housekeeping
 
-To clean up the metadata, we need to:
+To clean up the metadata for clipping, we need to:
   * filter out the Migrate Technology devices (they are the only devices with wetdry data)
   * remove any rows that have NA for `wetdry_filename`
   * merge cols for estimates and non-est for deployment and return dates, 
@@ -77,15 +74,90 @@ clipping_md <- md %>%
       ifelse(!is.na(ret_dateEst), substr(ret_dateEst, nchar(ret_dateEst) - 9, nchar(ret_dateEst)), 
              ret_date), format = "%Y-%m-%d")) %>%
   
-  mutate(depDate_comb = format(depDate_comb, "%d/%m/%Y"),
+  mutate(depDate_comb = format(depDate_comb, "%d/%m/%Y"), #keep dates in this format to match files
          retDate_comb = format(retDate_comb, "%d/%m/%Y")) %>%
   
   #only keep necessary columns 
-  select(wetdry_filename, depDate_comb, retDate_comb)
+  select(wetdry_filename, depDate_comb, retDate_comb, colony)
 
 # checked that number of observations in `MT_devices_retrieved` is equal to `clipping_md`
+```
 
+Make a similar `metrics_md` file that we can use later on for HMM 
 
+```{r}
+
+#clean up the metadata so that we only include the necessary columns for clipping
+#clean up the metadata so that we only include the necessary columns for clipping
+metrics_md <- md %>%
+  
+  filter(
+    #filter for MT devices
+    tagMake %in% c("Migrate Technology: W30A9-SEA", "Migrate Technology: W30A9-SEA-COOL"),
+    #remove any NA rows in wetdry_filename 
+    !is.na(wetdry_filename)) %>% 
+  
+  # merge estimated and observed columns 
+  mutate(
+    depDate_comb = as.Date(ifelse(!is.na(dep_dateEst), dep_dateEst, dep_date), format = "%Y-%m-%d"),
+    retDate_comb = as.Date(
+      ifelse(!is.na(ret_dateEst), substr(ret_dateEst, nchar(ret_dateEst) - 9, nchar(ret_dateEst)), 
+             ret_date), format = "%Y-%m-%d")) %>%
+  
+  mutate(depDate_comb = as.Date(depDate_comb), #leave dates in standard format for when DEGS match
+         retDate_comb = as.Date(retDate_comb)) %>% 
+  
+  #only keep necessary columns 
+  select(wetdry_filename, depDate_comb, retDate_comb, colony) %>%
+  
+  #categorize deployment periods in the dtaaframe
+  mutate(
+    deployment_period = case_when(
+    depDate_comb >= as.Date("2017-01-01") & retDate_comb <= as.Date("2018-12-31") ~ "2017-2018",
+    depDate_comb >= as.Date("2018-01-01") & retDate_comb <= as.Date("2019-12-31") ~ "2018-2019",
+    depDate_comb >= as.Date("2019-01-01") & retDate_comb <= as.Date("2020-12-31") ~ "2019-2020",
+    depDate_comb >= as.Date("2020-01-01") & retDate_comb <= as.Date("2021-12-31") ~ "2020-2021",
+    depDate_comb >= as.Date("2021-01-01") & retDate_comb <= as.Date("2022-12-31") ~ "2021-2022",
+    depDate_comb >= as.Date("2022-01-01") & retDate_comb <= as.Date("2023-12-31") ~ "2022-2023",
+    depDate_comb >= as.Date("2023-01-01") & retDate_comb <= as.Date("2024-12-31") ~ "2023-2024",
+    TRUE ~ "Other"   # any records outside of these ranges
+    )
+  )
+```
+
+and then a tibble to review how many files we have per deployment period per colony
+
+```{r}
+deployment_summary <- metrics_md %>%
+  
+  group_by(deployment_period, colony) %>%
+  
+  summarise(file_count=n(), .groups = "drop") %>%
+  
+  pivot_wider(names_from = colony,  #make tibble with colony columns
+              values_from = file_count, 
+              values_fill = 0 # fill missing vals with 0
+              ) %>%
+  mutate(TOTAL = rowSums(select(., -deployment_period))) %>%
+  
+  bind_rows(summarise(.,
+                      across(where(is.numeric), sum),
+                      deployment_period = "TOTAL"))
+
+deployment_summary
+
+```
+
+Looks like there were 3 devices that stayed out for longer than a year.
+Lets handle these later on*
+
+```{r}
+print(metrics_md[metrics_md$deployment_period =="Other", ])
+```
+
+Save the metadata file for when we run HMM
+```{r}
+write.csv(metrics_md, file.path(data.dir, "metrics_md.csv"))
 ```
 
 
@@ -93,9 +165,6 @@ clipping_md <- md %>%
 
 The number of DEG files we have in that original folder should equal `MT_devices_retrieved`
 
-```{r}
-print(length(list.files(origin.dir, pattern = "\\.deg$", full.names = TRUE))) #checks out!
-```
 So we want to clip this for our known deployment times from the metadata
 For this bird we want to filter the DEG file to keep any dates from 2017-09-20 to 2018-06-29.
 ```{r}
@@ -132,6 +201,15 @@ fixed_md <- update_ret_date(clipping_md, deg.dir)
 #looks like retrieval dates for 5 files had to be fixed
 
 ```
+
+
+When the function prints this output, the dates are numerical but I double checked and it is doing it properly so dates are just being printed kind of wonky in the output.
+
+4 files had to be changed because the last date in the DEG file was earlier than the retrieval date:
+  * BU784_14Aug20_141554driftadj.deg
+  * BP496_09Aug19_171436driftadj.deg
+  * BU971_25Nov23_194250.deg
+  * CD491_2461_13483_GLS411_NED_Walsh.deg
 
 ## Clipping DEGS
 
@@ -240,8 +318,6 @@ results <- future_map_dfr(
 ```
 
 With 4 cores for 50 files, Furrr::future_map_dfr used 6.4MB of memory and took 7.62 seconds.
-
-
 
 ### Final clip
 
@@ -368,7 +444,9 @@ deployment_md <- clipping_md %>%
 deployment_md
 ```
 
-There should only be 4 files with values for days_active_after_ret
+There should only be 4 files with values for days_active_after_ret, showing how many days the device was dead before retrieval
+
+We can also see from this table how many days devices were deployed, how long some devices were on after retrieval, etc.
 
 #### File: CD480_06Aug22_140316driftadj.deg
 

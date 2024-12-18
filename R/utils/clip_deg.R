@@ -1,8 +1,9 @@
 clip_degs_welcome <- function() {
   cat("\n")
-  cat("===================================================\n")
-  cat("             YOU LOADED clip_degs                  \n")
-  cat("===================================================\n")
+  cat("=================================================== \n")
+  cat("             YOU LOADED clip_degs                   \n")
+  cat("   view this function in wey-dry_analysis/R/utils   \n")
+  cat("=================================================== \n")
   cat("\n")
   cat("this function clips DEG files based on deployment periods\n")
   cat("for combined estimated and observed dates, where depDate_comb\n")
