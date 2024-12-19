@@ -20,7 +20,7 @@ To make a data frame that contains:
 1)  create a single clean data frame containing data for every file
 
 2)  Run a 2state HMMM, have to run the following for the HMM:
-    ```
+
     prepData()
     
     define variables:
@@ -30,14 +30,14 @@ To make a data frame that contains:
     
     fitHMM()
     plotSates() - visualize the model
-    ```
+
 
 3) test with different binning intervals
 
-4) test covariates (if seasonality or a day/night indicator)
+4) test covariates
 
-
-
+  * wetness level (0-20) as a covariate.
+  * maybe seasonality or a day/night indicator?
 
 REFERENCES: 
 https://cran.r-project.org/web/packages/momentuHMM/vignettes/momentuHMM.pdf

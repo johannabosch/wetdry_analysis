@@ -4,11 +4,11 @@ We want the following metrics for times the device was deployed:
 
 * **Total proportion of time wet:** proportion of seconds wet across all 2-hour bins
 
-* **Total number of state switches (wet/dry transitions) per day:** number of times the device switched between wet (non-zero) and dry (zero) states across all 2-hour bins.
+* **Total number of state switches (wet/dry transitions) per 10mins:** number of times the device switched between wet (non-zero) and dry (zero) states across the deployment time (without downsampling).
 
-* **Cumulative dry and wet times per day:** total time (in seconds) the device recorded as completely dry (wets == 0) or wet (wets > 0)
+* **Cumulative dry and wet times:** total time (in seconds) the device recorded as completely dry (wets == 0) or wet (wets > 0)
 
-* **Longest continuous periods of dry or wet states throughout the whole deployment period:** longest sequence of consecutive dy/wet 10-minute intervals within the entire deployment period
+* **Longest continuous periods of dry or wet states throughout the whole deployment period:** longest sequence of consecutive dry/wet 10-minute intervals within the entire deployment period
 
 
 I start with visualizing proportions/switches for Baccalieu Island (2017-2018) using both types of downsampled data (taking the average or sum of wets).
@@ -19,28 +19,37 @@ I start with visualizing proportions/switches for Baccalieu Island (2017-2018) u
 source(here::here("project_settings.R"), echo=TRUE)
 ```
 
-## USING AVERAGE WETS
+
+Add the colony and deployment_period values from metrics_md to `deg_props_2hrs` and `deg_switches`
+
+```{r}
+deg_props_2hrs <- deg_props_2hrs %>%
+  left_join(metrics_md %>% select(bird_id, deployment_period, colony), by = "bird_id")
+
+deg_switches <- deg_switches %>%
+    left_join(metrics_md %>% select(bird_id, deployment_period, colony), by = "bird_id")
+
+```
+
+
+Let's see what we have to work with per colony/deployment_periods
+```{r}
+deployment_summary
+```
+
 
 ## Baccalieu - Ned Walsh 2017-2018
 
-Decide what downsampled data you want to use and redefine bin_time 
-```{r}
-(downsampled.dir <- file.path(data.dir, "downsampled_2hrs"))
-
-bin_time = 2
-```
-
-Let's start with the 2017-2018 files from Baccalieu (6 files total)
+Let's start by visualizing switches/proportions for 2017-2018 files from Baccalieu (6 files total)
 
 ```{r}
+
 #get list of downsampled files to process 
-bacc_2017_md <- metrics_md %>%
+bacc_2017_props <- deg_props_2hrs %>%
   filter(colony == "Baccalieu - Ned Walsh",
          deployment_period == "2017-2018") %>%
-  pull(wetdry_filename)
+  pull(bird_id)
 
-bacc_2017_md <- paste0("filtered_", bacc_2017_md)
- 
 DEG_files <- list.files(downsampled.dir, full.names=TRUE)
 
 bacc_2017_files <- DEG_files[basename(DEG_files) %in% bacc_2017_md]

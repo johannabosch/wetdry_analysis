@@ -2,11 +2,10 @@
 
 **NOTE**: using wets > 0 after averaging will not capture the underlying switches in the 10-minute data, once we bin this data we lose access to those switch points. This is why we calculated switches before down sampling. Proportions can be calculated in 2hr bins because looking at the 10min bins is way too high of a resolution.
 
-First I calculate proportions in a 2hr bin for both types of downsampled data (taking the mean of wets vs sum of wets to compare which is better).
+Calculate proportions for downsampled data where the sum of wets was calculated in 2hr bins
+Should be sum for calculating proportions, and not mean wets.
 
-Then I look at proportions in the 1hr and 5hr bins to compare to 2hr bins.
-
-## Load settings
+##Load settings
 
 ```{r include=FALSE}
 source(here::here("project_settings.R"), echo=TRUE)
@@ -14,61 +13,37 @@ source(here::here("project_settings.R"), echo=TRUE)
 
 
 ## Calclate Proportions
-
-Function to calculate proportion:
+ 
+Function to calculate proportion of wet time on the downsampled data:
 ```{r}
 
-calc_prop <- function(file_path) {
-  deg_data <- read_csv(file_path, show_col_types=FALSE)
+calc_prop <- function(deg_data, bin_time = bin_time) {
   
-  bird_id <- str_extract(basename(file_path), "(?<=filtered_)[A-Z-0-9]{5}")
+  bird_id <- deg_data$bird_id[1]
   
   #start by calculating metrics for a single 2hr bin
   prop_data <- deg_data %>%
     mutate(
-      bin_length = bin_time * 3600, #2hrs in secs
-      
-      wets = ifelse(is.na(wets), 0, wets), #replace NAs with wet=0
-      
-      #proportion of time wet in 2hr period (wets*30 converts wetness level into secs spent wet)
+      bird_id = bird_id,
+      #proportion of time wet in bin_time period (wets*30 converts wetness level into secs spent wet)
       # (600sec per 10min interval) / 20 = 30 seconds per unit 
-      prop_wet = ifelse(bin_length > 0, (wets * 30) / bin_length), 
-      
-      bird_id = bird_id)
+      prop_wet = (wets * 30) / (bin_time * 3600) #convert wets to secs and divide by bin_length in secs
+      )
 
   return(prop_data)
 }
 ```
 
-### Mean of wets
 
-Applying the function to our DEG files downsampled by 2hrs using mean wets:
+Applying the function to our DEG files downsampled by 2hrs using sum of wets:
+
 ```{r}
-
-(downsampled.dir <- file.path(data.dir, "downsampled_2hrs_avg"))
+plan(multisession, workers = 4)
 
 bin_time = 2
 
-prop_metrics <- future_map_dfr(DEG_files, calc_prop)
+deg_props_2hrs <- future_map_dfr(deg_2hrs, calc_prop, bin_time = bin_time)
 
-head(bin_metrics)
-
-```
-
-
-### Sum of wets
-
-
-Applying the function to our DEG files downsampled by 2hrs using mean wets:
-```{r}
-
-(downsampled.dir <- file.path(data.dir, "downsampled_2hrs_sum"))
-
-bin_time = 2
-
-prop_metrics <- future_map_dfr(DEG_files, calc_prop)
-
-head(bin_metrics)
+deg_props_2hrs
 
 ```
-

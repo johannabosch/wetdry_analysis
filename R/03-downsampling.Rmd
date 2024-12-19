@@ -6,14 +6,10 @@
 source(here::here("project_settings.R"), echo=TRUE)
 ```
 
-Save the metadata file for when we run HMM
-```{r}
-metrics_md <- read.csv(file.path(data.dir, "metrics_md.csv"))
-```
-
 
 ## Down-sampling (MEAN wets)
 
+**Katie Notes:**
 Right now the files are logging every 10 minutes, which is too high of a resolution. Need to down-sample the dataset from 10min to some other interval that is meaningful to define states to.
 
 12hrs seems too long given how far birds can move in this time, but 10min is far too short.
@@ -33,19 +29,19 @@ For example, within each 2hr period we need to assess:
 ```{r eval=FALSE}
 
 #made a new dir called downsampled in /data
-source(here("utils/downsample_deg_avg.R"), echo = F)
+source(here("utils/downsample_deg.R"), echo = F)
 
 bin_time = 2
 
 #define deg files to use
-deg_files <- list.files(output.dir, pattern = "*.deg", full.names = TRUE)#[1:5] #add if you want to subset
+deg_files <- list.files(output.dir, pattern = "*.deg", full.names = TRUE)#[1:10] #add if you want to subset
 
 
-if (FALSE) {
+if (TRUE) {
 #set up a furrr plan for using 4 cores
 plan(multisession, workers = 4)
 
-future_map(deg_files, downsample_deg_avg, bin_time = bin_time, .progress = TRUE)
+deg_2hrs <- future_map(deg_files, downsample_deg, bin_time = bin_time, .progress = TRUE)
 
 plan(sequential)
 }
@@ -84,7 +80,6 @@ deg_files <- list.files(file.path(data.dir, "downsampled_2hr_avg"),
 #set your bin_time
 bin_time = 2
 
-
 if (FALSE) {
 #set up a furrr plan for using 4 cores
 plan(multisession, workers = 4)
@@ -106,7 +101,6 @@ date,start_time,end_time,wets
 2017-09-20,05:00:00,05:59:59,5.333
 2017-09-20,06:00:00,06:59:59,6.333
 ```
-
 
 
 ### 5hr Periods
@@ -138,7 +132,6 @@ date,start_time,end_time,wets
 2017-09-21,05:00:00,09:59:59,7.567
 2017-09-21,10:00:00,14:59:59,2.2
 ```
-
 
 ## Down-sampling (SUM wets)
 
