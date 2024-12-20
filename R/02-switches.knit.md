@@ -1,0 +1,96 @@
+
+# Wet-Dry Switches
+
+    Within each 2hr period we need to assess:
+    •	Number of switches between 0 and non-zero value
+
+## Getting started
+
+
+
+
+## Calculating Switches
+
+Before downsampling the data let's calculate the number of switches between wet and dry states in a 10min interval.
+This will be a binary indicator (wets>0 or wets==0) that we can use along with the proportions.
+
+Our current DEG files look like this:
+```
+date,time,wets0-20
+2017-09-20,00:08:08,0
+2017-09-20,00:18:08,0
+2017-09-20,00:28:08,0
+2017-09-20,00:38:08,0
+2017-09-20,00:48:08,0
+2017-09-20,00:58:08,0
+2017-09-20,01:08:08,0
+```
+
+To calculate switches between 10min intervals, we need to transform wet values to a binary 
+
+Example //
+
+If we have a vector of wets equal to:
+```[0, 20, 18, 0, 4, 2]```
+
+The binary would be:
+```[0, 1, 1, 0, 1, 1]```
+        
+Then we need to calculate the difference between each value.
+  
+  ```diff(c(0, 1, 1, 0, 1, 1))```
+  
+  Output:
+  ```[1, 0, -1, 1, 0]```
+
+Finally, we don't want negatives, so we can count absolute values
+  
+  ```abs(c(1, 0, -1, 1, 0))```
+  
+  Final Output:
+  ```[1, 0, 1, 1, 0]```
+
+The function below does this for one file, adding a column to our DEG files that tracks switches
+
+
+``` r
+calc_switch <- function(file_path) {
+  deg_data <- read_csv(file_path, show_col_types=FALSE)
+  bird_id <- str_extract(basename(file_path), "(?<=filtered_)[A-Z-0-9]{5}")
+  wets <- deg_data$`wets0-20`
+  
+  #switches between wet (non-zero) and dry (zero) states
+  #row_number() assigns a unique number to each row to reference row positions
+  #if it is the first row, set state to 0 since there are no rows to compare with
+  #for all other rows (else case), calculate the numb. of switches 
+  
+  switches =c(0, abs(diff( #calculates absolute values for state changes (1 or -1 depending on direction)
+      ifelse(wets > 0, 1, 0))))  #if wets>0 use 1, if not use 0 (transforms wets to binary)
+  
+  deg_data <- deg_data %>%
+    mutate(bird_id = bird_id, switches = switches)  %>%
+    rename(wets = `wets0-20`) %>%
+    select(bird_id, date, time, wets, switches)
+  
+  return(deg_data)
+}
+```
+
+Then we can apply that function to all our files in our `clipped` directory
+
+``` r
+#define deg files to use
+deg_files <- list.files(output.dir, pattern = "*.deg", full.names = TRUE)#[1:10] #add if you want to subset
+
+plan(multisession, workers = 4)
+
+deg_switches <- future_map_dfr(deg_files, calc_switch)
+
+plan(sequential)
+```
+
+
+Add the `colony` and `deployment_period` values from `metrics_md` to `deg_switches`
+
+
+

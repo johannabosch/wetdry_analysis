@@ -1,20 +1,27 @@
 book_filename: "my-book"
 output_dir: "_book"
-rmd_files: ["index.Rmd", "01-cleanup.Rmd", "02-downsampling.Rmd", "03-metrics_2hr.Rmd", "04-metrics_1hr.Rmd", "05-metrics_5hr.Rmd", "06-HMM.Rmd"]
+new_session: false
 delete_merged_file: true
-label:
-  fig: "Figure"
-  tab: "Table"
-
-bookdown::gitbook:
-  css: style.css
-  config:
-    toc:
-      collapse: section
-      before: null
-      after: null
-bookdown::pdf_book: default
-bookdown::epub_book: default
-download:
-  - pdf
-  - epub
+rmd_files: 
+  - "index.Rmd"
+  - "01-cleanup.Rmd"
+  - "02-switches.Rmd"
+  - "03-downsampling.Rmd"
+  - "04-proportions.Rmd"
+  - "05-longestperiods.Rmd"
+  - "06-total_wet-dry.Rmd"
+  - "07-visualize.Rmd"
+  - "08-HMM.Rmd"
+output:
+  bookdown::gitbook:
+    css: style.css
+    config:
+      toc:
+        collapse: section
+        before: null
+        after: null
+      includes:
+        in_header: header.html
+    download: ["pdf", "epub"]
+  bookdown::pdf_book: default
+  bookdown::epub_book: default

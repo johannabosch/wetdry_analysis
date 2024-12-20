@@ -1,0 +1,310 @@
+# Visualizing Metrics
+    
+    From Katie's Notes:
+    
+    Within each 2hr period we need to assess:
+    •	Proportion wet or time wet ((Count wets in 2hr period * 30sec) / 72000sec)
+    •	Number of switches between 0 and non-zero value
+    
+    •	Total time when entire 10min sampling interval was dry (count 0s * 10min)
+    •	Total time when entire 10min sampling interval was wet (count >=1 * 10min)
+    
+    •	Longest continuous time dry (longest number of consecutive rows with wets==0  * 10min)
+    •	Longest continuous time wet (longest number of consecutive rows with wets>=1 * 10min)
+
+
+I start with setting up some plotting functions so we can look at different subsets of our data easily. Then i apply those plotting functions to the Baccalieu (2017-2018) DEG files (6 files) to visualize the metrics we discussed.
+
+## Plotting Functions
+
+### Plot Proportions
+
+For proportions, I use the downsampled data by 2hr bins (taking the **sum** of wets).
+
+```{r}
+#plot by 2hr bins
+plot_props <- function(data, y_var, y_label, plot_title) {
+ plot_ly(data = data,
+        x = ~as.POSIXct(paste(date, start_time), format = "%Y-%m-%d %H:%M:%S", tz = "UTC"),
+        y= as.formula(paste0("~", y_var)), 
+       type = 'scatter',
+       mode = 'lines+markers',
+       color = ~bird_id,
+       line = list(width = 0.5),
+       marker = list(size = 3)) %>%
+        layout(
+          title = list(text=plot_title, font=list(size=11)),
+          xaxis = list(title = "Time (2-hour bins)", tickformat = "%b %Y", tickangle = 45),
+          yaxis = list(title = y_label, rangemode = "tozero"), 
+          legend = list(title = list(text = "Bird ID"), orientation = "v"),
+          margin = list(t=100, b=100, l=100, r=100)) %>%
+    config(responsive = TRUE)
+
+  }
+
+#or plot by day
+plot_daily_props <- function(data, y_var, y_label, plot_title) {
+ plot_ly(data = data,
+        x = ~date,
+        y= as.formula(paste0("~", y_var)), 
+       type = 'scatter',
+       mode = 'lines+markers',
+       color = ~bird_id,
+       line = list(width = 0.5),
+       marker = list(size = 3)) %>%
+        layout(
+          title = list(text=plot_title, font=list(size=11)),
+          xaxis = list(title = "Time (days)", tickformat = "%b %Y", tickangle = 45),
+          yaxis = list(title = y_label, rangemode = "tozero"), 
+          legend = list(title = list(text = "Bird ID"), orientation = "v"),
+          margin = list(t=50, b=50, l=100, r=100))%>%
+    config(responsive = TRUE)
+  }
+```
+
+
+### Plot Switches
+
+Plotting switches in **10min intervals** across a whole deployment period takes up a lot of mem and it's hard to visualise. Let's summarize the number of switches into a daily period to visualise, taking the sum of switches per day:
+
+```{r}
+daily_switches <- deg_switches %>%
+  group_by(bird_id, date, deployment_period, colony) %>%
+  summarize(daily_switches = sum(switches, na.rm = TRUE), 
+            .groups = "drop")
+
+#or plot by day
+plot_daily_switches <- function(data, y_var, y_label, plot_title) {
+ plot_ly(data = data,
+        x = ~date,
+        y= as.formula(paste0("~", y_var)), 
+       type = 'scatter',
+       mode = 'lines+markers',
+       color = ~bird_id,
+       line = list(width = 0.5),
+       marker = list(size = 3)) %>%
+        layout(
+          title = list(text=plot_title, font=list(size=11)),
+          xaxis = list(title = "Date", tickformat = "%b %Y", tickangle = 45),
+          yaxis = list(title = y_label, rangemode = "tozero"), 
+          legend = list(title = list(text = "Bird ID"), orientation = "v"),
+          margin = list(t=100, b=100, l=100, r=100))%>%
+    config(responsive = TRUE)
+}
+
+```
+
+
+### Plot Longest Periods
+
+These are the longest continuous dry and wet periods on a timeline (geom_segment)
+```{r}
+
+plot_longest_prds <- function(data, plot_title) {
+  
+  plot <- ggplot(data, aes(y=bird_id)) +
+    geom_segment(aes(x = longest_dry_start, xend = longest_dry_end, yend = bird_id), 
+                 size = 1, color = "lightblue") +  
+    geom_segment(aes(x = longest_wet_start, xend = longest_wet_end, yend = bird_id), 
+                 size = 1, color = "blue") +
+    
+    labs(title = plot_title,
+         subtitle = "Light Blue: Dry | Blue: Wet",
+         x = "Time", y = "Bird ID") +
+    
+    scale_x_datetime(breaks = scales::date_breaks("1 month"), labels = scales::date_format("%b %Y")) +
+    
+    theme_minimal() +
+    theme(
+      axis.text.y = element_text(size = 10),
+      plot.title = element_text(hjust = 0.5, face = "bold"),
+      plot.subtitle = element_text(hjust = 0.5)
+    )
+  
+  plotly_plot <- ggplotly(plot) %>%
+    layout(margin = list(l = 100, r = 100, b = 100, t = 100),
+           xaxis = list(tickangle = 45))%>%
+    config(responsive = TRUE)
+  
+  return(plotly_plot)
+}
+  
+```
+
+
+
+### Plot Total Wets 
+
+•	Total time when entire 10min sampling interval was dry (count 0s * 10min)
+•	Total time when entire 10min sampling interval was wet (count >=1 * 10min)
+
+
+```{r}
+plot_total_times <- function(data, plot_title) {
+  plot_ly(data = data) %>%
+    add_trace(
+      x = ~bird_id,
+      y = ~total_time_wet,
+      type = 'bar',
+      name = 'Total time wet (mins)',
+      marker = list(color = 'blue')
+    ) %>%
+    add_trace(
+      x = ~bird_id,
+      y = ~total_time_dry,
+      type = 'bar',
+      name = 'Total time dry (mins)',
+      marker = list(color = 'lightblue')
+    ) %>%
+    layout(
+      title = list(text = plot_title, font = list(size = 10)),
+      xaxis = list(title = "Bird ID", tickangle = 45),
+      yaxis = list(title = "Total time (mins)", rangemode = "tozero"),
+      barmode = 'group',
+      legend = list(title = list(text = "Metric")),
+      margin = list(t = 100, b = 100, l = 100, r = 100)%>%
+    config(responsive = TRUE)
+    )
+}
+```
+
+
+_____________________________________________________________________
+
+
+Let's see what we have to work with per colony/deployment_periods
+```{r}
+deployment_summary
+```
+
+
+
+## Baccalieu - Ned Walsh 2017-2018
+
+Let's start by visualizing switches/proportions for 2017-2018 files from Baccalieu (6 files total)
+
+### Running plotting functions
+
+**Proportions:**
+
+```{r}
+#subset the dataframe so we have less data to work with
+bacc_2017_props <- deg_props_2hrs %>%
+  filter(colony == "Baccalieu - Ned Walsh",
+         deployment_period == "2017-2018") %>%
+  select(bird_id, date, start_time, end_time, prop_wet)
+
+head(bacc_2017_props)
+```
+
+
+```{r}
+plot_bacc2017_props <- plot_props(data = bacc_2017_props, 
+                                  y_var = "prop_wet", 
+                                  y_label = "Proportion", 
+                                  plot_title = "Proportion of Wet Time Across Deployments Per 2hr bins) - (Baccalieu Island 2017-2018)")
+
+```
+
+
+This kind of hurts to look at so we can also try aggregating the data to days taking the sum of prop_wet.
+
+**Daily Proportions:**
+
+```{r}
+bacc_2017_daily_props <- bacc_2017_props %>%
+  group_by(bird_id, date) %>%
+  summarize(daily_prop_wet = mean(prop_wet, na.rm = TRUE), .groups = "drop")
+
+
+plot_bacc2017_daily_props <- plot_daily_props(data = bacc_2017_daily_props, 
+                                  y_var = "daily_prop_wet", 
+                                  y_label = "Proportion", 
+                                  plot_title = "Mean Proportion of Wet Periods (2hr bins) Per Day (Baccalieu Island 2017-2018)")
+
+```
+
+
+**Daily Switches:**
+
+```{r}
+#subset the dataframe so we have less data to work with
+bacc_2017_switches <- daily_switches %>%
+  filter(colony == "Baccalieu - Ned Walsh",
+         deployment_period == "2017-2018") %>%
+  select(bird_id, date, daily_switches)
+
+head(bacc_2017_switches)
+```
+
+```{r}
+plot_bacc2017_daily_switches <- plot_daily_switches(
+  data = bacc_2017_switches,
+  y_var = "daily_switches",
+  y_label = "Sum of Switches",
+  plot_title = "Daily Sum of Switches between Wet (wet>0) and Dry (wet=0) States for Baccalieu Island (2017-2018)")
+
+```
+
+
+**Longest Wet/Dry Periods**
+
+```{r}
+bacc_2017_longest_prds <- deg_longest_prds %>%
+  filter(colony == "Baccalieu - Ned Walsh",
+         deployment_period == "2017-2018") %>%
+  select(bird_id,
+         longest_dry_time, 
+         longest_dry_start, 
+         longest_dry_end, 
+         longest_wet_time,
+         longest_wet_start, 
+         longest_wet_end)
+```
+
+```{r}
+plot_bacc_2017_longest_prds <- plot_longest_prds(
+  data = bacc_2017_longest_prds,
+  plot_title = "Longest Wet and Dry Periods - Baccalieu Island 2017-2018")
+
+```
+
+
+
+**Total Wet/Dry**
+
+```{r}
+
+bacc_2017_total_wetdry <- deg_total_wetdry %>%
+  filter(colony == "Baccalieu - Ned Walsh",
+         deployment_period == "2017-2018") %>%
+  select(bird_id,
+         total_time_wet,
+         total_time_dry)
+
+
+plot_bacc_2017_total_times <- plot_total_times(bacc_2017_total_wetdry, "Total Wet and Dry Times (Baccalieu Island, 2017-2018)")
+```
+
+
+### Final Plots 
+
+```{r}
+plot_bacc2017_props
+```
+
+```{r}
+plot_bacc2017_daily_props
+```
+
+```{r}
+plot_bacc2017_daily_switches
+```
+
+```{r}
+plot_bacc_2017_total_times
+```
+
+```{r}
+plot_bacc_2017_longest_prds
+```

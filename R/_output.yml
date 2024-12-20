@@ -5,8 +5,8 @@ bookdown::gitbook:
       collapse: section
       before: null
       after: null
+    includes:
+      in_header: header.html
+  download: ["pdf", "epub"]
 bookdown::pdf_book: default
 bookdown::epub_book: default
-download:
-  - pdf
-  - epub

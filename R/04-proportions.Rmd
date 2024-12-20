@@ -1,16 +1,10 @@
 # Proportions Wet
 
-**NOTE**: using wets > 0 after averaging will not capture the underlying switches in the 10-minute data, once we bin this data we lose access to those switch points. This is why we calculated switches before down sampling. Proportions can be calculated in 2hr bins because looking at the 10min bins is way too high of a resolution.
+    Within each 2hr period we need to assess:
+    •	Proportion wet or time wet ((Count wets in 2hr period * 30sec) / 72000sec)
+
 
 Calculate proportions for downsampled data where the sum of wets was calculated in 2hr bins
-Should be sum for calculating proportions, and not mean wets.
-
-##Load settings
-
-```{r include=FALSE}
-source(here::here("project_settings.R"), echo=TRUE)
-```
-
 
 ## Calclate Proportions
  
@@ -47,3 +41,12 @@ deg_props_2hrs <- future_map_dfr(deg_2hrs, calc_prop, bin_time = bin_time)
 deg_props_2hrs
 
 ```
+
+Add the `colony` and `deployment_period` values from `metrics_md` to `deg_props_2hrs`
+
+```{r}
+deg_props_2hrs <- deg_props_2hrs %>%
+  left_join(metrics_md %>% select(bird_id, deployment_period, colony), by = "bird_id")
+```
+
+
