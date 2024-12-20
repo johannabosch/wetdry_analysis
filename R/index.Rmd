@@ -3,9 +3,15 @@ title: "Wet-Dry Analysis for Petrel GLS Devices"
 author: "Johanna Bosch"
 date: "`r Sys.Date()`"
 site: bookdown::bookdown_site
-documentclass: book
+output: 
+  bookdown::gitbook:
+    config:
+      toc:
+        collapse: section
+        before: null
+        after: null
+    css: style.css
 ---
-
 
 # Wet-Dry Analysis for Petrel GLS Devices
 

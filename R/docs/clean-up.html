@@ -241,38 +241,30 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <span id="cb1-4"><a href="clean-up.html#cb1-4" tabindex="-1"></a><span class="co"># let&#39;s double check - every time there is an NA in retDate_comb, there should be no wet-dry file</span></span>
 <span id="cb1-5"><a href="clean-up.html#cb1-5" tabindex="-1"></a><span class="fu">print</span>(md <span class="sc">%&gt;%</span></span>
 <span id="cb1-6"><a href="clean-up.html#cb1-6" tabindex="-1"></a>  <span class="fu">filter</span>(<span class="sc">!</span><span class="fu">is.na</span>(wetdry_filename) <span class="sc">&amp;</span> <span class="fu">is.na</span>(ret_date) <span class="sc">&amp;</span> <span class="fu">is.na</span>(ret_dateEst))) <span class="co"># checks out</span></span></code></pre></div>
-<pre><code>##  [1] colony                 tagType                tagMake               
-##  [4] tagID                  tagProg                tagProgStartUTC       
-##  [7] band                   sex                    dep_recap             
-## [10] dep_handlerInits       dep_lat                dep_lon               
-## [13] dep_burrowID           dep_plotID             dep_date              
-## [16] dep_dateEst            dep_yr                 dep_mo                
-## [19] dep_datetimeUTC        dep_startHandle        dep_time              
-## [22] dep_durHandle          dep_brStatus           dep_burrowCont        
-## [25] dep_mass               dep_wing               dep_wingType          
-## [28] dep_tarsus             dep_bill               dep_tail              
-## [31] dep_eggAge             dep_eggWid             dep_eggLen            
-## [34] dep_chkAge             dep_notes              dep_techNotes         
-## [37] ret_handlerInits       ret_birdYN             ret_tagYN             
-## [40] ret_date               ret_dateEst            ret_yr                
-## [43] ret_mo                 ret_datetimeUTC        ret_time              
-## [46] ret_endHandle          ret_durHandle          ret_burrowID          
-## [49] ret_burrowCont         ret_mass               ret_massChange        
-## [52] ret_eggAge             ret_eggWid             ret_eggLen            
-## [55] ret_chkAge             ret_spotCardYN         ret_bloodCapAmt       
-## [58] ret_feathType          ret_feathNum           ret_notes             
-## [61] ret_notesTissue        ret_tagStatus          ret_trackType         
-## [64] wetdry_filename        track_filename         track_dataStart       
-## [67] track_dataEnd          IPorig_track_filename  sourceFile            
-## [70] gtDep_site             gtDep_lat              gtDep_lon             
-## [73] gtDep_startDate        gtDep_startTime        gtDep_endDate         
-## [76] gtDep_endTime          gtDep_startDatetimeUTC gtDep_endDatetimeUTC  
-## [79] gtDep_notes            gtRet_site             gtRet_lat             
-## [82] gtRet_lon              gtRet_startDate        gtRet_startTime       
-## [85] gtRet_endDate          gtRet_endTime          gtRet_startDatetimeUTC
-## [88] gtRet_endDatetimeUTC   gtRet_notes            gtRet_filename        
-## [91] ESRF                   ret_brStatus           simulMateTrack        
-## [94] repGLS                 repGPS                 repGLSGPS             
+<pre><code>##  [1] colony                 tagType                tagMake                tagID                 
+##  [5] tagProg                tagProgStartUTC        band                   sex                   
+##  [9] dep_recap              dep_handlerInits       dep_lat                dep_lon               
+## [13] dep_burrowID           dep_plotID             dep_date               dep_dateEst           
+## [17] dep_yr                 dep_mo                 dep_datetimeUTC        dep_startHandle       
+## [21] dep_time               dep_durHandle          dep_brStatus           dep_burrowCont        
+## [25] dep_mass               dep_wing               dep_wingType           dep_tarsus            
+## [29] dep_bill               dep_tail               dep_eggAge             dep_eggWid            
+## [33] dep_eggLen             dep_chkAge             dep_notes              dep_techNotes         
+## [37] ret_handlerInits       ret_birdYN             ret_tagYN              ret_date              
+## [41] ret_dateEst            ret_yr                 ret_mo                 ret_datetimeUTC       
+## [45] ret_time               ret_endHandle          ret_durHandle          ret_burrowID          
+## [49] ret_burrowCont         ret_mass               ret_massChange         ret_eggAge            
+## [53] ret_eggWid             ret_eggLen             ret_chkAge             ret_spotCardYN        
+## [57] ret_bloodCapAmt        ret_feathType          ret_feathNum           ret_notes             
+## [61] ret_notesTissue        ret_tagStatus          ret_trackType          wetdry_filename       
+## [65] track_filename         track_dataStart        track_dataEnd          IPorig_track_filename 
+## [69] sourceFile             gtDep_site             gtDep_lat              gtDep_lon             
+## [73] gtDep_startDate        gtDep_startTime        gtDep_endDate          gtDep_endTime         
+## [77] gtDep_startDatetimeUTC gtDep_endDatetimeUTC   gtDep_notes            gtRet_site            
+## [81] gtRet_lat              gtRet_lon              gtRet_startDate        gtRet_startTime       
+## [85] gtRet_endDate          gtRet_endTime          gtRet_startDatetimeUTC gtRet_endDatetimeUTC  
+## [89] gtRet_notes            gtRet_filename         ESRF                   ret_brStatus          
+## [93] simulMateTrack         repGLS                 repGPS                 repGLSGPS             
 ## &lt;0 rows&gt; (or 0-length row.names)</code></pre>
 <div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="clean-up.html#cb3-1" tabindex="-1"></a><span class="co">#double check that Migrate Tech are the only devices with wetdry data</span></span>
 <span id="cb3-2"><a href="clean-up.html#cb3-2" tabindex="-1"></a><span class="fu">print</span>(md <span class="sc">%&gt;%</span></span>
@@ -394,28 +386,23 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <span id="cb8-16"><a href="clean-up.html#cb8-16" tabindex="-1"></a></span>
 <span id="cb8-17"><a href="clean-up.html#cb8-17" tabindex="-1"></a>deployment_summary</span></code></pre></div>
 <pre><code>## # A tibble: 8 × 8
-##   deployment_period `Baccalieu - Ned Walsh` `Bon Portage` Country  Gull  Kent
-##   &lt;chr&gt;                               &lt;int&gt;         &lt;int&gt;   &lt;int&gt; &lt;int&gt; &lt;int&gt;
-## 1 2017-2018                               6             0       0     0     0
-## 2 2018-2019                               0             5       6    10    10
-## 3 2019-2020                              10            17      17    23    16
-## 4 2021-2022                              20             0      16    16    27
-## 5 2022-2023                               7            13       0    11     0
-## 6 2023-2024                              12             0       0    12     0
-## 7 Other                                   0             0       0     2     0
-## 8 TOTAL                                  55            35      39    74    53
-## # ℹ 2 more variables: `Middle Lawn` &lt;int&gt;, TOTAL &lt;dbl&gt;</code></pre>
+##   deployment_period `Baccalieu - Ned Walsh` `Bon Portage` Country  Gull  Kent `Middle Lawn` TOTAL
+##   &lt;chr&gt;                               &lt;int&gt;         &lt;int&gt;   &lt;int&gt; &lt;int&gt; &lt;int&gt;         &lt;int&gt; &lt;dbl&gt;
+## 1 2017-2018                               6             0       0     0     0             0     6
+## 2 2018-2019                               0             5       6    10    10             0    31
+## 3 2019-2020                              10            17      17    23    16             0    83
+## 4 2021-2022                              20             0      16    16    27            18    97
+## 5 2022-2023                               7            13       0    11     0            23    54
+## 6 2023-2024                              12             0       0    12     0             0    24
+## 7 Other                                   0             0       0     2     0             1     3
+## 8 TOTAL                                  55            35      39    74    53            42   298</code></pre>
 <p>Looks like there were 3 devices that stayed out for longer than a year.
 Lets handle these later on*</p>
 <div class="sourceCode" id="cb10"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb10-1"><a href="clean-up.html#cb10-1" tabindex="-1"></a><span class="fu">print</span>(metrics_md[metrics_md<span class="sc">$</span>deployment_period <span class="sc">==</span><span class="st">&quot;Other&quot;</span>, ])</span></code></pre></div>
-<pre><code>##     bird_id      colony                  wetdry_filename depDate_comb
-## 154   BU971        Gull         BU971_25Nov23_194250.deg   2019-09-22
-## 177   CD493        Gull CD493_22Jun23_004919driftadj.deg   2021-09-16
-## 258   CD501 Middle Lawn CD501_25Nov23_184453driftadj.deg   2021-09-22
-##     retDate_comb deployment_period
-## 154   2023-08-22             Other
-## 177   2023-01-05             Other
-## 258   2023-01-01             Other</code></pre>
+<pre><code>##     bird_id      colony                  wetdry_filename depDate_comb retDate_comb deployment_period
+## 154   BU971        Gull         BU971_25Nov23_194250.deg   2019-09-22   2023-08-22             Other
+## 177   CD493        Gull CD493_22Jun23_004919driftadj.deg   2021-09-16   2023-01-05             Other
+## 258   CD501 Middle Lawn CD501_25Nov23_184453driftadj.deg   2021-09-22   2023-01-01             Other</code></pre>
 <p>Save the metadata file for when we run HMM</p>
 <div class="sourceCode" id="cb12"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb12-1"><a href="clean-up.html#cb12-1" tabindex="-1"></a><span class="fu">write.csv</span>(metrics_md, <span class="fu">file.path</span>(data.dir, <span class="st">&quot;metrics_md.csv&quot;</span>))</span></code></pre></div>
 </div>
@@ -721,21 +708,20 @@ created a sink in clip_degs to log output to a file instead of console</p>
 <span id="cb32-52"><a href="clean-up.html#cb32-52" tabindex="-1"></a></span>
 <span id="cb32-53"><a href="clean-up.html#cb32-53" tabindex="-1"></a>deployment_md</span></code></pre></div>
 <pre><code>## # A tibble: 298 × 8
-##    wetdry_filename       depDate_comb retDate_comb last_active_day days_deployed
-##    &lt;chr&gt;                 &lt;date&gt;       &lt;date&gt;       &lt;date&gt;                  &lt;dbl&gt;
-##  1 BH594_04Jul18_135310… 2017-09-20   2018-06-29   2018-07-04                283
-##  2 BH596_04Jul18_134429… 2017-09-20   2018-06-29   2018-07-04                283
-##  3 BH602_04Jul18_132708… 2017-09-20   2018-06-29   2018-07-04                283
-##  4 BH584_04Jul18_125355… 2017-09-20   2018-07-01   2018-07-04                285
-##  5 BH603_03Jul18_194628… 2017-09-19   2018-07-01   2018-07-03                286
-##  6 BH595_04Jul18_131651… 2017-09-19   2018-07-01   2018-07-04                286
-##  7 BU853_69W_4261-13034… 2019-08-27   2020-10-26   2021-04-19                427
-##  8 BU869_77W_2461-13037… 2019-08-27   2020-11-06   2021-02-09                438
-##  9 BU832_24Jul20_165309… 2019-08-27   2020-07-22   2020-07-24                331
-## 10 BU847_84W_2461-13042… 2019-08-27   2020-11-05   2021-02-19                437
+##    wetdry_filename                  depDate_comb retDate_comb last_active_day days_deployed days_active_before_ret
+##    &lt;chr&gt;                            &lt;date&gt;       &lt;date&gt;       &lt;date&gt;                  &lt;dbl&gt;                  &lt;dbl&gt;
+##  1 BH594_04Jul18_135310driftadj.deg 2017-09-20   2018-06-29   2018-07-04                283                    288
+##  2 BH596_04Jul18_134429driftadj.deg 2017-09-20   2018-06-29   2018-07-04                283                    288
+##  3 BH602_04Jul18_132708driftadj.deg 2017-09-20   2018-06-29   2018-07-04                283                    288
+##  4 BH584_04Jul18_125355driftadj.deg 2017-09-20   2018-07-01   2018-07-04                285                    288
+##  5 BH603_03Jul18_194628driftadj.deg 2017-09-19   2018-07-01   2018-07-03                286                    288
+##  6 BH595_04Jul18_131651driftadj.deg 2017-09-19   2018-07-01   2018-07-04                286                    289
+##  7 BU853_69W_4261-13034.deg         2019-08-27   2020-10-26   2021-04-19                427                    602
+##  8 BU869_77W_2461-13037.deg         2019-08-27   2020-11-06   2021-02-09                438                    533
+##  9 BU832_24Jul20_165309driftadj.deg 2019-08-27   2020-07-22   2020-07-24                331                    333
+## 10 BU847_84W_2461-13042.deg         2019-08-27   2020-11-05   2021-02-19                437                    543
 ## # ℹ 288 more rows
-## # ℹ 3 more variables: days_active_before_ret &lt;dbl&gt;,
-## #   days_inactive_before_ret &lt;dbl&gt;, days_active_after_ret &lt;dbl&gt;</code></pre>
+## # ℹ 2 more variables: days_inactive_before_ret &lt;dbl&gt;, days_active_after_ret &lt;dbl&gt;</code></pre>
 <p>There should only be 4 files with values for days_active_after_ret, showing how many days the device was dead before retrieval</p>
 <p>We can also see from this table how many days devices were deployed, how long some devices were on after retrieval, etc.</p>
 <div id="file-cd480_06aug22_140316driftadj.deg" class="section level4 hasAnchor" number="2.7.0.1">
@@ -794,11 +780,10 @@ Looks like it was deployed for 135 days and died 7 days after it was deployed</p
 <div class="sourceCode" id="cb36"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb36-1"><a href="clean-up.html#cb36-1" tabindex="-1"></a>file <span class="ot">&lt;-</span> deployment_md[deployment_md<span class="sc">$</span>wetdry_filename <span class="sc">==</span> <span class="st">&quot;BU784_14Aug20_141554driftadj.deg&quot;</span>, ]</span>
 <span id="cb36-2"><a href="clean-up.html#cb36-2" tabindex="-1"></a><span class="fu">print</span>(file)</span></code></pre></div>
 <pre><code>## # A tibble: 1 × 8
-##   wetdry_filename        depDate_comb retDate_comb last_active_day days_deployed
-##   &lt;chr&gt;                  &lt;date&gt;       &lt;date&gt;       &lt;date&gt;                  &lt;dbl&gt;
-## 1 BU784_14Aug20_141554d… 2019-08-31   2020-01-12   2019-09-06                135
-## # ℹ 3 more variables: days_active_before_ret &lt;dbl&gt;,
-## #   days_inactive_before_ret &lt;dbl&gt;, days_active_after_ret &lt;dbl&gt;</code></pre>
+##   wetdry_filename                  depDate_comb retDate_comb last_active_day days_deployed days_active_before_ret
+##   &lt;chr&gt;                            &lt;date&gt;       &lt;date&gt;       &lt;date&gt;                  &lt;dbl&gt;                  &lt;dbl&gt;
+## 1 BU784_14Aug20_141554driftadj.deg 2019-08-31   2020-01-12   2019-09-06                135                      7
+## # ℹ 2 more variables: days_inactive_before_ret &lt;dbl&gt;, days_active_after_ret &lt;dbl&gt;</code></pre>
 <p>Do we want to add a filtering step here for devices that didn’t last over X number of days? Like a quality filtering step?</p>
 
 </div>
@@ -859,9 +844,6 @@ gitbook.start({
 },
 "toc": {
 "collapse": "section"
-},
-"includes": {
-"in_header": "header.html"
 }
 });
 });

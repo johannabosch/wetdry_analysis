@@ -1,5 +1,5 @@
 book_filename: "my-book"
-output_dir: "_book"
+output_dir: "docs"
 new_session: false
 delete_merged_file: true
 rmd_files: 
@@ -14,14 +14,12 @@ rmd_files:
   - "08-HMM.Rmd"
 output:
   bookdown::gitbook:
-    css: style.css
+    css: style.css 
     config:
       toc:
         collapse: section
         before: null
         after: null
-      includes:
-        in_header: header.html
     download: ["pdf", "epub"]
   bookdown::pdf_book: default
   bookdown::epub_book: default
