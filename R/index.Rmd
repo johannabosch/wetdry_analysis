@@ -1,21 +1,22 @@
 ---
-title: "Wet-Dry Analysis for Petrel GLS Devices"
+
+title: "Wet-Dry Analysis"
 author: "Johanna Bosch"
 date: "`r Sys.Date()`"
+
 site: bookdown::bookdown_site
+
 output: 
   bookdown::gitbook:
+    css: style.css
     config:
       toc:
         collapse: section
-        before: null
-        after: null
-    css: style.css
+
 ---
 
-# Wet-Dry Analysis for Petrel GLS Devices
+# Wet-Dry Analysis
 
-This will be an intro area discussing stuff about the analysis and references
+**See chapter 8 for plots**
 
-Still need to make a references.bib file, contains BIBTEX references 
-(can make a BIBTEX file from Zotero)
+Functions: https://github.com/johannabosch/wetdry_analysis/tree/main/R/utils

@@ -521,4 +521,4 @@ print(file)
 ```
 
 
-Do we want to add a filtering step here for devices that didn't last over X number of days? Like a quality filtering step?
+**Going to hold these cleaned up and clipped files in R's memory instead of writing them to a new csv every time. Will remove the DEG_clean dir, but keep the final clipped DEGS in /clipped so we don't overload R

@@ -1,0 +1,43 @@
+# Downsampling
+
+## Down-sampling (MEAN wets)
+
+    **Katie's Notes:**
+    Right now the files are logging every 10 minutes, which is too high of a resolution. Need to down-sample the dataset from 10min to some other interval that is meaningful to define states to.
+    
+    12hrs seems too long given how far birds can move in this time, but 10min is far too short.
+    
+    Tempted to use 2hr resolution to match GPS. 
+
+
+**NOTE:** wet values should be **summed** when downsampling for calculating proportions, and not mean wets.
+
+### 2hr Periods
+
+```{r}
+
+source(here::here("utils/downsample_deg.R"), echo = F)
+
+bin_time = 2
+
+#define deg files to use
+deg_files <- list.files(output.dir, pattern = "*.deg", full.names = TRUE)#[1:10] #add if you want to subset
+
+#set up a furrr plan for using 4 cores
+plan(multisession, workers = 4)
+
+deg_2hrs <- future_map(deg_files, downsample_deg, bin_time = bin_time, .progress = TRUE)
+
+plan(sequential)
+
+
+```
+
+wets = 0 means 10min interval was entirely dry
+wets = 20 means 10min interval was entirely wet
+    
+    For one 10min interval,
+    if wets=1, then 600s/20 = 30 seconds
+    so 1 unit wets = 30 seconds wet per 10min interval
+
+So our dataset's `wets` values now represent the average number of 10-minute intervals that were wet during the 2-hour period. This means each 2hr period has 12 intervals of 10 minutes (600 secs).

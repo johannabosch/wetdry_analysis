@@ -1,25 +1,25 @@
-book_filename: "my-book"
+book_filename: "wet-dry-analysis"
 output_dir: "docs"
+
 new_session: false
 delete_merged_file: true
+
 rmd_files: 
   - "index.Rmd"
   - "01-cleanup.Rmd"
   - "02-switches.Rmd"
-  - "03-downsampling.Rmd"
-  - "04-proportions.Rmd"
-  - "05-longestperiods.Rmd"
-  - "06-total_wet-dry.Rmd"
+  - "03-longestperiods.Rmd"
+  - "04-totalwetdry.Rmd"
+  - "05-downsampling.Rmd"
+  - "06-proportions.Rmd"
   - "07-visualize.Rmd"
   - "08-HMM.Rmd"
+
 output:
   bookdown::gitbook:
-    css: style.css 
+    css: style.css
     config:
-      toc:
-        collapse: section
-        before: null
-        after: null
-    download: ["pdf", "epub"]
-  bookdown::pdf_book: default
-  bookdown::epub_book: default
+      download: ["pdf", "epub"]
+    
+bookdown::pdf_book: default
+bookdown::epub_book: default

@@ -1,0 +1,66 @@
+# Total Wet/Dry
+
+    For this we want to know:
+    •	Total time when entire 10min sampling interval was dry (count 0s * 10min)
+    •	Total time when entire 10min sampling interval was wet (count >=1 * 10min)
+
+```{r}
+calc_dry_time <- function(deg_data) {
+  #count rows where wets == 0
+  total_dry_intervals <- sum(deg_data$`wets0-20` == 0, na.rm = TRUE)
+  
+  total_time_dry <- total_dry_intervals * 10 #multiply by 10mins per interval
+  
+  return(total_time_dry)
+}
+
+calc_wet_time <- function(deg_data) {
+  
+  total_wet_intervals <- sum(deg_data$`wets0-20` >=1 , na.rm = TRUE)
+  
+  total_time_wet <- total_wet_intervals * 10 
+  
+  return(total_time_wet)
+}
+
+
+#then we need a function to run these on multiple files
+calc_times <- function(file_path) {
+  deg_data <- read_csv(file_path, show_col_types = FALSE)
+  
+    bird_id <- str_extract(basename(file_path), "(?<=filtered_)[A-Z-0-9]{5}")
+  
+  total_time_dry <- calc_dry_time(deg_data)
+  total_time_wet <- calc_wet_time(deg_data)
+  
+  tibble(
+    bird_id = bird_id,
+    total_time_dry = total_time_dry,
+    total_time_wet = total_time_wet)
+  
+}
+```
+
+
+```{r}
+deg_files <- list.files(output.dir, pattern = "*.deg", full.names = TRUE)#[1:10] #add if you want to subset
+
+plan(multisession, workers = 4)
+
+deg_total_wetdry <- future_map_dfr(deg_files, calc_times, .progress = TRUE)
+
+plan(sequential)
+
+```
+
+
+
+```{r}
+deg_total_wetdry <- deg_total_wetdry %>%
+  left_join(metrics_md %>% select(bird_id, deployment_period, colony), by = "bird_id") %>%
+      filter(deployment_period != "2023-2024") #filtering out Seatrack data for now
+
+```
+
+
+

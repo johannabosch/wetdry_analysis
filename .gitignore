@@ -1,16 +1,14 @@
 .Rproj.user/
 wetdry_analysis.docx
+.Rhistory
 
 /R/.RData
 /R/.Rhistory
 /R/wet-dry_analysis.Rproj
-/R/03-HMM.Rmd
 
-/data/DEG/
 /data/clipped/
+/data/DEG/
 /data/DEG_clean/
-data/downsampled*
 /data/problem_files
-/data/DEG_clean.zip
-
-!data/zipped/
+/data/Master*
+data/zipped/

@@ -4,14 +4,6 @@
     Within each 2hr period we need to assess:
     •	Number of switches between 0 and non-zero value
 
-## Getting started
-
-```{r include=FALSE}
-source(here::here("project_settings.R"), echo=TRUE)
-
-```
-
-
 ## Calculating Switches
 
 Before downsampling the data let's calculate the number of switches between wet and dry states in a 10min interval.
@@ -86,7 +78,7 @@ deg_files <- list.files(output.dir, pattern = "*.deg", full.names = TRUE)#[1:10]
 
 plan(multisession, workers = 4)
 
-deg_switches <- future_map_dfr(deg_files, calc_switch)
+deg_switches <- future_map_dfr(deg_files, calc_switch, .progress = TRUE)
 
 plan(sequential)
 
@@ -96,8 +88,11 @@ plan(sequential)
 Add the `colony` and `deployment_period` values from `metrics_md` to `deg_switches`
 
 ```{r}
+
 deg_switches <- deg_switches %>%
-    left_join(metrics_md %>% select(bird_id, deployment_period, colony), by = "bird_id")
+    left_join(metrics_md %>% select(bird_id, deployment_period, colony), by = "bird_id") %>%
+      filter(deployment_period != "2023-2024") #filtering out Seatrack data for now 
+
 ```
 
 
