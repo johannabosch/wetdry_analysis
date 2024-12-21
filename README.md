@@ -3,7 +3,6 @@
 ### [DRAFT]
 
 
-Git page -  
+Git page -  https://johannabosch.github.io/wetdry_analysis/
 
 See `LICENSE` in root directory.
-
