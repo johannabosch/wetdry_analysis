@@ -58,7 +58,7 @@ plan(sequential)
 ```{r}
 deg_total_wetdry <- deg_total_wetdry %>%
   left_join(metrics_md %>% select(bird_id, deployment_period, colony), by = "bird_id") %>%
-      filter(deployment_period != "2023-2024") #filtering out Seatrack data for now
+      filter(deployment_period != "2023-2024")
 
 ```
 

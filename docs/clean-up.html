@@ -4,18 +4,18 @@
 
   <meta charset="utf-8" />
   <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-  <title>2 Clean-up | Visualization</title>
-  <meta name="description" content="2 Clean-up | Visualization" />
+  <title>2 Clean-up | wet-dry-analysis.knit</title>
+  <meta name="description" content="" />
   <meta name="generator" content="bookdown 0.41 and GitBook 2.6.7" />
 
-  <meta property="og:title" content="2 Clean-up | Visualization" />
+  <meta property="og:title" content="2 Clean-up | wet-dry-analysis.knit" />
   <meta property="og:type" content="book" />
   
   
   
 
   <meta name="twitter:card" content="summary" />
-  <meta name="twitter:title" content="2 Clean-up | Visualization" />
+  <meta name="twitter:title" content="2 Clean-up | wet-dry-analysis.knit" />
   
   
   
@@ -207,7 +207,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
       <div class="body-inner">
         <div class="book-header" role="navigation">
           <h1>
-            <i class="fa fa-circle-o-notch fa-spin"></i><a href="./">Visualization</a>
+            <i class="fa fa-circle-o-notch fa-spin"></i><a href="./"></a>
           </h1>
         </div>
 
@@ -370,8 +370,9 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <span id="cb7-35"><a href="clean-up.html#cb7-35" tabindex="-1"></a>    depDate_comb <span class="sc">&gt;=</span> <span class="fu">as.Date</span>(<span class="st">&quot;2022-01-01&quot;</span>) <span class="sc">&amp;</span> retDate_comb <span class="sc">&lt;=</span> <span class="fu">as.Date</span>(<span class="st">&quot;2023-12-31&quot;</span>) <span class="sc">~</span> <span class="st">&quot;2022-2023&quot;</span>,</span>
 <span id="cb7-36"><a href="clean-up.html#cb7-36" tabindex="-1"></a>    depDate_comb <span class="sc">&gt;=</span> <span class="fu">as.Date</span>(<span class="st">&quot;2023-01-01&quot;</span>) <span class="sc">&amp;</span> retDate_comb <span class="sc">&lt;=</span> <span class="fu">as.Date</span>(<span class="st">&quot;2024-12-31&quot;</span>) <span class="sc">~</span> <span class="st">&quot;2023-2024&quot;</span>,</span>
 <span id="cb7-37"><a href="clean-up.html#cb7-37" tabindex="-1"></a>    <span class="cn">TRUE</span> <span class="sc">~</span> <span class="st">&quot;Other&quot;</span>   <span class="co"># any records outside of these ranges</span></span>
-<span id="cb7-38"><a href="clean-up.html#cb7-38" tabindex="-1"></a>    )</span>
-<span id="cb7-39"><a href="clean-up.html#cb7-39" tabindex="-1"></a>  )</span></code></pre></div>
+<span id="cb7-38"><a href="clean-up.html#cb7-38" tabindex="-1"></a>    )) <span class="sc">%&gt;%</span></span>
+<span id="cb7-39"><a href="clean-up.html#cb7-39" tabindex="-1"></a>  </span>
+<span id="cb7-40"><a href="clean-up.html#cb7-40" tabindex="-1"></a>  <span class="fu">filter</span>(deployment_period <span class="sc">!=</span> <span class="st">&quot;2023-2024&quot;</span>)</span></code></pre></div>
 <p>and then a tibble to review how many files we have per deployment period per colony</p>
 <div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb8-1"><a href="clean-up.html#cb8-1" tabindex="-1"></a>deployment_summary <span class="ot">&lt;-</span> metrics_md <span class="sc">%&gt;%</span></span>
 <span id="cb8-2"><a href="clean-up.html#cb8-2" tabindex="-1"></a>  </span>
@@ -390,7 +391,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <span id="cb8-15"><a href="clean-up.html#cb8-15" tabindex="-1"></a>                      <span class="at">deployment_period =</span> <span class="st">&quot;TOTAL&quot;</span>))</span>
 <span id="cb8-16"><a href="clean-up.html#cb8-16" tabindex="-1"></a></span>
 <span id="cb8-17"><a href="clean-up.html#cb8-17" tabindex="-1"></a>deployment_summary</span></code></pre></div>
-<pre><code>## # A tibble: 8 × 8
+<pre><code>## # A tibble: 7 × 8
 ##   deployment_period `Baccalieu - Ned Walsh` `Bon Portage` Country  Gull  Kent
 ##   &lt;chr&gt;                               &lt;int&gt;         &lt;int&gt;   &lt;int&gt; &lt;int&gt; &lt;int&gt;
 ## 1 2017-2018                               6             0       0     0     0
@@ -398,21 +399,20 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 ## 3 2019-2020                              10            17      17    23    16
 ## 4 2021-2022                              20             0      16    16    27
 ## 5 2022-2023                               7            13       0    11     0
-## 6 2023-2024                              12             0       0    12     0
-## 7 Other                                   0             0       0     2     0
-## 8 TOTAL                                  55            35      39    74    53
+## 6 Other                                   0             0       0     2     0
+## 7 TOTAL                                  43            35      39    62    53
 ## # ℹ 2 more variables: `Middle Lawn` &lt;int&gt;, TOTAL &lt;dbl&gt;</code></pre>
 <p>Looks like there were 3 devices that stayed out for longer than a year.
 Lets handle these later on*</p>
 <div class="sourceCode" id="cb10"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb10-1"><a href="clean-up.html#cb10-1" tabindex="-1"></a><span class="fu">print</span>(metrics_md[metrics_md<span class="sc">$</span>deployment_period <span class="sc">==</span><span class="st">&quot;Other&quot;</span>, ])</span></code></pre></div>
 <pre><code>##     bird_id      colony                  wetdry_filename depDate_comb
-## 154   BU971        Gull         BU971_25Nov23_194250.deg   2019-09-22
-## 177   CD493        Gull CD493_22Jun23_004919driftadj.deg   2021-09-16
-## 258   CD501 Middle Lawn CD501_25Nov23_184453driftadj.deg   2021-09-22
+## 142   BU971        Gull         BU971_25Nov23_194250.deg   2019-09-22
+## 165   CD493        Gull CD493_22Jun23_004919driftadj.deg   2021-09-16
+## 234   CD501 Middle Lawn CD501_25Nov23_184453driftadj.deg   2021-09-22
 ##     retDate_comb deployment_period
-## 154   2023-08-22             Other
-## 177   2023-01-05             Other
-## 258   2023-01-01             Other</code></pre>
+## 142   2023-08-22             Other
+## 165   2023-01-05             Other
+## 234   2023-01-01             Other</code></pre>
 <p>Save the metadata file for when we run HMM</p>
 <div class="sourceCode" id="cb12"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb12-1"><a href="clean-up.html#cb12-1" tabindex="-1"></a><span class="fu">write.csv</span>(metrics_md, <span class="fu">file.path</span>(data.dir, <span class="st">&quot;metrics_md.csv&quot;</span>))</span></code></pre></div>
 </div>

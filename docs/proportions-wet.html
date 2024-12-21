@@ -4,18 +4,18 @@
 
   <meta charset="utf-8" />
   <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-  <title>7 Proportions Wet | Visualization</title>
-  <meta name="description" content="7 Proportions Wet | Visualization" />
+  <title>7 Proportions Wet | wet-dry-analysis.knit</title>
+  <meta name="description" content="" />
   <meta name="generator" content="bookdown 0.41 and GitBook 2.6.7" />
 
-  <meta property="og:title" content="7 Proportions Wet | Visualization" />
+  <meta property="og:title" content="7 Proportions Wet | wet-dry-analysis.knit" />
   <meta property="og:type" content="book" />
   
   
   
 
   <meta name="twitter:card" content="summary" />
-  <meta name="twitter:title" content="7 Proportions Wet | Visualization" />
+  <meta name="twitter:title" content="7 Proportions Wet | wet-dry-analysis.knit" />
   
   
   
@@ -207,7 +207,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
       <div class="body-inner">
         <div class="book-header" role="navigation">
           <h1>
-            <i class="fa fa-circle-o-notch fa-spin"></i><a href="./">Visualization</a>
+            <i class="fa fa-circle-o-notch fa-spin"></i><a href="./"></a>
           </h1>
         </div>
 
@@ -263,7 +263,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <p>Add the <code>colony</code> and <code>deployment_period</code> values from <code>metrics_md</code> to <code>deg_props_2hrs</code></p>
 <div class="sourceCode" id="cb63"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb63-1"><a href="proportions-wet.html#cb63-1" tabindex="-1"></a>deg_props_2hrs <span class="ot">&lt;-</span> deg_props_2hrs <span class="sc">%&gt;%</span></span>
 <span id="cb63-2"><a href="proportions-wet.html#cb63-2" tabindex="-1"></a>  <span class="fu">left_join</span>(metrics_md <span class="sc">%&gt;%</span> <span class="fu">select</span>(bird_id, deployment_period, colony), <span class="at">by =</span> <span class="st">&quot;bird_id&quot;</span>) <span class="sc">%&gt;%</span></span>
-<span id="cb63-3"><a href="proportions-wet.html#cb63-3" tabindex="-1"></a>      <span class="fu">filter</span>(deployment_period <span class="sc">!=</span> <span class="st">&quot;2023-2024&quot;</span>) <span class="co">#filtering out Seatrack data for now </span></span></code></pre></div>
+<span id="cb63-3"><a href="proportions-wet.html#cb63-3" tabindex="-1"></a>      <span class="fu">filter</span>(deployment_period <span class="sc">!=</span> <span class="st">&quot;2023-2024&quot;</span>)</span></code></pre></div>
 
 </div>
 </div>

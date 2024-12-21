@@ -19,4 +19,5 @@ output:
 
 **See chapter 8 for plots**
 
-Functions: https://github.com/johannabosch/wetdry_analysis/tree/main/R/utils
+If you want to see the functions:
+https://github.com/johannabosch/wetdry_analysis/tree/main/R/utils

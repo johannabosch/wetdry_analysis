@@ -91,7 +91,7 @@ Add the `colony` and `deployment_period` values from `metrics_md` to `deg_switch
 
 deg_switches <- deg_switches %>%
     left_join(metrics_md %>% select(bird_id, deployment_period, colony), by = "bird_id") %>%
-      filter(deployment_period != "2023-2024") #filtering out Seatrack data for now 
+      filter(deployment_period != "2023-2024")
 
 ```
 

@@ -1,8 +1,3 @@
----
-title: "Visualization"
-output: html_document
----
-
 # Visualizing Metrics
     
     From Katie's Notes:

@@ -124,8 +124,9 @@ metrics_md <- md %>%
     depDate_comb >= as.Date("2022-01-01") & retDate_comb <= as.Date("2023-12-31") ~ "2022-2023",
     depDate_comb >= as.Date("2023-01-01") & retDate_comb <= as.Date("2024-12-31") ~ "2023-2024",
     TRUE ~ "Other"   # any records outside of these ranges
-    )
-  )
+    )) %>%
+  
+  filter(deployment_period != "2023-2024")
 ```
 
 and then a tibble to review how many files we have per deployment period per colony
