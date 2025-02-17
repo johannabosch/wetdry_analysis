@@ -88,7 +88,6 @@ Make a similar `metrics_md` file that we can use later on for HMM
 ```{r}
 
 #clean up the metadata so that we only include the necessary columns for clipping
-#clean up the metadata so that we only include the necessary columns for clipping
 metrics_md <- md %>%
   
 

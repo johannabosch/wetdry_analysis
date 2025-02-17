@@ -1,0 +1,866 @@
+<!DOCTYPE html>
+<html lang="" xml:lang="">
+<head>
+
+  <meta charset="utf-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <title>2 Clean-up | wet-dry-analysis.knit</title>
+  <meta name="description" content="" />
+  <meta name="generator" content="bookdown 0.41 and GitBook 2.6.7" />
+
+  <meta property="og:title" content="2 Clean-up | wet-dry-analysis.knit" />
+  <meta property="og:type" content="book" />
+  
+  
+  
+
+  <meta name="twitter:card" content="summary" />
+  <meta name="twitter:title" content="2 Clean-up | wet-dry-analysis.knit" />
+  
+  
+  
+
+
+
+
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black" />
+  
+  
+<link rel="prev" href="index.html"/>
+<link rel="next" href="wet-dry-switches.html"/>
+<script src="libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/fuse.js@6.4.6/dist/fuse.min.js"></script>
+<link href="libs/gitbook-2.6.7/css/style.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-table.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-bookdown.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-highlight.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-search.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-fontsettings.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-clipboard.css" rel="stylesheet" />
+
+
+
+
+
+
+
+
+<link href="libs/anchor-sections-1.1.0/anchor-sections.css" rel="stylesheet" />
+<link href="libs/anchor-sections-1.1.0/anchor-sections-hash.css" rel="stylesheet" />
+<script src="libs/anchor-sections-1.1.0/anchor-sections.js"></script>
+<link href="libs/htmltools-fill-0.5.8.1/fill.css" rel="stylesheet" />
+<script src="libs/htmlwidgets-1.6.4/htmlwidgets.js"></script>
+<script src="libs/plotly-binding-4.10.4/plotly.js"></script>
+<script src="libs/typedarray-0.1/typedarray.min.js"></script>
+<link href="libs/crosstalk-1.2.1/css/crosstalk.min.css" rel="stylesheet" />
+<script src="libs/crosstalk-1.2.1/js/crosstalk.min.js"></script>
+<link href="libs/plotly-htmlwidgets-css-2.11.1/plotly-htmlwidgets.css" rel="stylesheet" />
+<script src="libs/plotly-main-2.11.1/plotly-latest.min.js"></script>
+
+
+<style type="text/css">
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+    color: #aaaaaa;
+  }
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code span.at { color: #7d9029; } /* Attribute */
+code span.bn { color: #40a070; } /* BaseN */
+code span.bu { color: #008000; } /* BuiltIn */
+code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code span.ch { color: #4070a0; } /* Char */
+code span.cn { color: #880000; } /* Constant */
+code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code span.dt { color: #902000; } /* DataType */
+code span.dv { color: #40a070; } /* DecVal */
+code span.er { color: #ff0000; font-weight: bold; } /* Error */
+code span.ex { } /* Extension */
+code span.fl { color: #40a070; } /* Float */
+code span.fu { color: #06287e; } /* Function */
+code span.im { color: #008000; font-weight: bold; } /* Import */
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code span.op { color: #666666; } /* Operator */
+code span.ot { color: #007020; } /* Other */
+code span.pp { color: #bc7a00; } /* Preprocessor */
+code span.sc { color: #4070a0; } /* SpecialChar */
+code span.ss { color: #bb6688; } /* SpecialString */
+code span.st { color: #4070a0; } /* String */
+code span.va { color: #19177c; } /* Variable */
+code span.vs { color: #4070a0; } /* VerbatimString */
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+</style>
+
+<style type="text/css">
+  
+  div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+</style>
+
+<link rel="stylesheet" href="style.css" type="text/css" />
+</head>
+
+<body>
+
+
+
+  <div class="book without-animation with-summary font-size-2 font-family-1" data-basepath=".">
+
+    <div class="book-summary">
+      <nav role="navigation">
+
+<ul class="summary">
+<li class="chapter" data-level="1" data-path="index.html"><a href="index.html"><i class="fa fa-check"></i><b>1</b> Wet-Dry Analysis</a></li>
+<li class="chapter" data-level="2" data-path="clean-up.html"><a href="clean-up.html"><i class="fa fa-check"></i><b>2</b> Clean-up</a>
+<ul>
+<li class="chapter" data-level="2.1" data-path="clean-up.html"><a href="clean-up.html#getting-started"><i class="fa fa-check"></i><b>2.1</b> Getting started</a></li>
+<li class="chapter" data-level="2.2" data-path="clean-up.html"><a href="clean-up.html#metadata"><i class="fa fa-check"></i><b>2.2</b> Metadata</a>
+<ul>
+<li class="chapter" data-level="2.2.1" data-path="clean-up.html"><a href="clean-up.html#review"><i class="fa fa-check"></i><b>2.2.1</b> Review</a></li>
+<li class="chapter" data-level="2.2.2" data-path="clean-up.html"><a href="clean-up.html#housekeeping"><i class="fa fa-check"></i><b>2.2.2</b> Housekeeping</a></li>
+</ul></li>
+<li class="chapter" data-level="2.3" data-path="clean-up.html"><a href="clean-up.html#deg-files"><i class="fa fa-check"></i><b>2.3</b> DEG files</a></li>
+<li class="chapter" data-level="2.4" data-path="clean-up.html"><a href="clean-up.html#cleaning-degs"><i class="fa fa-check"></i><b>2.4</b> Cleaning DEGs</a></li>
+<li class="chapter" data-level="2.5" data-path="clean-up.html"><a href="clean-up.html#clipping-degs"><i class="fa fa-check"></i><b>2.5</b> Clipping DEGS</a></li>
+<li class="chapter" data-level="2.6" data-path="clean-up.html"><a href="clean-up.html#parallel-batch-clipping"><i class="fa fa-check"></i><b>2.6</b> Parallel Batch-clipping</a>
+<ul>
+<li class="chapter" data-level="2.6.1" data-path="clean-up.html"><a href="clean-up.html#testing"><i class="fa fa-check"></i><b>2.6.1</b> Testing</a></li>
+<li class="chapter" data-level="2.6.2" data-path="clean-up.html"><a href="clean-up.html#final-clip"><i class="fa fa-check"></i><b>2.6.2</b> Final clip</a></li>
+</ul></li>
+<li class="chapter" data-level="2.7" data-path="clean-up.html"><a href="clean-up.html#deg-file-issues"><i class="fa fa-check"></i><b>2.7</b> DEG File Issues</a></li>
+</ul></li>
+<li class="chapter" data-level="3" data-path="wet-dry-switches.html"><a href="wet-dry-switches.html"><i class="fa fa-check"></i><b>3</b> Wet-Dry Switches</a>
+<ul>
+<li class="chapter" data-level="3.1" data-path="wet-dry-switches.html"><a href="wet-dry-switches.html#calculating-switches"><i class="fa fa-check"></i><b>3.1</b> Calculating Switches</a></li>
+</ul></li>
+<li class="chapter" data-level="4" data-path="longest-wetdry-periods.html"><a href="longest-wetdry-periods.html"><i class="fa fa-check"></i><b>4</b> Longest Wet/Dry Periods</a></li>
+<li class="chapter" data-level="5" data-path="total-wetdry.html"><a href="total-wetdry.html"><i class="fa fa-check"></i><b>5</b> Total Wet/Dry</a></li>
+<li class="chapter" data-level="6" data-path="downsampling.html"><a href="downsampling.html"><i class="fa fa-check"></i><b>6</b> Downsampling</a>
+<ul>
+<li class="chapter" data-level="6.1" data-path="downsampling.html"><a href="downsampling.html#down-sampling-mean-wets"><i class="fa fa-check"></i><b>6.1</b> Down-sampling (MEAN wets)</a>
+<ul>
+<li class="chapter" data-level="6.1.1" data-path="downsampling.html"><a href="downsampling.html#hr-periods"><i class="fa fa-check"></i><b>6.1.1</b> 2hr Periods</a></li>
+</ul></li>
+</ul></li>
+<li class="chapter" data-level="7" data-path="proportions-wet.html"><a href="proportions-wet.html"><i class="fa fa-check"></i><b>7</b> Proportions Wet</a>
+<ul>
+<li class="chapter" data-level="7.1" data-path="proportions-wet.html"><a href="proportions-wet.html#calclate-proportions"><i class="fa fa-check"></i><b>7.1</b> Calclate Proportions</a></li>
+</ul></li>
+<li class="chapter" data-level="8" data-path="visualizing-metrics.html"><a href="visualizing-metrics.html"><i class="fa fa-check"></i><b>8</b> Visualizing Metrics</a>
+<ul>
+<li class="chapter" data-level="8.1" data-path="visualizing-metrics.html"><a href="visualizing-metrics.html#plotting-functions"><i class="fa fa-check"></i><b>8.1</b> Plotting Functions</a>
+<ul>
+<li class="chapter" data-level="8.1.1" data-path="visualizing-metrics.html"><a href="visualizing-metrics.html#plot-proportions"><i class="fa fa-check"></i><b>8.1.1</b> Plot Proportions</a></li>
+<li class="chapter" data-level="8.1.2" data-path="visualizing-metrics.html"><a href="visualizing-metrics.html#plot-switches"><i class="fa fa-check"></i><b>8.1.2</b> Plot Switches</a></li>
+<li class="chapter" data-level="8.1.3" data-path="visualizing-metrics.html"><a href="visualizing-metrics.html#plot-longest-periods"><i class="fa fa-check"></i><b>8.1.3</b> Plot Longest Periods</a></li>
+<li class="chapter" data-level="8.1.4" data-path="visualizing-metrics.html"><a href="visualizing-metrics.html#plot-total-wets"><i class="fa fa-check"></i><b>8.1.4</b> Plot Total Wets</a></li>
+</ul></li>
+<li class="chapter" data-level="8.2" data-path="visualizing-metrics.html"><a href="visualizing-metrics.html#baccalieu---ned-walsh-2017-2018"><i class="fa fa-check"></i><b>8.2</b> Baccalieu - Ned Walsh 2017-2018</a>
+<ul>
+<li class="chapter" data-level="8.2.1" data-path="visualizing-metrics.html"><a href="visualizing-metrics.html#running-plotting-functions"><i class="fa fa-check"></i><b>8.2.1</b> Running plotting functions</a></li>
+<li class="chapter" data-level="8.2.2" data-path="visualizing-metrics.html"><a href="visualizing-metrics.html#final-plots"><i class="fa fa-check"></i><b>8.2.2</b> Final Plots</a></li>
+</ul></li>
+</ul></li>
+<li class="chapter" data-level="9" data-path="hidden-markov-modelling-hmm.html"><a href="hidden-markov-modelling-hmm.html"><i class="fa fa-check"></i><b>9</b> Hidden Markov Modelling (HMM)</a>
+<ul>
+<li class="chapter" data-level="9.1" data-path="hidden-markov-modelling-hmm.html"><a href="hidden-markov-modelling-hmm.html#prep-the-data"><i class="fa fa-check"></i><b>9.1</b> Prep the data</a></li>
+</ul></li>
+</ul>
+
+      </nav>
+    </div>
+
+    <div class="book-body">
+      <div class="body-inner">
+        <div class="book-header" role="navigation">
+          <h1>
+            <i class="fa fa-circle-o-notch fa-spin"></i><a href="./"></a>
+          </h1>
+        </div>
+
+        <div class="page-wrapper" tabindex="-1" role="main">
+          <div class="page-inner">
+
+            <section class="normal" id="section-">
+<div id="clean-up" class="section level1 hasAnchor" number="2">
+<h1><span class="header-section-number">2</span> Clean-up<a href="clean-up.html#clean-up" class="anchor-section" aria-label="Anchor link to header"></a></h1>
+<div id="getting-started" class="section level2 hasAnchor" number="2.1">
+<h2><span class="header-section-number">2.1</span> Getting started<a href="clean-up.html#getting-started" class="anchor-section" aria-label="Anchor link to header"></a></h2>
+</div>
+<div id="metadata" class="section level2 hasAnchor" number="2.2">
+<h2><span class="header-section-number">2.2</span> Metadata<a href="clean-up.html#metadata" class="anchor-section" aria-label="Anchor link to header"></a></h2>
+<div id="review" class="section level3 hasAnchor" number="2.2.1">
+<h3><span class="header-section-number">2.2.1</span> Review<a href="clean-up.html#review" class="anchor-section" aria-label="Anchor link to header"></a></h3>
+<p>What we need from the metadata file:
+<code>track_dataStart:</code> first date in raw trackfile (as downloaded from the tag)
+<code>dep_date:</code> day the tag was deployed on the bird
+<code>dep_dateEst:</code> my estimate of deploy date if not reported in original datasheet
+<code>ret_date:</code> date the tag was removed from the bird
+<code>ret_dateEst:</code> estimate of retrieval date if not reported in original datasheet OR estimate of the last day of reliable light data if the logger battery died while still at sea
+<code>track_dataEnd:</code> last date in raw trackfile (as downloaded from the tag)</p>
+<p>The date window identified by these variables will include uninformative data before deployment and after retrieval, <code>track_dataEnd can be useful in identifying if/when a logger battery died at sea (track_dataEnd &lt; ret_date).</code> When building the logic for cleaning up the DEG files, we can’t forget to include scenarios where the device stopped collecting data before the retrieval date, so <code>ret_date</code> will be greater than the maximum date found in the DEG file.</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="clean-up.html#cb1-1" tabindex="-1"></a><span class="co">#load the metadata</span></span>
+<span id="cb1-2"><a href="clean-up.html#cb1-2" tabindex="-1"></a>md <span class="ot">&lt;-</span> <span class="fu">read.csv</span>(<span class="fu">file.path</span>(data.dir, <span class="st">&quot;MasterMetadata_LHSP_Tracking_NL_NB_NS_06Dec2024.csv&quot;</span>))</span>
+<span id="cb1-3"><a href="clean-up.html#cb1-3" tabindex="-1"></a></span>
+<span id="cb1-4"><a href="clean-up.html#cb1-4" tabindex="-1"></a><span class="co"># let&#39;s double check - every time there is an NA in retDate_comb, there should be no wet-dry file</span></span>
+<span id="cb1-5"><a href="clean-up.html#cb1-5" tabindex="-1"></a><span class="fu">print</span>(md <span class="sc">%&gt;%</span></span>
+<span id="cb1-6"><a href="clean-up.html#cb1-6" tabindex="-1"></a>  <span class="fu">filter</span>(<span class="sc">!</span><span class="fu">is.na</span>(wetdry_filename) <span class="sc">&amp;</span> <span class="fu">is.na</span>(ret_date) <span class="sc">&amp;</span> <span class="fu">is.na</span>(ret_dateEst))) <span class="co"># checks out</span></span></code></pre></div>
+<pre><code>##  [1] colony                 tagType                tagMake               
+##  [4] tagID                  tagProg                tagProgStartUTC       
+##  [7] band                   sex                    dep_recap             
+## [10] dep_handlerInits       dep_lat                dep_lon               
+## [13] dep_burrowID           dep_plotID             dep_date              
+## [16] dep_dateEst            dep_yr                 dep_mo                
+## [19] dep_datetimeUTC        dep_startHandle        dep_time              
+## [22] dep_durHandle          dep_brStatus           dep_burrowCont        
+## [25] dep_mass               dep_wing               dep_wingType          
+## [28] dep_tarsus             dep_bill               dep_tail              
+## [31] dep_eggAge             dep_eggWid             dep_eggLen            
+## [34] dep_chkAge             dep_notes              dep_techNotes         
+## [37] ret_handlerInits       ret_birdYN             ret_tagYN             
+## [40] ret_date               ret_dateEst            ret_yr                
+## [43] ret_mo                 ret_datetimeUTC        ret_time              
+## [46] ret_endHandle          ret_durHandle          ret_burrowID          
+## [49] ret_burrowCont         ret_mass               ret_massChange        
+## [52] ret_eggAge             ret_eggWid             ret_eggLen            
+## [55] ret_chkAge             ret_spotCardYN         ret_bloodCapAmt       
+## [58] ret_feathType          ret_feathNum           ret_notes             
+## [61] ret_notesTissue        ret_tagStatus          ret_trackType         
+## [64] wetdry_filename        track_filename         track_dataStart       
+## [67] track_dataEnd          IPorig_track_filename  sourceFile            
+## [70] gtDep_site             gtDep_lat              gtDep_lon             
+## [73] gtDep_startDate        gtDep_startTime        gtDep_endDate         
+## [76] gtDep_endTime          gtDep_startDatetimeUTC gtDep_endDatetimeUTC  
+## [79] gtDep_notes            gtRet_site             gtRet_lat             
+## [82] gtRet_lon              gtRet_startDate        gtRet_startTime       
+## [85] gtRet_endDate          gtRet_endTime          gtRet_startDatetimeUTC
+## [88] gtRet_endDatetimeUTC   gtRet_notes            gtRet_filename        
+## [91] ESRF                   ret_brStatus           simulMateTrack        
+## [94] repGLS                 repGPS                 repGLSGPS             
+## &lt;0 rows&gt; (or 0-length row.names)</code></pre>
+<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="clean-up.html#cb3-1" tabindex="-1"></a><span class="co">#double check that Migrate Tech are the only devices with wetdry data</span></span>
+<span id="cb3-2"><a href="clean-up.html#cb3-2" tabindex="-1"></a><span class="fu">print</span>(md <span class="sc">%&gt;%</span></span>
+<span id="cb3-3"><a href="clean-up.html#cb3-3" tabindex="-1"></a>  <span class="fu">group_by</span>(tagMake) <span class="sc">%&gt;%</span></span>
+<span id="cb3-4"><a href="clean-up.html#cb3-4" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="at">filename_count =</span> <span class="fu">sum</span>(<span class="sc">!</span><span class="fu">is.na</span>(wetdry_filename))))</span></code></pre></div>
+<pre><code>## # A tibble: 12 × 2
+##    tagMake                            filename_count
+##    &lt;chr&gt;                                       &lt;int&gt;
+##  1 Biotrack: MK5040                                0
+##  2 Biotrack: MK5440                                0
+##  3 Biotrack: MK5540                                0
+##  4 Biotrack: MK5540 C                              0
+##  5 Biotrack: MK5740                                0
+##  6 Biotrack: MK5740?                               0
+##  7 Migrate Technology: W30A9-SEA                 200
+##  8 Migrate Technology: W30A9-SEA-COOL             98
+##  9 Migrate Technology: W30A9-SEA-NOT               0
+## 10 Pathtrack: nanoFix GEO-Mini                     0
+## 11 Pathtrack: nanoFix miniR3_12                    0
+## 12 &lt;NA&gt;                                            0</code></pre>
+<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="clean-up.html#cb5-1" tabindex="-1"></a><span class="co">#how many Migrate Tech (MT) devices total?</span></span>
+<span id="cb5-2"><a href="clean-up.html#cb5-2" tabindex="-1"></a>MT_devices <span class="ot">&lt;-</span> md <span class="sc">%&gt;%</span>  <span class="fu">filter</span>(tagMake <span class="sc">%in%</span> <span class="fu">c</span>(<span class="st">&quot;Migrate Technology: W30A9-SEA&quot;</span>, <span class="st">&quot;Migrate Technology: W30A9-SEA-COOL&quot;</span>))</span>
+<span id="cb5-3"><a href="clean-up.html#cb5-3" tabindex="-1"></a></span>
+<span id="cb5-4"><a href="clean-up.html#cb5-4" tabindex="-1"></a><span class="co">#how many MT devices with missing wetdry files?</span></span>
+<span id="cb5-5"><a href="clean-up.html#cb5-5" tabindex="-1"></a>MT_devices_missing <span class="ot">&lt;-</span> (MT_devices <span class="sc">%&gt;%</span></span>
+<span id="cb5-6"><a href="clean-up.html#cb5-6" tabindex="-1"></a>  <span class="fu">filter</span>(tagMake <span class="sc">%in%</span> <span class="fu">c</span>(<span class="st">&quot;Migrate Technology: W30A9-SEA&quot;</span>, <span class="st">&quot;Migrate Technology: W30A9-SEA-COOL&quot;</span>), <span class="fu">is.na</span>(wetdry_filename)) <span class="sc">%&gt;%</span></span>
+<span id="cb5-7"><a href="clean-up.html#cb5-7" tabindex="-1"></a>    <span class="fu">select</span>(wetdry_filename, tagID))</span>
+<span id="cb5-8"><a href="clean-up.html#cb5-8" tabindex="-1"></a></span>
+<span id="cb5-9"><a href="clean-up.html#cb5-9" tabindex="-1"></a><span class="co">#how many MT devices have wetdry-data?</span></span>
+<span id="cb5-10"><a href="clean-up.html#cb5-10" tabindex="-1"></a>MT_devices_retrieved <span class="ot">&lt;-</span> (MT_devices <span class="sc">%&gt;%</span></span>
+<span id="cb5-11"><a href="clean-up.html#cb5-11" tabindex="-1"></a>  <span class="fu">filter</span>(tagMake <span class="sc">%in%</span> <span class="fu">c</span>(<span class="st">&quot;Migrate Technology: W30A9-SEA&quot;</span>, <span class="st">&quot;Migrate Technology: W30A9-SEA-COOL&quot;</span>), <span class="sc">!</span><span class="fu">is.na</span>(wetdry_filename)) <span class="sc">%&gt;%</span></span>
+<span id="cb5-12"><a href="clean-up.html#cb5-12" tabindex="-1"></a>    <span class="fu">select</span>(wetdry_filename, tagID))</span></code></pre></div>
+</div>
+<div id="housekeeping" class="section level3 hasAnchor" number="2.2.2">
+<h3><span class="header-section-number">2.2.2</span> Housekeeping<a href="clean-up.html#housekeeping" class="anchor-section" aria-label="Anchor link to header"></a></h3>
+<p>To clean up the metadata for clipping, we need to:
+* filter out the Migrate Technology devices (they are the only devices with wetdry data)
+* remove any rows that have NA for <code>wetdry_filename</code>
+* merge cols for estimates and non-est for deployment and return dates,</p>
+<div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb6-1"><a href="clean-up.html#cb6-1" tabindex="-1"></a><span class="co">#clean up the metadata so that we only include the necessary columns for clipping</span></span>
+<span id="cb6-2"><a href="clean-up.html#cb6-2" tabindex="-1"></a>clipping_md <span class="ot">&lt;-</span> md <span class="sc">%&gt;%</span></span>
+<span id="cb6-3"><a href="clean-up.html#cb6-3" tabindex="-1"></a>  </span>
+<span id="cb6-4"><a href="clean-up.html#cb6-4" tabindex="-1"></a>  <span class="fu">filter</span>(</span>
+<span id="cb6-5"><a href="clean-up.html#cb6-5" tabindex="-1"></a>    <span class="co">#filter for MT devices</span></span>
+<span id="cb6-6"><a href="clean-up.html#cb6-6" tabindex="-1"></a>    tagMake <span class="sc">%in%</span> <span class="fu">c</span>(<span class="st">&quot;Migrate Technology: W30A9-SEA&quot;</span>, <span class="st">&quot;Migrate Technology: W30A9-SEA-COOL&quot;</span>),</span>
+<span id="cb6-7"><a href="clean-up.html#cb6-7" tabindex="-1"></a>    <span class="co">#remove any NA rows in wetdry_filename </span></span>
+<span id="cb6-8"><a href="clean-up.html#cb6-8" tabindex="-1"></a>    <span class="sc">!</span><span class="fu">is.na</span>(wetdry_filename)) <span class="sc">%&gt;%</span> </span>
+<span id="cb6-9"><a href="clean-up.html#cb6-9" tabindex="-1"></a>  </span>
+<span id="cb6-10"><a href="clean-up.html#cb6-10" tabindex="-1"></a>  <span class="co"># merge estimated and observed columns </span></span>
+<span id="cb6-11"><a href="clean-up.html#cb6-11" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
+<span id="cb6-12"><a href="clean-up.html#cb6-12" tabindex="-1"></a>    <span class="at">depDate_comb =</span> <span class="fu">as.Date</span>(<span class="fu">ifelse</span>(<span class="sc">!</span><span class="fu">is.na</span>(dep_dateEst), dep_dateEst, dep_date), <span class="at">format =</span> <span class="st">&quot;%Y-%m-%d&quot;</span>),</span>
+<span id="cb6-13"><a href="clean-up.html#cb6-13" tabindex="-1"></a>    <span class="at">retDate_comb =</span> <span class="fu">as.Date</span>(</span>
+<span id="cb6-14"><a href="clean-up.html#cb6-14" tabindex="-1"></a>      <span class="fu">ifelse</span>(<span class="sc">!</span><span class="fu">is.na</span>(ret_dateEst), <span class="fu">substr</span>(ret_dateEst, <span class="fu">nchar</span>(ret_dateEst) <span class="sc">-</span> <span class="dv">9</span>, <span class="fu">nchar</span>(ret_dateEst)), </span>
+<span id="cb6-15"><a href="clean-up.html#cb6-15" tabindex="-1"></a>             ret_date), <span class="at">format =</span> <span class="st">&quot;%Y-%m-%d&quot;</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb6-16"><a href="clean-up.html#cb6-16" tabindex="-1"></a>  </span>
+<span id="cb6-17"><a href="clean-up.html#cb6-17" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">depDate_comb =</span> <span class="fu">format</span>(depDate_comb, <span class="st">&quot;%d/%m/%Y&quot;</span>), <span class="co">#keep dates in this format to match files</span></span>
+<span id="cb6-18"><a href="clean-up.html#cb6-18" tabindex="-1"></a>         <span class="at">retDate_comb =</span> <span class="fu">format</span>(retDate_comb, <span class="st">&quot;%d/%m/%Y&quot;</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb6-19"><a href="clean-up.html#cb6-19" tabindex="-1"></a>  </span>
+<span id="cb6-20"><a href="clean-up.html#cb6-20" tabindex="-1"></a>  <span class="co">#only keep necessary columns </span></span>
+<span id="cb6-21"><a href="clean-up.html#cb6-21" tabindex="-1"></a>  <span class="fu">select</span>(wetdry_filename, depDate_comb, retDate_comb, colony)</span>
+<span id="cb6-22"><a href="clean-up.html#cb6-22" tabindex="-1"></a></span>
+<span id="cb6-23"><a href="clean-up.html#cb6-23" tabindex="-1"></a><span class="co"># checked that number of observations in `MT_devices_retrieved` is equal to `clipping_md`</span></span></code></pre></div>
+<p>Make a similar <code>metrics_md</code> file that we can use later on for HMM</p>
+<div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb7-1"><a href="clean-up.html#cb7-1" tabindex="-1"></a><span class="co">#clean up the metadata so that we only include the necessary columns for clipping</span></span>
+<span id="cb7-2"><a href="clean-up.html#cb7-2" tabindex="-1"></a><span class="co">#clean up the metadata so that we only include the necessary columns for clipping</span></span>
+<span id="cb7-3"><a href="clean-up.html#cb7-3" tabindex="-1"></a>metrics_md <span class="ot">&lt;-</span> md <span class="sc">%&gt;%</span></span>
+<span id="cb7-4"><a href="clean-up.html#cb7-4" tabindex="-1"></a>  </span>
+<span id="cb7-5"><a href="clean-up.html#cb7-5" tabindex="-1"></a></span>
+<span id="cb7-6"><a href="clean-up.html#cb7-6" tabindex="-1"></a>  <span class="fu">filter</span>(</span>
+<span id="cb7-7"><a href="clean-up.html#cb7-7" tabindex="-1"></a>    <span class="co">#filter for MT devices</span></span>
+<span id="cb7-8"><a href="clean-up.html#cb7-8" tabindex="-1"></a>    tagMake <span class="sc">%in%</span> <span class="fu">c</span>(<span class="st">&quot;Migrate Technology: W30A9-SEA&quot;</span>, <span class="st">&quot;Migrate Technology: W30A9-SEA-COOL&quot;</span>),</span>
+<span id="cb7-9"><a href="clean-up.html#cb7-9" tabindex="-1"></a>    <span class="co">#remove any NA rows in wetdry_filename </span></span>
+<span id="cb7-10"><a href="clean-up.html#cb7-10" tabindex="-1"></a>    <span class="sc">!</span><span class="fu">is.na</span>(wetdry_filename)) <span class="sc">%&gt;%</span> </span>
+<span id="cb7-11"><a href="clean-up.html#cb7-11" tabindex="-1"></a>  </span>
+<span id="cb7-12"><a href="clean-up.html#cb7-12" tabindex="-1"></a>  <span class="co"># merge estimated and observed columns </span></span>
+<span id="cb7-13"><a href="clean-up.html#cb7-13" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
+<span id="cb7-14"><a href="clean-up.html#cb7-14" tabindex="-1"></a>    <span class="at">depDate_comb =</span> <span class="fu">as.Date</span>(<span class="fu">ifelse</span>(<span class="sc">!</span><span class="fu">is.na</span>(dep_dateEst), dep_dateEst, dep_date), <span class="at">format =</span> <span class="st">&quot;%Y-%m-%d&quot;</span>),</span>
+<span id="cb7-15"><a href="clean-up.html#cb7-15" tabindex="-1"></a>    <span class="at">retDate_comb =</span> <span class="fu">as.Date</span>(</span>
+<span id="cb7-16"><a href="clean-up.html#cb7-16" tabindex="-1"></a>      <span class="fu">ifelse</span>(<span class="sc">!</span><span class="fu">is.na</span>(ret_dateEst), <span class="fu">substr</span>(ret_dateEst, <span class="fu">nchar</span>(ret_dateEst) <span class="sc">-</span> <span class="dv">9</span>, <span class="fu">nchar</span>(ret_dateEst)), </span>
+<span id="cb7-17"><a href="clean-up.html#cb7-17" tabindex="-1"></a>             ret_date), <span class="at">format =</span> <span class="st">&quot;%Y-%m-%d&quot;</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb7-18"><a href="clean-up.html#cb7-18" tabindex="-1"></a>  </span>
+<span id="cb7-19"><a href="clean-up.html#cb7-19" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">depDate_comb =</span> <span class="fu">as.Date</span>(depDate_comb), <span class="co">#leave dates in standard format for when DEGS match</span></span>
+<span id="cb7-20"><a href="clean-up.html#cb7-20" tabindex="-1"></a>         <span class="at">retDate_comb =</span> <span class="fu">as.Date</span>(retDate_comb)) <span class="sc">%&gt;%</span> </span>
+<span id="cb7-21"><a href="clean-up.html#cb7-21" tabindex="-1"></a>  </span>
+<span id="cb7-22"><a href="clean-up.html#cb7-22" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">bird_id =</span> <span class="fu">str_extract</span>(<span class="fu">basename</span>(wetdry_filename), <span class="st">&quot;[A-Z-0-9]{5}&quot;</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb7-23"><a href="clean-up.html#cb7-23" tabindex="-1"></a></span>
+<span id="cb7-24"><a href="clean-up.html#cb7-24" tabindex="-1"></a>  <span class="co">#only keep necessary columns </span></span>
+<span id="cb7-25"><a href="clean-up.html#cb7-25" tabindex="-1"></a>  <span class="fu">select</span>(bird_id, colony, wetdry_filename, depDate_comb, retDate_comb) <span class="sc">%&gt;%</span></span>
+<span id="cb7-26"><a href="clean-up.html#cb7-26" tabindex="-1"></a></span>
+<span id="cb7-27"><a href="clean-up.html#cb7-27" tabindex="-1"></a>  <span class="co">#categorize deployment periods in the dtaaframe</span></span>
+<span id="cb7-28"><a href="clean-up.html#cb7-28" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
+<span id="cb7-29"><a href="clean-up.html#cb7-29" tabindex="-1"></a>    <span class="at">deployment_period =</span> <span class="fu">case_when</span>(</span>
+<span id="cb7-30"><a href="clean-up.html#cb7-30" tabindex="-1"></a>    depDate_comb <span class="sc">&gt;=</span> <span class="fu">as.Date</span>(<span class="st">&quot;2017-01-01&quot;</span>) <span class="sc">&amp;</span> retDate_comb <span class="sc">&lt;=</span> <span class="fu">as.Date</span>(<span class="st">&quot;2018-12-31&quot;</span>) <span class="sc">~</span> <span class="st">&quot;2017-2018&quot;</span>,</span>
+<span id="cb7-31"><a href="clean-up.html#cb7-31" tabindex="-1"></a>    depDate_comb <span class="sc">&gt;=</span> <span class="fu">as.Date</span>(<span class="st">&quot;2018-01-01&quot;</span>) <span class="sc">&amp;</span> retDate_comb <span class="sc">&lt;=</span> <span class="fu">as.Date</span>(<span class="st">&quot;2019-12-31&quot;</span>) <span class="sc">~</span> <span class="st">&quot;2018-2019&quot;</span>,</span>
+<span id="cb7-32"><a href="clean-up.html#cb7-32" tabindex="-1"></a>    depDate_comb <span class="sc">&gt;=</span> <span class="fu">as.Date</span>(<span class="st">&quot;2019-01-01&quot;</span>) <span class="sc">&amp;</span> retDate_comb <span class="sc">&lt;=</span> <span class="fu">as.Date</span>(<span class="st">&quot;2020-12-31&quot;</span>) <span class="sc">~</span> <span class="st">&quot;2019-2020&quot;</span>,</span>
+<span id="cb7-33"><a href="clean-up.html#cb7-33" tabindex="-1"></a>    depDate_comb <span class="sc">&gt;=</span> <span class="fu">as.Date</span>(<span class="st">&quot;2020-01-01&quot;</span>) <span class="sc">&amp;</span> retDate_comb <span class="sc">&lt;=</span> <span class="fu">as.Date</span>(<span class="st">&quot;2021-12-31&quot;</span>) <span class="sc">~</span> <span class="st">&quot;2020-2021&quot;</span>,</span>
+<span id="cb7-34"><a href="clean-up.html#cb7-34" tabindex="-1"></a>    depDate_comb <span class="sc">&gt;=</span> <span class="fu">as.Date</span>(<span class="st">&quot;2021-01-01&quot;</span>) <span class="sc">&amp;</span> retDate_comb <span class="sc">&lt;=</span> <span class="fu">as.Date</span>(<span class="st">&quot;2022-12-31&quot;</span>) <span class="sc">~</span> <span class="st">&quot;2021-2022&quot;</span>,</span>
+<span id="cb7-35"><a href="clean-up.html#cb7-35" tabindex="-1"></a>    depDate_comb <span class="sc">&gt;=</span> <span class="fu">as.Date</span>(<span class="st">&quot;2022-01-01&quot;</span>) <span class="sc">&amp;</span> retDate_comb <span class="sc">&lt;=</span> <span class="fu">as.Date</span>(<span class="st">&quot;2023-12-31&quot;</span>) <span class="sc">~</span> <span class="st">&quot;2022-2023&quot;</span>,</span>
+<span id="cb7-36"><a href="clean-up.html#cb7-36" tabindex="-1"></a>    depDate_comb <span class="sc">&gt;=</span> <span class="fu">as.Date</span>(<span class="st">&quot;2023-01-01&quot;</span>) <span class="sc">&amp;</span> retDate_comb <span class="sc">&lt;=</span> <span class="fu">as.Date</span>(<span class="st">&quot;2024-12-31&quot;</span>) <span class="sc">~</span> <span class="st">&quot;2023-2024&quot;</span>,</span>
+<span id="cb7-37"><a href="clean-up.html#cb7-37" tabindex="-1"></a>    <span class="cn">TRUE</span> <span class="sc">~</span> <span class="st">&quot;Other&quot;</span>   <span class="co"># any records outside of these ranges</span></span>
+<span id="cb7-38"><a href="clean-up.html#cb7-38" tabindex="-1"></a>    )) <span class="sc">%&gt;%</span></span>
+<span id="cb7-39"><a href="clean-up.html#cb7-39" tabindex="-1"></a>  </span>
+<span id="cb7-40"><a href="clean-up.html#cb7-40" tabindex="-1"></a>  <span class="fu">filter</span>(deployment_period <span class="sc">!=</span> <span class="st">&quot;2023-2024&quot;</span>)</span></code></pre></div>
+<p>and then a tibble to review how many files we have per deployment period per colony</p>
+<div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb8-1"><a href="clean-up.html#cb8-1" tabindex="-1"></a>deployment_summary <span class="ot">&lt;-</span> metrics_md <span class="sc">%&gt;%</span></span>
+<span id="cb8-2"><a href="clean-up.html#cb8-2" tabindex="-1"></a>  </span>
+<span id="cb8-3"><a href="clean-up.html#cb8-3" tabindex="-1"></a>  <span class="fu">group_by</span>(deployment_period, colony) <span class="sc">%&gt;%</span></span>
+<span id="cb8-4"><a href="clean-up.html#cb8-4" tabindex="-1"></a>  </span>
+<span id="cb8-5"><a href="clean-up.html#cb8-5" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="at">file_count=</span><span class="fu">n</span>(), <span class="at">.groups =</span> <span class="st">&quot;drop&quot;</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb8-6"><a href="clean-up.html#cb8-6" tabindex="-1"></a>  </span>
+<span id="cb8-7"><a href="clean-up.html#cb8-7" tabindex="-1"></a>  <span class="fu">pivot_wider</span>(<span class="at">names_from =</span> colony,  <span class="co">#make tibble with colony columns</span></span>
+<span id="cb8-8"><a href="clean-up.html#cb8-8" tabindex="-1"></a>              <span class="at">values_from =</span> file_count, </span>
+<span id="cb8-9"><a href="clean-up.html#cb8-9" tabindex="-1"></a>              <span class="at">values_fill =</span> <span class="dv">0</span> <span class="co"># fill missing vals with 0</span></span>
+<span id="cb8-10"><a href="clean-up.html#cb8-10" tabindex="-1"></a>              ) <span class="sc">%&gt;%</span></span>
+<span id="cb8-11"><a href="clean-up.html#cb8-11" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">TOTAL =</span> <span class="fu">rowSums</span>(<span class="fu">select</span>(., <span class="sc">-</span>deployment_period))) <span class="sc">%&gt;%</span></span>
+<span id="cb8-12"><a href="clean-up.html#cb8-12" tabindex="-1"></a>  </span>
+<span id="cb8-13"><a href="clean-up.html#cb8-13" tabindex="-1"></a>  <span class="fu">bind_rows</span>(<span class="fu">summarise</span>(.,</span>
+<span id="cb8-14"><a href="clean-up.html#cb8-14" tabindex="-1"></a>                      <span class="fu">across</span>(<span class="fu">where</span>(is.numeric), sum),</span>
+<span id="cb8-15"><a href="clean-up.html#cb8-15" tabindex="-1"></a>                      <span class="at">deployment_period =</span> <span class="st">&quot;TOTAL&quot;</span>))</span>
+<span id="cb8-16"><a href="clean-up.html#cb8-16" tabindex="-1"></a></span>
+<span id="cb8-17"><a href="clean-up.html#cb8-17" tabindex="-1"></a>deployment_summary</span></code></pre></div>
+<pre><code>## # A tibble: 7 × 8
+##   deployment_period `Baccalieu - Ned Walsh` `Bon Portage` Country  Gull  Kent
+##   &lt;chr&gt;                               &lt;int&gt;         &lt;int&gt;   &lt;int&gt; &lt;int&gt; &lt;int&gt;
+## 1 2017-2018                               6             0       0     0     0
+## 2 2018-2019                               0             5       6    10    10
+## 3 2019-2020                              10            17      17    23    16
+## 4 2021-2022                              20             0      16    16    27
+## 5 2022-2023                               7            13       0    11     0
+## 6 Other                                   0             0       0     2     0
+## 7 TOTAL                                  43            35      39    62    53
+## # ℹ 2 more variables: `Middle Lawn` &lt;int&gt;, TOTAL &lt;dbl&gt;</code></pre>
+<p>Looks like there were 3 devices that stayed out for longer than a year.
+Lets handle these later on*</p>
+<div class="sourceCode" id="cb10"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb10-1"><a href="clean-up.html#cb10-1" tabindex="-1"></a><span class="fu">print</span>(metrics_md[metrics_md<span class="sc">$</span>deployment_period <span class="sc">==</span><span class="st">&quot;Other&quot;</span>, ])</span></code></pre></div>
+<pre><code>##     bird_id      colony                  wetdry_filename depDate_comb
+## 142   BU971        Gull         BU971_25Nov23_194250.deg   2019-09-22
+## 165   CD493        Gull CD493_22Jun23_004919driftadj.deg   2021-09-16
+## 234   CD501 Middle Lawn CD501_25Nov23_184453driftadj.deg   2021-09-22
+##     retDate_comb deployment_period
+## 142   2023-08-22             Other
+## 165   2023-01-05             Other
+## 234   2023-01-01             Other</code></pre>
+<p>Save the metadata file for when we run HMM</p>
+<div class="sourceCode" id="cb12"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb12-1"><a href="clean-up.html#cb12-1" tabindex="-1"></a><span class="fu">write.csv</span>(metrics_md, <span class="fu">file.path</span>(data.dir, <span class="st">&quot;metrics_md.csv&quot;</span>))</span></code></pre></div>
+</div>
+</div>
+<div id="deg-files" class="section level2 hasAnchor" number="2.3">
+<h2><span class="header-section-number">2.3</span> DEG files<a href="clean-up.html#deg-files" class="anchor-section" aria-label="Anchor link to header"></a></h2>
+<p>The number of DEG files we have in that original folder should equal <code>MT_devices_retrieved</code></p>
+<p>So we want to clip this for our known deployment times from the metadata
+For this bird we want to filter the DEG file to keep any dates from 2017-09-20 to 2018-06-29.</p>
+<div class="sourceCode" id="cb13"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb13-1"><a href="clean-up.html#cb13-1" tabindex="-1"></a><span class="co">#access the deg file</span></span>
+<span id="cb13-2"><a href="clean-up.html#cb13-2" tabindex="-1"></a>deg_file <span class="ot">&lt;-</span> <span class="fu">file.path</span>(origin.dir, <span class="st">&quot;BH584_04Jul18_125355driftadj.deg&quot;</span>)</span>
+<span id="cb13-3"><a href="clean-up.html#cb13-3" tabindex="-1"></a></span>
+<span id="cb13-4"><a href="clean-up.html#cb13-4" tabindex="-1"></a><span class="co">#here&#39;s what a raw deg looks like</span></span>
+<span id="cb13-5"><a href="clean-up.html#cb13-5" tabindex="-1"></a><span class="fu">print</span>(<span class="fu">readLines</span>(deg_file, <span class="at">n =</span> <span class="dv">25</span>)) <span class="co">#our data starts at line 20</span></span></code></pre></div>
+<pre><code>##  [1] &quot;Migrate Technology Ltd logger&quot;                                                                                                                
+##  [2] &quot;Type: 10.13.4, current settings: Approx 1&#39;C resolution. Conductivity &gt;63 for &#39;wets&#39; count. Light range 4, clipped OFF, max light regime. XT. &quot;
+##  [3] &quot;Logger number: BH584&quot;                                                                                                                         
+##  [4] &quot;&quot;                                                                                                                                             
+##  [5] &quot;MODE: 6B (light, wet/dry recorded) - FOR OLD MODE 6, CLIPPED MUST BE ON&quot;                                                                      
+##  [6] &quot;LIGHT: Sampled every minute with max light recorded every 5mins.&quot;                                                                             
+##  [7] &quot;TEMPERATURE: NOT RECORDED.&quot;                                                                                                                   
+##  [8] &quot;WET/DRY: Sampled every 30secs with number of samples wet recorded every 10mins.&quot;                                                              
+##  [9] &quot;Max record length = 26 months. Total battery life approx 9 months. Logger is currently 11 months old.&quot;                                        
+## [10] &quot;&quot;                                                                                                                                             
+## [11] &quot;Programmed: 13/09/2017 17:18:06. Start of logging (DD/MM/YYYY HH:MM:SS): 13/09/2017 17:18:06&quot;                                                 
+## [12] &quot;Age at start of logging (secs): 3372472, approx 1 months&quot;                                                                                     
+## [13] &quot;End of logging (DD/MM/YYYY HH:MM:SS): 04/07/2018 12:51:58&quot;                                                                                    
+## [14] &quot;Age at end of logging (secs): 28757996, approx 11 months&quot;                                                                                     
+## [15] &quot;Timer (DDDDD:HH:MM:SS): 00293:19:32:04&quot;                                                                                                       
+## [16] &quot;Drift (secs): 108. Memory not full. &quot;                                                                                                         
+## [17] &quot;Pointers: 47511,105444,15000804,15000804,0,0,59% light mem used,50% wet/dry/temp mem used&quot;                                                    
+## [18] &quot;Tcals (Ax^3+Bx^2+Cx+D): 12065.555,-25651.861,17238.887,-3643.479&quot;                                                                             
+## [19] &quot;Approx 1&#39;C resolution. Conductivity &gt;63 for &#39;wets&#39; count. Light range 4, clipped OFF, max light regime. XT. &quot;                                 
+## [20] &quot;DD/MM/YYYY HH:MM:SS\twets0-20&quot;                                                                                                                
+## [21] &quot;13/09/2017 17:28:06\t0&quot;                                                                                                                       
+## [22] &quot;13/09/2017 17:38:06\t0&quot;                                                                                                                       
+## [23] &quot;13/09/2017 17:48:06\t0&quot;                                                                                                                       
+## [24] &quot;13/09/2017 17:58:06\t0&quot;                                                                                                                       
+## [25] &quot;13/09/2017 18:08:06\t0&quot;</code></pre>
+<p>Right now the DEG files contain a bunch of metadata (the first 20 lines), and data from the entire track time, from <code>track_dataStart</code> to <code>track_dataEnd</code> in the <code>migrate_md</code> dataframe. On line 20, you can see the two columns (<code>datetime</code> and <code>wets0-20</code>) that log data for the device. The rows after line 20 sometimes contain random errors that occur while the device is logging data, so we have clean those out too and also isolate the date from the <code>datetime</code> column.</p>
+</div>
+<div id="cleaning-degs" class="section level2 hasAnchor" number="2.4">
+<h2><span class="header-section-number">2.4</span> Cleaning DEGs<a href="clean-up.html#cleaning-degs" class="anchor-section" aria-label="Anchor link to header"></a></h2>
+<p>I made a <code>clean_deg function</code> to remove the noise from the DEG files.</p>
+<div class="sourceCode" id="cb15"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb15-1"><a href="clean-up.html#cb15-1" tabindex="-1"></a><span class="fu">source</span>(here<span class="sc">::</span><span class="fu">here</span>(<span class="st">&quot;utils/clean_degs.R&quot;</span>), <span class="at">echo=</span>F)</span>
+<span id="cb15-2"><a href="clean-up.html#cb15-2" tabindex="-1"></a></span>
+<span id="cb15-3"><a href="clean-up.html#cb15-3" tabindex="-1"></a></span>
+<span id="cb15-4"><a href="clean-up.html#cb15-4" tabindex="-1"></a><span class="cf">if</span> (<span class="cn">FALSE</span>) {</span>
+<span id="cb15-5"><a href="clean-up.html#cb15-5" tabindex="-1"></a><span class="fu">clean_degs</span>(origin.dir, deg.dir)</span>
+<span id="cb15-6"><a href="clean-up.html#cb15-6" tabindex="-1"></a>}</span></code></pre></div>
+<p>Use this function to fix the retrieval dates in clipping_md when retrieval date is greater than the last day listed in the DEG. This preps metadata for clipping the DEG files based on deployment periods.</p>
+<div class="sourceCode" id="cb16"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb16-1"><a href="clean-up.html#cb16-1" tabindex="-1"></a><span class="fu">source</span>(<span class="fu">here</span>(<span class="st">&quot;utils/fix_ret_dates.R&quot;</span>), <span class="at">echo =</span> F)</span></code></pre></div>
+<pre><code>## 
+## =================================================== 
+##              YOU LOADED fix_ret_dates                  
+##    view this function in wey-dry_analysis/R/utils   
+## =================================================== 
+## 
+## this function fixes the retrieval dates in a metadata file
+## In cases where retDate_comb is greater than the last date 
+## listed in the DEG file, the last date in the DEG file 
+## replaces the retrieval date. This preps the metadata for clipping the DEG files based on deployment periods.
+## 
+## - Ensure dependencies in project_settings.R
+## =============================================</code></pre>
+<div class="sourceCode" id="cb18"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb18-1"><a href="clean-up.html#cb18-1" tabindex="-1"></a><span class="co">#this just changes the structure of clipping_md, no files are changed</span></span>
+<span id="cb18-2"><a href="clean-up.html#cb18-2" tabindex="-1"></a>fixed_md <span class="ot">&lt;-</span> <span class="fu">update_ret_date</span>(clipping_md, deg.dir)</span></code></pre></div>
+<pre><code>## 
+## =====================================================
+##  C:/Users/BoschJ/Desktop/wet-dry_analysis/data/DEG_clean/CD491_2461_13483_GLS411_NED_Walsh.deg 
+## 
+## Deployment date: 18856 - Retrieval date: 19177
+## Updating retDate_comb for row: 25 from 04/07/2022 to 10/03/2022 
+## 
+## =====================================================
+##  C:/Users/BoschJ/Desktop/wet-dry_analysis/data/DEG_clean/BU971_25Nov23_194250.deg 
+## 
+## Deployment date: 18161 - Retrieval date: 19591
+## Updating retDate_comb for row: 154 from 22/08/2023 to 12/03/2021 
+## 
+## =====================================================
+##  C:/Users/BoschJ/Desktop/wet-dry_analysis/data/DEG_clean/BP496_09Aug19_171436driftadj.deg 
+## 
+## Deployment date: 17787 - Retrieval date: 18071
+## Updating retDate_comb for row: 211 from 24/06/2019 to 22/06/2019 
+## 
+## =====================================================
+##  C:/Users/BoschJ/Desktop/wet-dry_analysis/data/DEG_clean/BU784_14Aug20_141554driftadj.deg 
+## 
+## Deployment date: 18139 - Retrieval date: 18273
+## Updating retDate_comb for row: 221 from 12/01/2020 to 06/09/2019</code></pre>
+<div class="sourceCode" id="cb20"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb20-1"><a href="clean-up.html#cb20-1" tabindex="-1"></a><span class="co">#looks like retrieval dates for 5 files had to be fixed</span></span></code></pre></div>
+<p>When the function prints this output, the dates are numerical but I double checked and it is doing it properly so dates are just being printed kind of wonky in the output.</p>
+<p>4 files had to be changed because the last date in the DEG file was earlier than the retrieval date:
+* BU784_14Aug20_141554driftadj.deg
+* BP496_09Aug19_171436driftadj.deg
+* BU971_25Nov23_194250.deg
+* CD491_2461_13483_GLS411_NED_Walsh.deg</p>
+</div>
+<div id="clipping-degs" class="section level2 hasAnchor" number="2.5">
+<h2><span class="header-section-number">2.5</span> Clipping DEGS<a href="clean-up.html#clipping-degs" class="anchor-section" aria-label="Anchor link to header"></a></h2>
+<p>I’m using <code>Furrr</code> to speed up the clipping task. <a href="purrr.tidyverse.org/">Purrr</a> basically replaces R’s <code>apply</code> family, and <a href="furrr.futureverse.org/">Furrr</a> extends Purrr to support parallel processing. Purrr’s <code>pmap()</code> family applies a function row-wise over multiple inputs and bins the results into a single data frame (<code>pmap_dfr</code> - data frame row-bind).</p>
+<p>This works for our big clip job because we can use <code>Furrr</code> in combination with <code>dplyr</code> functions like <code>mutate()</code> <code>summarize()</code> or <code>filter()</code> to optimize clipping, we can still process a single file at a time to avoid overloading memory, but we can distribute the work across multiple cores for faster execution so that one core deals with 50 files</p>
+<p>I clipped the data sequentially with Purrr for 10 files first to get the logic down, and then switched to Furrr to build a bigger function (<code>clip_degs.R</code>).</p>
+<div class="sourceCode" id="cb21"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb21-1"><a href="clean-up.html#cb21-1" tabindex="-1"></a><span class="fu">source</span>(<span class="fu">here</span>(<span class="st">&quot;utils/clip_deg.R&quot;</span>), <span class="at">echo =</span> F)</span></code></pre></div>
+<pre><code>## 
+## =================================================== 
+##              YOU LOADED clip_degs                   
+##    view this function in wey-dry_analysis/R/utils   
+## =================================================== 
+## 
+## this function clips DEG files based on deployment periods
+## for combined estimated and observed dates, where depDate_comb
+## is the deployment date and retDate_comb is the retrieval date
+## 
+## 
+## - Ensure dependencies in project_settings.R
+## =============================================</code></pre>
+<div class="sourceCode" id="cb23"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb23-1"><a href="clean-up.html#cb23-1" tabindex="-1"></a><span class="co">#run on a subset of 10 files to start</span></span>
+<span id="cb23-2"><a href="clean-up.html#cb23-2" tabindex="-1"></a>subset <span class="ot">&lt;-</span> fixed_md[<span class="dv">1</span><span class="sc">:</span><span class="dv">10</span>, ]</span>
+<span id="cb23-3"><a href="clean-up.html#cb23-3" tabindex="-1"></a><span class="fu">str</span>(subset)</span></code></pre></div>
+<pre><code>## &#39;data.frame&#39;:    10 obs. of  4 variables:
+##  $ wetdry_filename: chr  &quot;BH594_04Jul18_135310driftadj.deg&quot; &quot;BH596_04Jul18_134429driftadj.deg&quot; &quot;BH602_04Jul18_132708driftadj.deg&quot; &quot;BH584_04Jul18_125355driftadj.deg&quot; ...
+##  $ depDate_comb   : chr  &quot;20/09/2017&quot; &quot;20/09/2017&quot; &quot;20/09/2017&quot; &quot;20/09/2017&quot; ...
+##  $ retDate_comb   : chr  &quot;29/06/2018&quot; &quot;29/06/2018&quot; &quot;29/06/2018&quot; &quot;01/07/2018&quot; ...
+##  $ colony         : chr  &quot;Baccalieu - Ned Walsh&quot; &quot;Baccalieu - Ned Walsh&quot; &quot;Baccalieu - Ned Walsh&quot; &quot;Baccalieu - Ned Walsh&quot; ...</code></pre>
+<div class="sourceCode" id="cb25"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb25-1"><a href="clean-up.html#cb25-1" tabindex="-1"></a><span class="co"># Loop through each row in the &#39;subset&#39; data frame and call clip_deg</span></span>
+<span id="cb25-2"><a href="clean-up.html#cb25-2" tabindex="-1"></a><span class="cf">if</span> (<span class="cn">FALSE</span>) {</span>
+<span id="cb25-3"><a href="clean-up.html#cb25-3" tabindex="-1"></a><span class="fu">profvis</span>({</span>
+<span id="cb25-4"><a href="clean-up.html#cb25-4" tabindex="-1"></a><span class="cf">for</span> (i <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span><span class="fu">nrow</span>(subset)) {</span>
+<span id="cb25-5"><a href="clean-up.html#cb25-5" tabindex="-1"></a>  <span class="fu">print</span>(<span class="fu">paste</span>(<span class="st">&quot;Processing row:&quot;</span>, i))</span>
+<span id="cb25-6"><a href="clean-up.html#cb25-6" tabindex="-1"></a>  <span class="fu">print</span>(subset[i, , <span class="at">drop =</span> <span class="cn">FALSE</span>])</span>
+<span id="cb25-7"><a href="clean-up.html#cb25-7" tabindex="-1"></a>  </span>
+<span id="cb25-8"><a href="clean-up.html#cb25-8" tabindex="-1"></a>  result <span class="ot">&lt;-</span> <span class="fu">clip_deg</span>(subset[i, , <span class="at">drop =</span> <span class="cn">FALSE</span>], deg.dir, output.dir, zip_file, log_file)</span>
+<span id="cb25-9"><a href="clean-up.html#cb25-9" tabindex="-1"></a>}})</span>
+<span id="cb25-10"><a href="clean-up.html#cb25-10" tabindex="-1"></a></span>
+<span id="cb25-11"><a href="clean-up.html#cb25-11" tabindex="-1"></a><span class="co"># using write_csv() the Date column (now of type Date) is automatically </span></span>
+<span id="cb25-12"><a href="clean-up.html#cb25-12" tabindex="-1"></a><span class="co"># converted to the standard YYYY-MM-DD format -  default behavior of the </span></span>
+<span id="cb25-13"><a href="clean-up.html#cb25-13" tabindex="-1"></a><span class="co"># readr package so I&#39;ll just keep it that way</span></span>
+<span id="cb25-14"><a href="clean-up.html#cb25-14" tabindex="-1"></a>}</span></code></pre></div>
+<p>Without using Furrr process took :
+* 85.6MB of memory on my machine
+* 5.27 seconds for 10 files</p>
+</div>
+<div id="parallel-batch-clipping" class="section level2 hasAnchor" number="2.6">
+<h2><span class="header-section-number">2.6</span> Parallel Batch-clipping<a href="clean-up.html#parallel-batch-clipping" class="anchor-section" aria-label="Anchor link to header"></a></h2>
+<p>I have 8 cores on my machine</p>
+<div class="sourceCode" id="cb26"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb26-1"><a href="clean-up.html#cb26-1" tabindex="-1"></a><span class="co">#define the number of cores on your machine</span></span>
+<span id="cb26-2"><a href="clean-up.html#cb26-2" tabindex="-1"></a>cores <span class="ot">&lt;-</span> parallel<span class="sc">::</span><span class="fu">detectCores</span>()</span></code></pre></div>
+<div id="testing" class="section level3 hasAnchor" number="2.6.1">
+<h3><span class="header-section-number">2.6.1</span> Testing<a href="clean-up.html#testing" class="anchor-section" aria-label="Anchor link to header"></a></h3>
+<div class="sourceCode" id="cb27"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb27-1"><a href="clean-up.html#cb27-1" tabindex="-1"></a><span class="co"># define function for a single row with clip deg</span></span>
+<span id="cb27-2"><a href="clean-up.html#cb27-2" tabindex="-1"></a>process_row <span class="ot">&lt;-</span> <span class="cf">function</span>(row, deg.dir, output.dir, log_file) {</span>
+<span id="cb27-3"><a href="clean-up.html#cb27-3" tabindex="-1"></a>  <span class="fu">clip_deg</span>(row, deg.dir, output.dir, log_file)</span>
+<span id="cb27-4"><a href="clean-up.html#cb27-4" tabindex="-1"></a>  }</span></code></pre></div>
+<p>I’m testing Furrr with 7 and then 4 cores to process 10 files to start, then scale it up to 50 files</p>
+<div class="sourceCode" id="cb28"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb28-1"><a href="clean-up.html#cb28-1" tabindex="-1"></a><span class="cf">if</span> (<span class="cn">FALSE</span>) {</span>
+<span id="cb28-2"><a href="clean-up.html#cb28-2" tabindex="-1"></a><span class="co"># first I&#39;ll try using half of my cores</span></span>
+<span id="cb28-3"><a href="clean-up.html#cb28-3" tabindex="-1"></a><span class="co"># and then try using one less than what I have available</span></span>
+<span id="cb28-4"><a href="clean-up.html#cb28-4" tabindex="-1"></a><span class="fu">plan</span>(multisession, <span class="at">workers =</span> (cores<span class="sc">/</span><span class="dv">2</span>))</span>
+<span id="cb28-5"><a href="clean-up.html#cb28-5" tabindex="-1"></a></span>
+<span id="cb28-6"><a href="clean-up.html#cb28-6" tabindex="-1"></a><span class="fu">plan</span>()</span>
+<span id="cb28-7"><a href="clean-up.html#cb28-7" tabindex="-1"></a></span>
+<span id="cb28-8"><a href="clean-up.html#cb28-8" tabindex="-1"></a></span>
+<span id="cb28-9"><a href="clean-up.html#cb28-9" tabindex="-1"></a><span class="fu">profvis</span>({</span>
+<span id="cb28-10"><a href="clean-up.html#cb28-10" tabindex="-1"></a>results <span class="ot">&lt;-</span> <span class="fu">future_map_dfr</span>(</span>
+<span id="cb28-11"><a href="clean-up.html#cb28-11" tabindex="-1"></a>  <span class="at">.x =</span> <span class="fu">split</span>(subset, <span class="fu">seq_len</span>(<span class="fu">nrow</span>(subset))),</span>
+<span id="cb28-12"><a href="clean-up.html#cb28-12" tabindex="-1"></a>  <span class="at">.f =</span> <span class="sc">~</span> <span class="fu">process_row</span>(.x, deg.dir, output.dir, log_file),</span>
+<span id="cb28-13"><a href="clean-up.html#cb28-13" tabindex="-1"></a>  <span class="at">.progress =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb28-14"><a href="clean-up.html#cb28-14" tabindex="-1"></a>})</span>
+<span id="cb28-15"><a href="clean-up.html#cb28-15" tabindex="-1"></a></span>
+<span id="cb28-16"><a href="clean-up.html#cb28-16" tabindex="-1"></a><span class="fu">print</span>(results)</span>
+<span id="cb28-17"><a href="clean-up.html#cb28-17" tabindex="-1"></a>}</span></code></pre></div>
+<p>Only took up 10.9MB of memory and around 4.64 seconds to run 10 files on 7 cores
+On 4 cores it took 5.1MB and 3.74 seconds to run (using 4 cores)</p>
+<p>Try scaling up to 50 files with 4 cores to see how it performs</p>
+<div class="sourceCode" id="cb29"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb29-1"><a href="clean-up.html#cb29-1" tabindex="-1"></a><span class="cf">if</span> (<span class="cn">FALSE</span>) {</span>
+<span id="cb29-2"><a href="clean-up.html#cb29-2" tabindex="-1"></a>  </span>
+<span id="cb29-3"><a href="clean-up.html#cb29-3" tabindex="-1"></a>subset <span class="ot">&lt;-</span> fixed_md[<span class="dv">1</span><span class="sc">:</span><span class="dv">50</span>, ]</span>
+<span id="cb29-4"><a href="clean-up.html#cb29-4" tabindex="-1"></a><span class="fu">str</span>(subset)</span>
+<span id="cb29-5"><a href="clean-up.html#cb29-5" tabindex="-1"></a></span>
+<span id="cb29-6"><a href="clean-up.html#cb29-6" tabindex="-1"></a><span class="fu">plan</span>()</span>
+<span id="cb29-7"><a href="clean-up.html#cb29-7" tabindex="-1"></a></span>
+<span id="cb29-8"><a href="clean-up.html#cb29-8" tabindex="-1"></a><span class="fu">profvis</span>({</span>
+<span id="cb29-9"><a href="clean-up.html#cb29-9" tabindex="-1"></a>results <span class="ot">&lt;-</span> <span class="fu">future_map_dfr</span>(</span>
+<span id="cb29-10"><a href="clean-up.html#cb29-10" tabindex="-1"></a>  <span class="at">.x =</span> <span class="fu">split</span>(subset, <span class="fu">seq_len</span>(<span class="fu">nrow</span>(subset))),</span>
+<span id="cb29-11"><a href="clean-up.html#cb29-11" tabindex="-1"></a>  <span class="at">.f =</span> <span class="sc">~</span> <span class="fu">process_row</span>(.x, deg.dir, output.dir, zip_file, log_file),</span>
+<span id="cb29-12"><a href="clean-up.html#cb29-12" tabindex="-1"></a>  <span class="at">.progress =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb29-13"><a href="clean-up.html#cb29-13" tabindex="-1"></a>})</span>
+<span id="cb29-14"><a href="clean-up.html#cb29-14" tabindex="-1"></a>}</span></code></pre></div>
+<p>With 4 cores for 50 files, Furrr::future_map_dfr used 6.4MB of memory and took 7.62 seconds.</p>
+</div>
+<div id="final-clip" class="section level3 hasAnchor" number="2.6.2">
+<h3><span class="header-section-number">2.6.2</span> Final clip<a href="clean-up.html#final-clip" class="anchor-section" aria-label="Anchor link to header"></a></h3>
+<p>Let’s run it on all files in deg.dir
+created a sink in clip_degs to log output to a file instead of console</p>
+<div class="sourceCode" id="cb30"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb30-1"><a href="clean-up.html#cb30-1" tabindex="-1"></a><span class="cf">if</span> (<span class="cn">FALSE</span>) {</span>
+<span id="cb30-2"><a href="clean-up.html#cb30-2" tabindex="-1"></a>subset <span class="ot">&lt;-</span> fixed_md[<span class="dv">1</span><span class="sc">:</span><span class="dv">10</span>, ]</span>
+<span id="cb30-3"><a href="clean-up.html#cb30-3" tabindex="-1"></a><span class="fu">str</span>(subset)</span>
+<span id="cb30-4"><a href="clean-up.html#cb30-4" tabindex="-1"></a></span>
+<span id="cb30-5"><a href="clean-up.html#cb30-5" tabindex="-1"></a>aggregate_logs <span class="ot">&lt;-</span> <span class="cf">function</span>(output.dir, log_file) {</span>
+<span id="cb30-6"><a href="clean-up.html#cb30-6" tabindex="-1"></a>  worker_logs <span class="ot">&lt;-</span> <span class="fu">list.files</span>(output.dir, <span class="at">pattern =</span> <span class="st">&quot;clip_summary_worker_.*</span><span class="sc">\\</span><span class="st">.txt&quot;</span>, <span class="at">full.names =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb30-7"><a href="clean-up.html#cb30-7" tabindex="-1"></a>  <span class="fu">file.append</span>(log_file, worker_logs)</span>
+<span id="cb30-8"><a href="clean-up.html#cb30-8" tabindex="-1"></a>  <span class="fu">file.remove</span>(worker_logs)</span>
+<span id="cb30-9"><a href="clean-up.html#cb30-9" tabindex="-1"></a>}</span>
+<span id="cb30-10"><a href="clean-up.html#cb30-10" tabindex="-1"></a></span>
+<span id="cb30-11"><a href="clean-up.html#cb30-11" tabindex="-1"></a>log_file <span class="ot">&lt;-</span> <span class="fu">file.path</span>(output.dir, <span class="st">&quot;clip_summary.txt&quot;</span>)</span>
+<span id="cb30-12"><a href="clean-up.html#cb30-12" tabindex="-1"></a><span class="cf">if</span> (<span class="fu">file.exists</span>(log_file)) <span class="fu">file.remove</span>(log_file)</span>
+<span id="cb30-13"><a href="clean-up.html#cb30-13" tabindex="-1"></a></span>
+<span id="cb30-14"><a href="clean-up.html#cb30-14" tabindex="-1"></a><span class="co">#restart R and clear env, then try with all files on 4 cores</span></span>
+<span id="cb30-15"><a href="clean-up.html#cb30-15" tabindex="-1"></a><span class="fu">plan</span>(sequential)  </span>
+<span id="cb30-16"><a href="clean-up.html#cb30-16" tabindex="-1"></a><span class="co"># use sequential for testing</span></span>
+<span id="cb30-17"><a href="clean-up.html#cb30-17" tabindex="-1"></a><span class="co">#switch to `multisession` for parallel</span></span>
+<span id="cb30-18"><a href="clean-up.html#cb30-18" tabindex="-1"></a></span>
+<span id="cb30-19"><a href="clean-up.html#cb30-19" tabindex="-1"></a>results <span class="ot">&lt;-</span> <span class="fu">future_map_dfr</span>(</span>
+<span id="cb30-20"><a href="clean-up.html#cb30-20" tabindex="-1"></a>  <span class="at">.x =</span> <span class="fu">split</span>(subset, <span class="fu">seq_len</span>(<span class="fu">nrow</span>(subset))),</span>
+<span id="cb30-21"><a href="clean-up.html#cb30-21" tabindex="-1"></a>  <span class="at">.f =</span> <span class="sc">~</span> <span class="fu">clip_deg</span>(.x, deg.dir, output.dir),</span>
+<span id="cb30-22"><a href="clean-up.html#cb30-22" tabindex="-1"></a>  <span class="at">.progress =</span> <span class="cn">TRUE</span></span>
+<span id="cb30-23"><a href="clean-up.html#cb30-23" tabindex="-1"></a>)</span>
+<span id="cb30-24"><a href="clean-up.html#cb30-24" tabindex="-1"></a></span>
+<span id="cb30-25"><a href="clean-up.html#cb30-25" tabindex="-1"></a><span class="fu">print</span>(results)</span>
+<span id="cb30-26"><a href="clean-up.html#cb30-26" tabindex="-1"></a></span>
+<span id="cb30-27"><a href="clean-up.html#cb30-27" tabindex="-1"></a>}</span></code></pre></div>
+<div class="sourceCode" id="cb31"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb31-1"><a href="clean-up.html#cb31-1" tabindex="-1"></a><span class="cf">if</span> (<span class="cn">FALSE</span>) {</span>
+<span id="cb31-2"><a href="clean-up.html#cb31-2" tabindex="-1"></a><span class="co"># Switch to parallel processing for the full dataset</span></span>
+<span id="cb31-3"><a href="clean-up.html#cb31-3" tabindex="-1"></a><span class="fu">plan</span>(multisession, <span class="at">workers =</span> cores<span class="sc">/</span><span class="dv">2</span>)</span>
+<span id="cb31-4"><a href="clean-up.html#cb31-4" tabindex="-1"></a></span>
+<span id="cb31-5"><a href="clean-up.html#cb31-5" tabindex="-1"></a><span class="cf">if</span> (<span class="fu">file.exists</span>(log_file)) <span class="fu">file.remove</span>(log_file)</span>
+<span id="cb31-6"><a href="clean-up.html#cb31-6" tabindex="-1"></a>  </span>
+<span id="cb31-7"><a href="clean-up.html#cb31-7" tabindex="-1"></a>worker_logs <span class="ot">&lt;-</span> <span class="fu">list.files</span>(output.dir, <span class="at">pattern =</span> <span class="st">&quot;^clip_summary_worker_.*</span><span class="sc">\\</span><span class="st">.txt$&quot;</span>, <span class="at">full.names =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb31-8"><a href="clean-up.html#cb31-8" tabindex="-1"></a></span>
+<span id="cb31-9"><a href="clean-up.html#cb31-9" tabindex="-1"></a><span class="cf">if</span> (<span class="fu">length</span>(worker_logs) <span class="sc">&gt;</span> <span class="dv">0</span>) <span class="fu">file.remove</span>(worker_logs)</span>
+<span id="cb31-10"><a href="clean-up.html#cb31-10" tabindex="-1"></a></span>
+<span id="cb31-11"><a href="clean-up.html#cb31-11" tabindex="-1"></a><span class="co"># Process the full dataset</span></span>
+<span id="cb31-12"><a href="clean-up.html#cb31-12" tabindex="-1"></a>results_full <span class="ot">&lt;-</span> <span class="fu">future_map_dfr</span>(</span>
+<span id="cb31-13"><a href="clean-up.html#cb31-13" tabindex="-1"></a>  <span class="at">.x =</span> <span class="fu">split</span>(fixed_md, <span class="fu">seq_len</span>(<span class="fu">nrow</span>(fixed_md))),</span>
+<span id="cb31-14"><a href="clean-up.html#cb31-14" tabindex="-1"></a>  <span class="at">.f =</span> <span class="sc">~</span> <span class="fu">clip_deg</span>(.x, deg.dir, output.dir),</span>
+<span id="cb31-15"><a href="clean-up.html#cb31-15" tabindex="-1"></a>  <span class="at">.progress =</span> <span class="cn">TRUE</span></span>
+<span id="cb31-16"><a href="clean-up.html#cb31-16" tabindex="-1"></a>)</span>
+<span id="cb31-17"><a href="clean-up.html#cb31-17" tabindex="-1"></a></span>
+<span id="cb31-18"><a href="clean-up.html#cb31-18" tabindex="-1"></a><span class="co"># Consolidate logs</span></span>
+<span id="cb31-19"><a href="clean-up.html#cb31-19" tabindex="-1"></a><span class="fu">aggregate_logs</span>(output.dir, log_file)</span>
+<span id="cb31-20"><a href="clean-up.html#cb31-20" tabindex="-1"></a></span>
+<span id="cb31-21"><a href="clean-up.html#cb31-21" tabindex="-1"></a><span class="fu">print</span>(results_full)</span>
+<span id="cb31-22"><a href="clean-up.html#cb31-22" tabindex="-1"></a>}</span></code></pre></div>
+<p>274 files on 4 cores required 9.2MB of memory allocation and around 58 seconds.</p>
+</div>
+</div>
+<div id="deg-file-issues" class="section level2 hasAnchor" number="2.7">
+<h2><span class="header-section-number">2.7</span> DEG File Issues<a href="clean-up.html#deg-file-issues" class="anchor-section" aria-label="Anchor link to header"></a></h2>
+<p>Make a new metadata file that reviews the days deployed</p>
+<div class="sourceCode" id="cb32"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb32-1"><a href="clean-up.html#cb32-1" tabindex="-1"></a>deployment_md <span class="ot">&lt;-</span> clipping_md <span class="sc">%&gt;%</span></span>
+<span id="cb32-2"><a href="clean-up.html#cb32-2" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
+<span id="cb32-3"><a href="clean-up.html#cb32-3" tabindex="-1"></a>    <span class="at">depDate_comb =</span> <span class="fu">as.Date</span>(depDate_comb, <span class="at">format =</span> <span class="st">&quot;%d/%m/%Y&quot;</span>),</span>
+<span id="cb32-4"><a href="clean-up.html#cb32-4" tabindex="-1"></a>    <span class="at">retDate_comb =</span> <span class="fu">as.Date</span>(retDate_comb, <span class="at">format =</span> <span class="st">&quot;%d/%m/%Y&quot;</span>),</span>
+<span id="cb32-5"><a href="clean-up.html#cb32-5" tabindex="-1"></a>    <span class="at">days_deployed =</span> <span class="fu">as.numeric</span>(retDate_comb <span class="sc">-</span> depDate_comb) <span class="sc">+</span><span class="dv">1</span></span>
+<span id="cb32-6"><a href="clean-up.html#cb32-6" tabindex="-1"></a>  ) <span class="sc">%&gt;%</span></span>
+<span id="cb32-7"><a href="clean-up.html#cb32-7" tabindex="-1"></a>  <span class="fu">rowwise</span>() <span class="sc">%&gt;%</span></span>
+<span id="cb32-8"><a href="clean-up.html#cb32-8" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
+<span id="cb32-9"><a href="clean-up.html#cb32-9" tabindex="-1"></a>    <span class="at">last_active_day =</span> {</span>
+<span id="cb32-10"><a href="clean-up.html#cb32-10" tabindex="-1"></a>      </span>
+<span id="cb32-11"><a href="clean-up.html#cb32-11" tabindex="-1"></a>      deg_file <span class="ot">&lt;-</span> <span class="fu">file.path</span>(deg.dir, wetdry_filename)</span>
+<span id="cb32-12"><a href="clean-up.html#cb32-12" tabindex="-1"></a>      </span>
+<span id="cb32-13"><a href="clean-up.html#cb32-13" tabindex="-1"></a>      <span class="cf">if</span> (<span class="fu">file.exists</span>(deg_file)) {</span>
+<span id="cb32-14"><a href="clean-up.html#cb32-14" tabindex="-1"></a>        deg_data <span class="ot">&lt;-</span> <span class="fu">tryCatch</span>(</span>
+<span id="cb32-15"><a href="clean-up.html#cb32-15" tabindex="-1"></a>          <span class="fu">read_csv</span>(deg_file, <span class="at">col_types =</span> <span class="fu">cols</span>( <span class="co">#define column types</span></span>
+<span id="cb32-16"><a href="clean-up.html#cb32-16" tabindex="-1"></a>            <span class="at">date =</span> <span class="fu">col_date</span>(<span class="at">format =</span> <span class="st">&quot;%d/%m/%Y&quot;</span>),</span>
+<span id="cb32-17"><a href="clean-up.html#cb32-17" tabindex="-1"></a>            <span class="at">time =</span> <span class="fu">col_character</span>(),</span>
+<span id="cb32-18"><a href="clean-up.html#cb32-18" tabindex="-1"></a>            <span class="st">`</span><span class="at">wets0-20</span><span class="st">`</span> <span class="ot">=</span> <span class="fu">col_double</span>()</span>
+<span id="cb32-19"><a href="clean-up.html#cb32-19" tabindex="-1"></a>          )),</span>
+<span id="cb32-20"><a href="clean-up.html#cb32-20" tabindex="-1"></a>          <span class="at">error =</span> <span class="cf">function</span>(e) <span class="cn">NULL</span></span>
+<span id="cb32-21"><a href="clean-up.html#cb32-21" tabindex="-1"></a>        )</span>
+<span id="cb32-22"><a href="clean-up.html#cb32-22" tabindex="-1"></a>        <span class="cf">if</span> (<span class="sc">!</span><span class="fu">is.null</span>(deg_data)) {</span>
+<span id="cb32-23"><a href="clean-up.html#cb32-23" tabindex="-1"></a>          <span class="fu">max</span>(deg_data<span class="sc">$</span>date, <span class="at">na.rm =</span> <span class="cn">TRUE</span>) <span class="co">#use the max deg date </span></span>
+<span id="cb32-24"><a href="clean-up.html#cb32-24" tabindex="-1"></a>        } <span class="cf">else</span> {</span>
+<span id="cb32-25"><a href="clean-up.html#cb32-25" tabindex="-1"></a>          <span class="cn">NA</span></span>
+<span id="cb32-26"><a href="clean-up.html#cb32-26" tabindex="-1"></a>        }</span>
+<span id="cb32-27"><a href="clean-up.html#cb32-27" tabindex="-1"></a>      } <span class="cf">else</span> {</span>
+<span id="cb32-28"><a href="clean-up.html#cb32-28" tabindex="-1"></a>        <span class="cn">NA</span></span>
+<span id="cb32-29"><a href="clean-up.html#cb32-29" tabindex="-1"></a>      }</span>
+<span id="cb32-30"><a href="clean-up.html#cb32-30" tabindex="-1"></a>    },</span>
+<span id="cb32-31"><a href="clean-up.html#cb32-31" tabindex="-1"></a>    <span class="at">days_inactive_before_ret =</span> <span class="cf">if</span> (retDate_comb <span class="sc">&gt;</span> last_active_day) {</span>
+<span id="cb32-32"><a href="clean-up.html#cb32-32" tabindex="-1"></a>      <span class="fu">as.numeric</span>(retDate_comb <span class="sc">-</span> last_active_day)<span class="sc">+</span><span class="dv">1</span></span>
+<span id="cb32-33"><a href="clean-up.html#cb32-33" tabindex="-1"></a>    } <span class="cf">else</span> {</span>
+<span id="cb32-34"><a href="clean-up.html#cb32-34" tabindex="-1"></a>      <span class="cn">NA</span></span>
+<span id="cb32-35"><a href="clean-up.html#cb32-35" tabindex="-1"></a>    },</span>
+<span id="cb32-36"><a href="clean-up.html#cb32-36" tabindex="-1"></a>    <span class="at">days_active_before_ret =</span> <span class="fu">as.numeric</span>(last_active_day<span class="sc">-</span>depDate_comb)<span class="sc">+</span><span class="dv">1</span>,</span>
+<span id="cb32-37"><a href="clean-up.html#cb32-37" tabindex="-1"></a>    </span>
+<span id="cb32-38"><a href="clean-up.html#cb32-38" tabindex="-1"></a>    <span class="at">days_active_after_ret =</span> <span class="cf">if</span> (last_active_day <span class="sc">&gt;</span> retDate_comb) {</span>
+<span id="cb32-39"><a href="clean-up.html#cb32-39" tabindex="-1"></a>      <span class="fu">as.numeric</span>(last_active_day <span class="sc">-</span> retDate_comb)<span class="sc">+</span><span class="dv">1</span></span>
+<span id="cb32-40"><a href="clean-up.html#cb32-40" tabindex="-1"></a>    } <span class="cf">else</span> {</span>
+<span id="cb32-41"><a href="clean-up.html#cb32-41" tabindex="-1"></a>      <span class="cn">NA</span></span>
+<span id="cb32-42"><a href="clean-up.html#cb32-42" tabindex="-1"></a>    },</span>
+<span id="cb32-43"><a href="clean-up.html#cb32-43" tabindex="-1"></a>    ) <span class="sc">%&gt;%</span></span>
+<span id="cb32-44"><a href="clean-up.html#cb32-44" tabindex="-1"></a>  <span class="fu">ungroup</span>() <span class="sc">%&gt;%</span></span>
+<span id="cb32-45"><a href="clean-up.html#cb32-45" tabindex="-1"></a>  </span>
+<span id="cb32-46"><a href="clean-up.html#cb32-46" tabindex="-1"></a>  <span class="fu">select</span>(wetdry_filename, </span>
+<span id="cb32-47"><a href="clean-up.html#cb32-47" tabindex="-1"></a>         depDate_comb, retDate_comb, </span>
+<span id="cb32-48"><a href="clean-up.html#cb32-48" tabindex="-1"></a>         last_active_day, </span>
+<span id="cb32-49"><a href="clean-up.html#cb32-49" tabindex="-1"></a>         days_deployed, </span>
+<span id="cb32-50"><a href="clean-up.html#cb32-50" tabindex="-1"></a>         days_active_before_ret, days_inactive_before_ret, </span>
+<span id="cb32-51"><a href="clean-up.html#cb32-51" tabindex="-1"></a>         days_active_after_ret)</span>
+<span id="cb32-52"><a href="clean-up.html#cb32-52" tabindex="-1"></a></span>
+<span id="cb32-53"><a href="clean-up.html#cb32-53" tabindex="-1"></a>deployment_md</span></code></pre></div>
+<pre><code>## # A tibble: 298 × 8
+##    wetdry_filename       depDate_comb retDate_comb last_active_day days_deployed
+##    &lt;chr&gt;                 &lt;date&gt;       &lt;date&gt;       &lt;date&gt;                  &lt;dbl&gt;
+##  1 BH594_04Jul18_135310… 2017-09-20   2018-06-29   2018-07-04                283
+##  2 BH596_04Jul18_134429… 2017-09-20   2018-06-29   2018-07-04                283
+##  3 BH602_04Jul18_132708… 2017-09-20   2018-06-29   2018-07-04                283
+##  4 BH584_04Jul18_125355… 2017-09-20   2018-07-01   2018-07-04                285
+##  5 BH603_03Jul18_194628… 2017-09-19   2018-07-01   2018-07-03                286
+##  6 BH595_04Jul18_131651… 2017-09-19   2018-07-01   2018-07-04                286
+##  7 BU853_69W_4261-13034… 2019-08-27   2020-10-26   2021-04-19                427
+##  8 BU869_77W_2461-13037… 2019-08-27   2020-11-06   2021-02-09                438
+##  9 BU832_24Jul20_165309… 2019-08-27   2020-07-22   2020-07-24                331
+## 10 BU847_84W_2461-13042… 2019-08-27   2020-11-05   2021-02-19                437
+## # ℹ 288 more rows
+## # ℹ 3 more variables: days_active_before_ret &lt;dbl&gt;,
+## #   days_inactive_before_ret &lt;dbl&gt;, days_active_after_ret &lt;dbl&gt;</code></pre>
+<p>There should only be 4 files with values for days_active_after_ret, showing how many days the device was dead before retrieval</p>
+<p>We can also see from this table how many days devices were deployed, how long some devices were on after retrieval, etc.</p>
+<div id="file-cd480_06aug22_140316driftadj.deg" class="section level4 hasAnchor" number="2.7.0.1">
+<h4><span class="header-section-number">2.7.0.1</span> File: CD480_06Aug22_140316driftadj.deg<a href="clean-up.html#file-cd480_06aug22_140316driftadj.deg" class="anchor-section" aria-label="Anchor link to header"></a></h4>
+<p>Noticed file <code>CD480_06Aug22_140316driftadj.deg</code> has DEG some dates listed as <code>2201-10-06</code></p>
+<div class="sourceCode" id="cb34"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb34-1"><a href="clean-up.html#cb34-1" tabindex="-1"></a>file <span class="ot">&lt;-</span> deployment_md[deployment_md<span class="sc">$</span>wetdry_filename <span class="sc">==</span> <span class="st">&quot;CD480_06Aug22_140316driftadj.deg&quot;</span>, ]</span></code></pre></div>
+<p>The DEG file has a weird invalid byte error message and then date formatting messed up.</p>
+<p>On May 2022, <code>01/05/2022</code>, the device starts logging invalid bytes
+then says it starts logging again in January of the next year? listed as <code>18/01/2201</code>,
+It can’t be logging for 2022 anymore because the day <code>18/01</code> already passed in 2022
+and metadata says retrieval day was in August 2022, <code>2022-07-31</code></p>
+<p>So it says it started logging in January again but lists the date as <code>2201</code></p>
+<pre><code>```
+01/05/2022 07:09:47 20
+01/05/2022 07:19:47 20
+01/05/2022 07:29:47 20
+01/05/2022 07:39:47 20
+01/05/2022 07:49:47 20
+Invalid byte: FF
+Invalid byte: FF
+Invalid byte: FF
+Invalid byte: FF
+Invalid byte: FF
+01/05/2022 07:59:47 20
+01/05/2022 08:09:47 20
+01/05/2022 08:19:47 20
+01/05/2022 08:29:47 20
+01/05/2022 08:39:47 20
+...
+01/05/2022 21:49:47 20
+01/05/2022 21:59:47 20
+01/05/2022 22:09:47 20
+01/05/2022 22:19:47 20
+Missing data until 18/01/2201 08:39:17
+Invalid byte: FF
+Invalid byte: FF
+Invalid byte: FF
+Invalid byte: FF
+Invalid byte: FF
+...
+Invalid byte: FF
+Invalid byte: FF
+18/01/2201 08:40:40 20
+18/01/2201 08:50:40 20
+18/01/2201 09:00:40 20
+...
+```</code></pre>
+<p>When we applied clip_deg it filtered out all those messy dates leaving any dates before <code>01/05/2022</code>, so we’re good to just keep using this file but it is bad quality.</p>
+<p>The wets values from April 30 at 8AM to May 1 at 7AM were consistently equal to 20, so maybe something went wrong with the device there (<code>30/04/2022 08:19:47</code> to <code>01/05/2022 07:49:47</code>).</p>
+<p>So really the last active day for this device was 01/05/2022</p>
+</div>
+<div id="file-bu784_14aug20_141554driftadj.deg" class="section level4 hasAnchor" number="2.7.0.2">
+<h4><span class="header-section-number">2.7.0.2</span> File: BU784_14Aug20_141554driftadj.deg<a href="clean-up.html#file-bu784_14aug20_141554driftadj.deg" class="anchor-section" aria-label="Anchor link to header"></a></h4>
+<p>Also the file <code>BU784_14Aug20_141554driftadj.deg</code> only has 937 lines after filtering
+Looks like it was deployed for 135 days and died 7 days after it was deployed</p>
+<div class="sourceCode" id="cb36"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb36-1"><a href="clean-up.html#cb36-1" tabindex="-1"></a>file <span class="ot">&lt;-</span> deployment_md[deployment_md<span class="sc">$</span>wetdry_filename <span class="sc">==</span> <span class="st">&quot;BU784_14Aug20_141554driftadj.deg&quot;</span>, ]</span>
+<span id="cb36-2"><a href="clean-up.html#cb36-2" tabindex="-1"></a><span class="fu">print</span>(file)</span></code></pre></div>
+<pre><code>## # A tibble: 1 × 8
+##   wetdry_filename        depDate_comb retDate_comb last_active_day days_deployed
+##   &lt;chr&gt;                  &lt;date&gt;       &lt;date&gt;       &lt;date&gt;                  &lt;dbl&gt;
+## 1 BU784_14Aug20_141554d… 2019-08-31   2020-01-12   2019-09-06                135
+## # ℹ 3 more variables: days_active_before_ret &lt;dbl&gt;,
+## #   days_inactive_before_ret &lt;dbl&gt;, days_active_after_ret &lt;dbl&gt;</code></pre>
+<p>**Going to hold these cleaned up and clipped files in R’s memory instead of writing them to a new csv every time. Will remove the DEG_clean dir, but keep the final clipped DEGS in /clipped so we don’t overload R</p>
+
+</div>
+</div>
+</div>
+            </section>
+
+          </div>
+        </div>
+      </div>
+<a href="index.html" class="navigation navigation-prev " aria-label="Previous page"><i class="fa fa-angle-left"></i></a>
+<a href="wet-dry-switches.html" class="navigation navigation-next " aria-label="Next page"><i class="fa fa-angle-right"></i></a>
+    </div>
+  </div>
+<script src="libs/gitbook-2.6.7/js/app.min.js"></script>
+<script src="libs/gitbook-2.6.7/js/clipboard.min.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-search.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-sharing.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-fontsettings.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-bookdown.js"></script>
+<script src="libs/gitbook-2.6.7/js/jquery.highlight.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-clipboard.js"></script>
+<script>
+gitbook.require(["gitbook"], function(gitbook) {
+gitbook.start({
+"sharing": {
+"github": false,
+"facebook": true,
+"twitter": true,
+"linkedin": false,
+"weibo": false,
+"instapaper": false,
+"vk": false,
+"whatsapp": false,
+"all": ["facebook", "twitter", "linkedin", "weibo", "instapaper"]
+},
+"fontsettings": {
+"theme": "white",
+"family": "sans",
+"size": 2
+},
+"edit": {
+"link": null,
+"text": null
+},
+"history": {
+"link": null,
+"text": null
+},
+"view": {
+"link": null,
+"text": null
+},
+"download": null,
+"search": {
+"engine": "fuse",
+"options": null
+},
+"toc": {
+"collapse": "section"
+}
+});
+});
+</script>
+
+</body>
+
+</html>

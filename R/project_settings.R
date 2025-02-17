@@ -11,6 +11,7 @@ library(flexdashboard)
 library(htmlwidgets)
 library(readr)
 library(lubridate)
+library(viridis)
 
 #packages for clipping deg files
 library(pryr) #tracks memory usage

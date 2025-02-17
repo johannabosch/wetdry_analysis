@@ -10,7 +10,7 @@
     Tempted to use 2hr resolution to match GPS. 
 
 
-**NOTE:** wet values should be **summed** when downsampling for calculating proportions, and not mean wets.
+**NOTE:** wet values should be **summed** when down-sampling for calculating proportions, and not mean wets.
 
 ### 2hr Periods
 

@@ -181,17 +181,20 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 </ul></li>
 <li class="chapter" data-level="8" data-path="visualizing-metrics.html"><a href="visualizing-metrics.html"><i class="fa fa-check"></i><b>8</b> Visualizing Metrics</a>
 <ul>
-<li class="chapter" data-level="8.1" data-path="visualizing-metrics.html"><a href="visualizing-metrics.html#plotting-functions"><i class="fa fa-check"></i><b>8.1</b> Plotting Functions</a>
+<li class="chapter" data-level="8.1" data-path="visualizing-metrics.html"><a href="visualizing-metrics.html#baccalieu-island-2017-2018"><i class="fa fa-check"></i><b>8.1</b> Baccalieu Island 2017-2018</a>
 <ul>
-<li class="chapter" data-level="8.1.1" data-path="visualizing-metrics.html"><a href="visualizing-metrics.html#plot-proportions"><i class="fa fa-check"></i><b>8.1.1</b> Plot Proportions</a></li>
-<li class="chapter" data-level="8.1.2" data-path="visualizing-metrics.html"><a href="visualizing-metrics.html#plot-switches"><i class="fa fa-check"></i><b>8.1.2</b> Plot Switches</a></li>
-<li class="chapter" data-level="8.1.3" data-path="visualizing-metrics.html"><a href="visualizing-metrics.html#plot-longest-periods"><i class="fa fa-check"></i><b>8.1.3</b> Plot Longest Periods</a></li>
-<li class="chapter" data-level="8.1.4" data-path="visualizing-metrics.html"><a href="visualizing-metrics.html#plot-total-wets"><i class="fa fa-check"></i><b>8.1.4</b> Plot Total Wets</a></li>
+<li class="chapter" data-level="8.1.1" data-path="visualizing-metrics.html"><a href="visualizing-metrics.html#running-plotting-functions"><i class="fa fa-check"></i><b>8.1.1</b> Running plotting functions</a></li>
+<li class="chapter" data-level="8.1.2" data-path="visualizing-metrics.html"><a href="visualizing-metrics.html#final-plots"><i class="fa fa-check"></i><b>8.1.2</b> Final Plots</a></li>
 </ul></li>
-<li class="chapter" data-level="8.2" data-path="visualizing-metrics.html"><a href="visualizing-metrics.html#baccalieu---ned-walsh-2017-2018"><i class="fa fa-check"></i><b>8.2</b> Baccalieu - Ned Walsh 2017-2018</a>
+<li class="chapter" data-level="8.2" data-path="visualizing-metrics.html"><a href="visualizing-metrics.html#kent-island-2018-2019"><i class="fa fa-check"></i><b>8.2</b> Kent Island 2018-2019</a>
 <ul>
-<li class="chapter" data-level="8.2.1" data-path="visualizing-metrics.html"><a href="visualizing-metrics.html#running-plotting-functions"><i class="fa fa-check"></i><b>8.2.1</b> Running plotting functions</a></li>
-<li class="chapter" data-level="8.2.2" data-path="visualizing-metrics.html"><a href="visualizing-metrics.html#final-plots"><i class="fa fa-check"></i><b>8.2.2</b> Final Plots</a></li>
+<li class="chapter" data-level="8.2.1" data-path="visualizing-metrics.html"><a href="visualizing-metrics.html#running-plotting-functions-1"><i class="fa fa-check"></i><b>8.2.1</b> Running plotting functions</a></li>
+<li class="chapter" data-level="8.2.2" data-path="visualizing-metrics.html"><a href="visualizing-metrics.html#final-plots-1"><i class="fa fa-check"></i><b>8.2.2</b> Final Plots</a></li>
+</ul></li>
+<li class="chapter" data-level="8.3" data-path="visualizing-metrics.html"><a href="visualizing-metrics.html#random-subset"><i class="fa fa-check"></i><b>8.3</b> Random subset</a>
+<ul>
+<li class="chapter" data-level="8.3.1" data-path="visualizing-metrics.html"><a href="visualizing-metrics.html#running-plotting-functions-2"><i class="fa fa-check"></i><b>8.3.1</b> Running plotting functions</a></li>
+<li class="chapter" data-level="8.3.2" data-path="visualizing-metrics.html"><a href="visualizing-metrics.html#final-plots-2"><i class="fa fa-check"></i><b>8.3.2</b> Final Plots</a></li>
 </ul></li>
 </ul></li>
 <li class="chapter" data-level="9" data-path="hidden-markov-modelling-hmm.html"><a href="hidden-markov-modelling-hmm.html"><i class="fa fa-check"></i><b>9</b> Hidden Markov Modelling (HMM)</a>
@@ -225,7 +228,7 @@ Right now the files are logging every 10 minutes, which is too high of a resolut
 12hrs seems too long given how far birds can move in this time, but 10min is far too short.
 
 Tempted to use 2hr resolution to match GPS. </code></pre>
-<p><strong>NOTE:</strong> wet values should be <strong>summed</strong> when downsampling for calculating proportions, and not mean wets.</p>
+<p><strong>NOTE:</strong> wet values should be <strong>summed</strong> when down-sampling for calculating proportions, and not mean wets.</p>
 <div id="hr-periods" class="section level3 hasAnchor" number="6.1.1">
 <h3><span class="header-section-number">6.1.1</span> 2hr Periods<a href="downsampling.html#hr-periods" class="anchor-section" aria-label="Anchor link to header"></a></h3>
 <div class="sourceCode" id="cb55"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb55-1"><a href="downsampling.html#cb55-1" tabindex="-1"></a><span class="fu">source</span>(here<span class="sc">::</span><span class="fu">here</span>(<span class="st">&quot;utils/downsample_deg.R&quot;</span>), <span class="at">echo =</span> F)</span></code></pre></div>
