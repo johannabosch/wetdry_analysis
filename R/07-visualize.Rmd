@@ -16,6 +16,12 @@
 I start with setting up some plotting functions so we can look at different subsets of our data easily. Then I apply those plotting functions to various sets of the DEG files (6 files) to visualize the metrics we discussed (for Baccalieu, Kent's Island, and random files).
 
 ```{r include=FALSE}
+
+source(here::here("project_settings.R"), echo=TRUE)
+
+```
+
+```{r}
 #Load the plotting functions 
 source(here::here("utils/plotting_functions.R"), echo=TRUE)
 ```
@@ -42,14 +48,14 @@ Let's start by visualizing switches/proportions for 2017-2018 files from Baccali
 bacc_2017_props <- deg_props_2hrs %>%
   filter(colony == "Baccalieu - Ned Walsh",
          deployment_period == "2017-2018") %>%
-  select(bird_id, date, start_time, end_time, prop_wet)
+    select(bird_id, date, start_time, end_time, prop_wet, colony, deployment_period)
 
 head(bacc_2017_props)
 ```
 
 
 ```{r}
-plot_bacc2017_props <- plot_props(data = bacc_2017_props, 
+plotly_bacc2017_props <- plot_props(data = bacc_2017_props, 
                                   y_var = "prop_wet", 
                                   y_label = "Proportion", 
                                   plot_title = "Proportion of Wet Time Across Deployments Per 2hr bins) - (Baccalieu Island 2017-2018)")
@@ -63,11 +69,11 @@ This kind of hurts to look at so we can also try aggregating the data to days ta
 
 ```{r}
 bacc_2017_daily_props <- bacc_2017_props %>%
-  group_by(bird_id, date) %>%
+  group_by(bird_id, date, colony, deployment_period) %>%
   summarize(daily_prop_wet = mean(prop_wet, na.rm = TRUE), .groups = "drop")
 
 
-plot_bacc2017_daily_props <- plot_daily_props(data = bacc_2017_daily_props, 
+plotly_bacc2017_daily_props <- plot_daily_props(data = bacc_2017_daily_props, 
                                   y_var = "daily_prop_wet", 
                                   y_label = "Proportion", 
                                   plot_title = "Mean Proportion of Wet Periods (2hr bins) Per Day (Baccalieu Island 2017-2018)")
@@ -82,13 +88,9 @@ plot_bacc2017_daily_props <- plot_daily_props(data = bacc_2017_daily_props,
 bacc_2017_switches <- daily_switches %>%
   filter(colony == "Baccalieu - Ned Walsh",
          deployment_period == "2017-2018") %>%
-  select(bird_id, date, daily_switches)
+  select(bird_id, colony, date, daily_switches, deployment_period)
 
-head(bacc_2017_switches)
-```
-
-```{r}
-plot_bacc2017_daily_switches <- plot_daily_switches(
+plotly_bacc2017_daily_switches <- plot_daily_switches(
   data = bacc_2017_switches,
   y_var = "daily_switches",
   y_label = "Sum of Switches",
@@ -110,10 +112,9 @@ bacc_2017_longest_prds <- deg_longest_prds %>%
          longest_wet_time,
          longest_wet_start, 
          longest_wet_end)
-```
 
-```{r}
-plot_bacc_2017_longest_prds <- plot_longest_prds(
+
+plotly_bacc_2017_longest_prds <- plot_longest_prds(
   data = bacc_2017_longest_prds,
   plot_title = "Longest Wet and Dry Periods - Baccalieu Island 2017-2018")
 
@@ -133,30 +134,30 @@ bacc_2017_total_wetdry <- deg_total_wetdry %>%
          total_time_dry)
 
 
-plot_bacc_2017_total_times <- plot_total_times(bacc_2017_total_wetdry, "Total Wet and Dry Times (Baccalieu Island, 2017-2018)")
+plotly_bacc_2017_total_times <- plot_total_times(bacc_2017_total_wetdry, "Total Wet and Dry Times (Baccalieu Island, 2017-2018)")
 ```
 
 
 ### Final Plots 
 
 ```{r}
-plot_bacc2017_props
+plotly_bacc2017_props
 ```
 
 ```{r}
-plot_bacc2017_daily_props
+plotly_bacc2017_daily_props
 ```
 
 ```{r}
-plot_bacc2017_daily_switches
+plotly_bacc2017_daily_switches
 ```
 
 ```{r}
-plot_bacc_2017_total_times
+plotly_bacc_2017_total_times
 ```
 
 ```{r}
-plot_bacc_2017_longest_prds
+plotly_bacc_2017_longest_prds
 ```
 
 
@@ -192,14 +193,14 @@ kent_2018_props <- deg_props_2hrs %>%
   filter(colony == "Kent",
          deployment_period == "2018-2019") %>%
   
-  select(bird_id, date, start_time, end_time, prop_wet)
+  select(bird_id, date, colony, start_time, end_time, prop_wet, deployment_period)
 
 kent_2018_props
 ```
 
 
 ```{r}
-plot_kent2018_props <- plot_props(data = kent_2018_props, 
+plotly_kent2018_props <- plot_props(data = kent_2018_props, 
                                   y_var = "prop_wet", 
                                   y_label = "Proportion", 
                                   plot_title = "Proportion of Wet Time Across Deployments Per 2hr bins) - (Kent Island 2018-2019)")
@@ -211,10 +212,10 @@ plot_kent2018_props <- plot_props(data = kent_2018_props,
 
 ```{r}
 kent_2018_daily_props <- kent_2018_props %>%
-  group_by(bird_id, date) %>%
+  group_by(bird_id, date, colony, deployment_period) %>%
   summarize(daily_prop_wet = mean(prop_wet, na.rm = TRUE), .groups = "drop")
 
-plot_kent2018_daily_props <- plot_daily_props(data = kent_2018_daily_props, 
+plotly_kent2018_daily_props <- plot_daily_props(data = kent_2018_daily_props, 
                                   y_var = "daily_prop_wet", 
                                   y_label = "Proportion", 
                                   plot_title = "Mean Proportion of Wet Periods (2hr bins) Per Day (Kent Island 2018-2019)")
@@ -229,13 +230,13 @@ plot_kent2018_daily_props <- plot_daily_props(data = kent_2018_daily_props,
 kent_2018_switches <- daily_switches %>%
   filter(colony == "Kent",
          deployment_period == "2018-2019") %>%
-  select(bird_id, date, daily_switches)
+  select(bird_id, colony, date, daily_switches, deployment_period)
 
 head(kent_2018_switches)
 ```
 
 ```{r}
-plot_kent2018_daily_switches <- plot_daily_switches(
+plotly_kent2018_daily_switches <- plot_daily_switches(
   data = kent_2018_switches,
   y_var = "daily_switches",
   y_label = "Sum of Switches",
@@ -261,7 +262,7 @@ kent_2018_longest_prds <- deg_longest_prds %>%
 
 ```{r}
 
-plot_kent_2018_longest_prds <- plot_longest_prds(
+plotly_kent_2018_longest_prds <- plot_longest_prds(
   data = kent_2018_longest_prds,
   plot_title = "Longest Wet and Dry Periods for Kent Island 2018-2019")
 
@@ -280,42 +281,42 @@ kent_2018_total_wetdry <- deg_total_wetdry %>%
          total_time_dry)
 
 
-plot_kent_2018_total_times <- plot_total_times(kent_2018_total_wetdry, "Total Wet and Dry Times (Kent Island 2018-2019)")
+plotly_kent_2018_total_times <- plot_total_times(kent_2018_total_wetdry, "Total Wet and Dry Times (Kent Island 2018-2019)")
 ```
 
 
 ### Final Plots 
 
 ```{r}
-plot_kent2018_props
+plotly_kent2018_props
 ```
 
 ```{r}
-plot_kent2018_daily_props
+plotly_kent2018_daily_props
 ```
 
 ```{r}
-plot_kent2018_daily_switches
+plotly_kent2018_daily_switches
 ```
 
 ```{r}
 
-plot_kent_2018_total_times
+plotly_kent_2018_total_times
 ```
 
 ```{r}
-plot_kent_2018_longest_prds
+plotly_kent_2018_longest_prds
 ```
 
 
 ## Random subset
 
-Now let's visualize the switches/proportions for 10 random files
-Make sure you clear out your environment so you don't accidentally run this on Baccalieu- or Kent-related objects or other sites you may have tried out.
+Now let's visualize the switches/proportions for 10 random files. Make sure you clear out your environment so you don't accidentally run this on Baccalieu-related or Kent-related objects or other sites you may have tried out.
 
 ```{r}
 rm(list = ls(pattern = "^kent"), envir = .GlobalEnv)
 rm(list = ls(pattern = "^bacc"), envir = .GlobalEnv)
+rm(list = ls(pattern = "^random"), envir = .GlobalEnv)
 ```
 
 
@@ -334,23 +335,62 @@ random_bird_ids <- metrics_md %>%
 random_bird_ids
 
 ```
+
+
 **Proportions:**
 
 ```{r}
+#let's just put all the random subsets on the same year so we can visualize them better
+# this means we have to determine the reference shift (let's make the smallest year = 1988)
 
-#subset the dataframe so we have less data to work with
 random_props <- deg_props_2hrs %>%
+    mutate(date = as.Date(date))
+
+random_props <- deg_props_2hrs %>%
+  
   filter(bird_id %in% random_bird_ids) %>%
-  select(bird_id, colony, date, start_time, end_time, prop_wet)
+  
+  select(bird_id, colony, date, start_time, end_time, prop_wet, deployment_period) %>%
+  
+  group_by(bird_id) %>%
+  
+  mutate(
+    min_year = min(year(date)),  # find the min date per bird_id
+    relative_year = year(date) - min_year,
+    fake_year = 1988 + relative_year,  # calculate the shifted year
+
+    #fixing leap year issue (see note below)
+    fake_date = make_date(
+      year = fake_year,
+      month = month(date),
+      day = ifelse(month(date) == 2 & day(date) == 29 & !leap_year(fake_year), 28, day(date)))) %>%
+  
+  ungroup()
+
 
 #make sure it filtered the same random files properly
 print(unique(random_props$bird_id))
+```
+
+**NOTE:** Weird NA's kept popping up because of leap years I think? 2020 was a leap. 1989 does not have feb 29 so NA values were popping up
+
+Before plotting let's make sure the dates all start at 1988 and that the dates are still relative for each bird_id
+
+```{r}
+
+random_props %>%
+  group_by(bird_id) %>%
+  summarize(
+    min_fake_year = min(year(fake_date)),
+    min_original_year = min(year(date))) %>%
+  print()
+
 
 ```
 
 
 ```{r}
-plot_random_props <- plot_props(data = random_props, 
+plotly_random_props <- plot_props_random(random_props, 
                                   y_var = "prop_wet", 
                                   y_label = "Proportion", 
                                   plot_title = "Proportion of Wet Time Across Deployments Per 2hr bins) - (10 random files)")
@@ -362,10 +402,11 @@ plot_random_props <- plot_props(data = random_props,
 
 ```{r}
 random_daily_props <- random_props %>%
-  group_by(bird_id, date) %>%
+  group_by(bird_id, fake_date, colony, deployment_period) %>%
   summarize(daily_prop_wet = mean(prop_wet, na.rm = TRUE), .groups = "drop")
 
-plot_random_daily_props <- plot_daily_props(data = random_daily_props, 
+
+plotly_random_daily_props <- plot_daily_props_random(data = random_daily_props, 
                                   y_var = "daily_prop_wet", 
                                   y_label = "Proportion", 
                                   plot_title = "Mean Proportion of Wet Periods (2hr bins) Per Day (10 random files)")
@@ -376,18 +417,29 @@ plot_random_daily_props <- plot_daily_props(data = random_daily_props,
 **Daily Switches:**
 
 ```{r}
+
 #subset the dataframe so we have less data to work with
+
 random_switches <- daily_switches %>%
   filter(bird_id %in% random_bird_ids) %>%
-  select(bird_id, date, daily_switches)
+  select(bird_id, date, daily_switches, colony, deployment_period) %>%
+  
+  group_by(bird_id) %>%  # ✅ Make sure each bird_id has its own reference year
+  mutate(
+    min_year = min(year(date), na.rm = TRUE),  
+    relative_year = year(date) - min_year,  
+    fake_year = 1988 + relative_year,
+    fake_date = make_date(
+      year = fake_year,
+      month = month(date),
+      day = ifelse(month(date) == 2 & day(date) == 29 & !leap_year(fake_year), 28, day(date))
+    )
+  ) %>%
+  ungroup()
 
-#make sure it filtered the same random files
-print(unique(random_switches$bird_id))
-```
 
-```{r}
-plot_random_daily_switches <- plot_daily_switches(
-  data = random_switches,
+
+plotly_random_daily_switches <- plot_daily_switches_random(random_switches,
   y_var = "daily_switches",
   y_label = "Sum of Switches",
   plot_title = "Daily Sum of Switches between Wet (wet>0) and Dry (wet=0) States for 10 Random Files")
@@ -408,11 +460,8 @@ random_longest_prds <- deg_longest_prds %>%
          longest_wet_start, 
          longest_wet_end)
 
-```
 
-```{r}
-
-plot_random_longest_prds <- plot_longest_prds(
+plotly_random_longest_prds <- plot_longest_prds(
   data = random_longest_prds,
   plot_title = "Longest Wet and Dry Periods for 10 Random Files")
 
@@ -430,29 +479,28 @@ random_total_wetdry <- deg_total_wetdry %>%
          total_time_dry)
 
 
-plot_random_total_times <- plot_total_times(random_total_wetdry, "Total Wet and Dry Times for 10 Random Files")
+plotly_random_total_times <- plot_total_times(random_total_wetdry, "Total Wet and Dry Times for 10 Random Files")
 
 ```
-
 
 ### Final Plots 
 
 ```{r}
-plot_random_props
+plotly_random_props
 ```
 
 ```{r}
-plot_random_daily_props
+plotly_random_daily_props
 ```
 
 ```{r}
-plot_random_daily_switches
+plotly_random_daily_switches
 ```
 
 ```{r}
-plot_random_total_times
+plotly_random_total_times
 ```
 
 ```{r}
-plot_random_longest_prds
+plotly_random_longest_prds
 ```

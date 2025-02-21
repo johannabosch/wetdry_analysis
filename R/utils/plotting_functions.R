@@ -35,7 +35,9 @@ custom_palette <- c("#E41A1C", "#377EB8", "#4DAF4A", "#984EA3", "#FF7F00",
 plot_props <- function(data, y_var, y_label, plot_title) {
   
   n_colors <- length(unique(data$bird_id))
-  palette <- rep(custom_palette, length.out = n_colors) #rep to ensure that colors repeat if n_colors is greater than the number of colors in custom_palette (want to add error message eventually)
+
+  #rep to ensure that colors repeat if n_colors is greater than the number of colors in custom_palette (want to add error message eventually)
+  palette <- rep(custom_palette, length.out = n_colors) 
   
   plot_ly(data = data,
           x = ~as.POSIXct(paste(date, start_time), format = "%Y-%m-%d %H:%M:%S", tz = "UTC"),
@@ -60,6 +62,7 @@ plot_props <- function(data, y_var, y_label, plot_title) {
       yaxis = list(title = y_label, rangemode = "tozero"), 
       
       legend = list(title = list(text = "Bird ID"), orientation = "v"),
+
       margin = list(t=100, b=100, l=100, r=100)) %>%
     config(responsive = TRUE)
 }
@@ -88,7 +91,7 @@ plot_daily_props <- function(data, y_var, y_label, plot_title) {
                    tickangle = 45),
       yaxis = list(title = y_label, rangemode = "tozero"), 
       legend = list(title = list(text = "Bird ID"), orientation = "v"),
-      margin = list(t=50, b=50, l=100, r=100))%>%
+      margin = list(t=100, b=100, l=120, r=120))%>%
     config(responsive = TRUE)
 }
 
@@ -103,7 +106,7 @@ daily_switches <- deg_switches %>%
   summarize(daily_switches = sum(switches, na.rm = TRUE), 
             .groups = "drop")
 
-#or plot by day
+# plot by day
 plot_daily_switches <- function(data, y_var, y_label, plot_title) {
   
   n_colors <- length(unique(data$bird_id))
@@ -127,11 +130,15 @@ plot_daily_switches <- function(data, y_var, y_label, plot_title) {
                    tickangle = 45),
       yaxis = list(title = y_label, rangemode = "tozero"), 
       legend = list(title = list(text = "Bird ID"), orientation = "v"),
-      margin = list(t=100, b=100, l=100, r=100))%>%
+      margin = list(t=100, b=100, l=120, r=120))%>%
     config(responsive = TRUE)
 }
 
 
+
+
+################################################
+################################################
 
 ### Plot Longest Periods
 
@@ -159,7 +166,7 @@ plot_longest_prds <- function(data, plot_title) {
     )
   
   plotly_plot <- ggplotly(plot) %>%
-    layout(margin = list(l = 100, r = 100, b = 100, t = 100),
+    layout(margin = list(l = 100, r = 100, b = 120, t = 120),
            xaxis = list(tickangle = 45))%>%
     config(responsive = TRUE)
   
@@ -195,9 +202,134 @@ plot_total_times <- function(data, plot_title) {
       yaxis = list(title = "Total time (mins)", rangemode = "tozero"),
       barmode = 'group',
       legend = list(title = list(text = "Metric")),
-      margin = list(t = 100, b = 100, l = 100, r = 100)%>%
+      margin = list(t = 100, b = 100, l = 120, r = 120)%>%
         config(responsive = TRUE)
     )
 }
 
+
+################################################
+################################################
+
+
+# Plot RANDOM subsets (adds more info to legend and fixes dates)
+
+plot_props_random <- function(data, y_var, y_label, plot_title) {
+  
+  n_colors <- length(unique(data$bird_id))
+  
+  #rep to ensure that colors repeat if n_colors is greater than the number of colors in custom_palette (want to add error message eventually)
+  palette <- rep(custom_palette, length.out = n_colors) 
+  
+  data <- data %>%
+    mutate(extra_info = paste(colony, deployment_period, sep = " | "))
+  
+  plot_ly(data = data,
+          x = ~as.POSIXct(paste(fake_date, start_time), format = "%Y-%m-%d %H:%M:%S", tz = "UTC"),
+          y= as.formula(paste0("~", y_var)), 
+          type = 'scatter',
+          mode = 'lines+markers',
+          color = ~interaction(bird_id, extra_info, sep = " | "),
+          colors = palette,
+          line = list(width = 0.5),
+          marker = list(size = 3)) %>%
+    
+    layout(
+      
+      title = list(text=plot_title, font=list(size=11)),
+      
+      xaxis = list(title = "Time (2-hour bins)", 
+                   tickformat = "%d %b %Y", # show day. month, year
+                   tickmode = "auto", #plotly adjusts the ticks based on zoom
+                   showgrid = TRUE,
+                   tickangle = 45),
+      
+      yaxis = list(title = y_label, rangemode = "tozero"), 
+      
+      legend = list(title = list(text = "Bird ID | Deployment | Colony"), 
+                    font = list(size = 9),
+                    orientation = "v"),
+      
+      margin = list(t=80, b=100, l=120, r=120)) %>%
+    
+    config(responsive = TRUE)
+}
+
+#or plot by day
+plot_daily_props_random <- function(data, y_var, y_label, plot_title) {
+  
+  data <- data %>%
+    mutate(extra_info = paste(colony, deployment_period, sep = " | "))
+  
+  n_colors <- length(unique(data$bird_id))
+  palette <- rep(custom_palette, length.out = n_colors)
+  
+  plot_ly(data = data,
+          x = ~fake_date,
+          y= as.formula(paste0("~", y_var)), 
+          type = 'scatter',
+          mode = 'lines+markers',
+          color = ~interaction(bird_id, extra_info, sep = " | "),
+          colors = palette,
+          line = list(width = 0.5),
+          marker = list(size = 3)) %>%
+    layout(
+      title = list(text=plot_title, font=list(size=11)),
+      xaxis = list(title = "Time (2-hour bins)", 
+                   tickformat = "%d %b %Y",
+                   tickmode = "auto",
+                   showgrid = TRUE,
+                   tickangle = 45),
+      yaxis = list(title = y_label, rangemode = "tozero"),
+      
+      legend = list(title = list(text = "Bird ID | Deployment | Colony"),  
+                    font = list(size = 9),
+                    orientation = "v"),
+      
+      margin = list(t=80, b=100, l=120, r=120))%>%
+    config(responsive = TRUE)
+}
+
+
+
+### Plot Random Switches
+
+plot_daily_switches_random <- function(data, y_var, y_label, plot_title) {
+  
+  data <- data %>%
+    mutate(extra_info = paste(colony, deployment_period, sep = " | "))
+  
+  n_colors <- length(unique(data$bird_id))
+  palette <- rep(custom_palette, length.out = n_colors)
+  
+  plot_ly(data = data,
+          x = ~fake_date,
+          y= as.formula(paste0("~", y_var)), 
+          type = 'scatter',
+          mode = 'lines+markers',
+          color = ~interaction(bird_id, extra_info, sep = " | "),
+          colors = palette,
+          line = list(width = 0.5),
+          marker = list(size = 3)) %>%
+    
+    layout(
+      title = list(text=plot_title, font=list(size=11)),
+      xaxis = list(title = "Time (2-hour bins)", 
+                   tickformat = "%d %b %Y",
+                   tickmode = "auto",
+                   showgrid = TRUE,
+                   tickangle = 45),
+      
+      yaxis = list(title = y_label, rangemode = "tozero"), 
+      
+      legend = list(title = list(text = "Bird ID | Colony | Deployment Period"),  
+                    font = list(size = 9),
+                    orientation = "v"),
+      margin = list(t=80, b=100, l=120, r=120))%>%
+    config(responsive = TRUE)}
+
+
 })
+
+
+

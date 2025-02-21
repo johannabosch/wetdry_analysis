@@ -1,12 +1,43 @@
 # Hidden Markov Modelling (HMM)
 
-## Prep the data
+
+Datasets of interest are `deg_props_2hrs` and `deg_switches`
+Other datasets we migth use are `deg_total_dry` and `deg_longest_prds_time`
+
+## Data Prep
 
 ```{r include=FALSE}
 source(here::here("project_settings.R"), echo=TRUE)
 ```
 
+### Clip Burrow-Use
+
+Now let's clip the files for the burrow use periods, we don't want files that have the fully dry days when the bird is in the burrow in the non-breeding analysis. We're looking for the ID_yr, datetime_start, datetime_end columns to clip the end of our datasets and exclude fully dry days from our analysis.
+
+```{r}
+
+# read in the burrow use data
+burrow_use <- readRDS("C:/Users/BoschJ/Desktop/wet-dry_analysis/data/LHSP_burrowUse_returnOnly.rds")
+
+burrow_use <- burrow_use %>%
+    mutate(  #isolate bird ID into a column called bird_id
+    bird_id = str_extract(ID_yr, "^[^_]+")) %>%
+  select(  #keep only ID_year, datetime_start, datetime_end columns
+    bird_id, datetime_start, datetime_end)
+
+
+```
+
+
+
+
+We can also clip the first day the device was deployed because we trap the birds in th eburrows so we can catch them.
+
+
+
 1)  create a single clean data frame containing data for every file
+
+
 
 2)  Run a 2state HMMM, have to run the following for the HMM:
 

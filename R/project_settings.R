@@ -1,3 +1,6 @@
+
+suppressMessages({
+  
 library(RMark)
 library(dplyr)
 library(tidyverse)
@@ -38,3 +41,5 @@ options(scipen = 999, digits=4)
 
 
 sessionInfo()
+
+})

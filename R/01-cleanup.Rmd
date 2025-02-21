@@ -255,7 +255,7 @@ Without using Furrr process took :
 * 85.6MB of memory on my machine 
 * 5.27 seconds for 10 files
 
-## Parallel Batch-clipping
+## Clipping Deployment Dates
 
 I have 8 cores on my machine
 
@@ -322,9 +322,9 @@ results <- future_map_dfr(
 
 With 4 cores for 50 files, Furrr::future_map_dfr used 6.4MB of memory and took 7.62 seconds.
 
-### Final clip
+### Fina Clip
 
-Let's run it on all files in deg.dir
+Let's run it on all files in deg.dir to clip deployment dates
 created a sink in clip_degs to log output to a file instead of console
 
 ```{r eval = FALSE}
@@ -522,3 +522,5 @@ print(file)
 
 
 **Going to hold these cleaned up and clipped files in R's memory instead of writing them to a new csv every time. Will remove the DEG_clean dir, but keep the final clipped DEGS in /clipped so we don't overload R
+
+
