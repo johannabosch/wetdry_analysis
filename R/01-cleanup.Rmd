@@ -26,6 +26,10 @@ The date window identified by these variables will include uninformative data be
 #load the metadata
 md <- read.csv(file.path(data.dir, "MasterMetadata_LHSP_Tracking_NL_NB_NS_06Dec2024.csv"))
 
+```
+
+```{r}
+
 # let's double check - every time there is an NA in retDate_comb, there should be no wet-dry file
 print(md %>%
   filter(!is.na(wetdry_filename) & is.na(ret_date) & is.na(ret_dateEst))) # checks out

@@ -20,23 +20,190 @@ Now let's clip the files for the burrow use periods, we don't want files that ha
 burrow_use <- readRDS("C:/Users/BoschJ/Desktop/wet-dry_analysis/data/LHSP_burrowUse_returnOnly.rds")
 
 burrow_use <- burrow_use %>%
-    mutate(  #isolate bird ID into a column called bird_id
-    bird_id = str_extract(ID_yr, "^[^_]+")) %>%
+  
+  mutate(  
+    
+    #isolate bird ID into a column called bird_id
+    bird_id = str_extract(ID_yr, "^[^_]+"),
+    
+    #split the datetime columns up to isolate dates
+    start_date = as.Date(datetime_start),
+    end_date = as.Date(datetime_end)) %>%
+  
   select(  #keep only ID_year, datetime_start, datetime_end columns
-    bird_id, datetime_start, datetime_end)
+    bird_id, start_date, end_date) 
 
+head(burrow_use, 100)
 
 ```
 
 
+Let's build a function to clip burrow use from any dataframe we would like:
+
+```{r}
+
+clip_burrow_use <- function(data, burrow_use) {
+  
+  #summarize earliest and latest burrow use
+  burrow_use_summary <- burrow_use %>%
+    group_by(bird_id) %>%
+    summarize(
+      start_date = min(start_date, na.rm = TRUE),
+      end_date = max(end_date, na.rm = TRUE))
+  
+  #merge summarized burrow-use dates
+  data_joined <- data %>%
+    left_join(burrow_use_summary, by = "bird_id")
+  
+  
+  #filter out burrow-use periods
+  data_filtered <- data_joined %>%
+    filter(is.na(start_date) | date < start_date | date > end_date) %>%
+    select(-start_date, -end_date)    #remove columns 
+  
+  return(data_filtered)
+}
+
+```
+
+And here is a final df with all the summarized burrow use periods
+```{r}
+
+ burrow_use_summary<- burrow_use %>%
+    group_by(bird_id) %>%
+    summarize(
+      start_date = min(start_date, na.rm = TRUE),
+      end_date = max(end_date, na.rm = TRUE))
+
+burrow_use_summary
+```
+
+If bird_id in `burrow_use` matches bird_id in the df's below, then clip the df's to exclude any dates that fall in between `start_date` and `end_date` of `burrow_use`. 
+```{r}
+
+#clip burrow-use periods from the proportions df, named 'nb' for non-breeding
+deg_props_2hrs_nb <- clip_burrow_use(deg_props_2hrs, burrow_use)
 
 
-We can also clip the first day the device was deployed because we trap the birds in th eburrows so we can catch them.
+print(deg_props_2hrs_nb)
 
+```
+
+Check to make sure it removed burrow-use periods from all 274 files and make sure rows were actually removed.
+
+```{r}
+summary_counts <- deg_props_2hrs %>%
+  count(bird_id, name = "before") %>%
+  left_join(deg_props_2hrs_nb %>% count(bird_id, name = "after"), by = "bird_id") %>%
+  mutate(removed = before - replace_na(after, 0))
+
+print(summary_counts)
+```
+
+```{r}
+
+#clip burrow-use periods from the proportions df, named 'nb' for non-breeding
+deg_switches_nb <- clip_burrow_use(deg_switches, burrow_use)
+
+print(deg_switches_nb)
+
+```
+
+```{r}
+
+# do the check for switches
+summary_counts <- deg_switches %>%
+  count(bird_id, name = "before") %>%
+  left_join(deg_switches_nb %>% count(bird_id, name = "after"), by = "bird_id") %>%
+  mutate(removed = before - replace_na(after, 0))
+
+print(summary_counts)
+```
+
+
+### Clip Deployment Day
+
+We can also clip the first day the device was deployed because we trap the birds in the burrows so we can catch them, we know for sure they are dry this day.
+
+Here is a function to clip the first day from both datasets
+```{r}
+
+clip_first_days <- function(data) {
+  
+  first_days <- data %>%
+    group_by(bird_id) %>%
+    summarize(first_date = min(date, na.rm = TRUE), .groups = "drop")
+  
+  data_filtered <- data %>%
+    left_join(first_days, by = "bird_id") %>%
+    filter( date > first_date) %>%
+    select(-first_date)
+}
+
+```
+
+Run the function in the proportions dataset 
+
+```{r}
+clip_first_day_summary <- deg_props_2hrs_nb %>%
+  group_by(bird_id) %>%
+  summarize(first_date_before = min(date, na.rm = TRUE))
+```
+
+
+```{r}
+deg_props_2hrs_nb <- clip_first_days(deg_props_2hrs_nb)
+
+head(deg_props_2hrs_nb)
+```
+```{r}
+clip_first_day_summary <- clip_first_day_summary %>%
+  left_join(
+    deg_props_2hrs_nb %>%
+      group_by(bird_id) %>%
+      summarize(first_date_after = min(date, na.rm = TRUE)),
+    by = "bird_id") %>%
+  print()
+```
+
+
+```{r}
+
+deg_switches_nb <- clip_first_day(deg_switches_nb)
+
+head(deg_switches_nb)
+
+```
+
+
+Run the function on the switches dataset:
+```{r}
+clip_first_day_summary <- deg_switches_nb %>%
+  group_by(bird_id) %>%
+  summarize(first_date_before = min(date, na.rm = TRUE))
+```
+
+
+```{r}
+deg_switches_nb <- clip_first_days(deg_switches_nb)
+
+head(deg_switches_nb)
+```
+
+```{r}
+clip_first_day_summary <- clip_first_day_summary %>%
+  left_join(
+    deg_switches_nb %>%
+      group_by(bird_id) %>%
+      summarize(first_date_after = min(date, na.rm = TRUE)),
+    by = "bird_id") %>%
+  print()
+```
+274 files processed for each dataset, should be good then. 
+In the future can make a mor erobust way of checking, but I think this is good for now.
 
 
 1)  create a single clean data frame containing data for every file
-
 
 
 2)  Run a 2state HMMM, have to run the following for the HMM:
@@ -44,6 +211,7 @@ We can also clip the first day the device was deployed because we trap the birds
     prepData()
     
     define variables:
+    
     stateNames <- dry, wet
     stepPar <- (inital mean for states based on prop_wet)
     anglePar <- (no angle parameter for our analysis)

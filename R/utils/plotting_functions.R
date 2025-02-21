@@ -91,7 +91,7 @@ plot_daily_props <- function(data, y_var, y_label, plot_title) {
                    tickangle = 45),
       yaxis = list(title = y_label, rangemode = "tozero"), 
       legend = list(title = list(text = "Bird ID"), orientation = "v"),
-      margin = list(t=100, b=100, l=120, r=120))%>%
+      margin = list(t=100, b=100, l=100, r=100))%>%
     config(responsive = TRUE)
 }
 
